@@ -63,7 +63,7 @@ namespace HotelBookingApp.Controllers
 
         /// <summary>Create a new amenity. Admin only.</summary>
         [HttpPost]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin,hotelmanager")]
         public async Task<IActionResult> Create([FromBody] CreateAmenityDto dto)
         {
             try
@@ -93,7 +93,7 @@ namespace HotelBookingApp.Controllers
 
         /// <summary>Update an amenity. Admin only.</summary>
         [HttpPut("{amenityId:int}")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin,hotelmanager")]
         public async Task<IActionResult> Update(int amenityId, [FromBody] CreateAmenityDto dto)
         {
             try
@@ -125,7 +125,7 @@ namespace HotelBookingApp.Controllers
 
         /// <summary>Delete an amenity. Admin only.</summary>
         [HttpDelete("{amenityId:int}")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin,hotelmanager")]
         public async Task<IActionResult> Delete(int amenityId)
         {
             try

@@ -46,14 +46,20 @@ namespace HotelBookingApp.Services
             if (room is null)
                 throw new NotFoundException("Room", dto.RoomId);
 
-            if (!room.IsAvailable)
-                throw new BadRequestException($"Room #{room.RoomNumber} is unavailable.");
-
             if (room.HotelId != dto.HotelId)
                 throw new BadRequestException("Room does not belong to selected hotel.");
 
+            // ✅ INVENTORY CHECK
+            if (!room.IsAvailable || room.AvailableRooms < dto.NumberOfRooms)
+                throw new BadRequestException("Not enough rooms available.");
+
             var nights = (decimal)(dto.CheckOut - dto.CheckIn).TotalDays;
             var totalAmount = Math.Round(nights * room.PricePerNight * dto.NumberOfRooms, 2);
+
+            // ✅ REDUCE INVENTORY
+            room.AvailableRooms -= dto.NumberOfRooms;
+            room.IsAvailable = room.AvailableRooms > 0;
+            await _roomRepo.UpdateAsync(room.RoomId, room);
 
             var booking = new Booking
             {
@@ -117,7 +123,7 @@ namespace HotelBookingApp.Services
             };
         }
 
-        // ── GET BY USER (PAGED) ────────────────
+        // ── GET BY USER ────────────────────────
         public async Task<PagedResponseDto<BookingResponseDto>> GetByUserAsync(int userId, PagedRequestDto request)
         {
             request.PageNumber = Math.Max(1, request.PageNumber);
@@ -149,7 +155,7 @@ namespace HotelBookingApp.Services
             };
         }
 
-        // ── GET BY HOTEL (PAGED) ───────────────
+        // ── GET BY HOTEL (FIXED ERROR) ─────────
         public async Task<PagedResponseDto<BookingResponseDto>> GetByHotelAsync(int hotelId, PagedRequestDto request)
         {
             request.PageNumber = Math.Max(1, request.PageNumber);
@@ -177,7 +183,7 @@ namespace HotelBookingApp.Services
             };
         }
 
-        // ── GET PENDING BY HOTEL ───────────────
+        // ── GET PENDING BY HOTEL (FIXED ERROR) ─
         public async Task<List<BookingResponseDto>> GetPendingByHotelAsync(int hotelId)
         {
             var hotel = await _hotelRepo.GetByIdAsync(hotelId)
@@ -187,54 +193,59 @@ namespace HotelBookingApp.Services
                 b => b.HotelId == hotelId && b.Status == "Pending"
             );
 
-            return bookings.Select(b => MapToDto(b, hotel.HotelName)).ToList();
+            return bookings
+                .Select(b => MapToDto(b, hotel.HotelName))
+                .ToList();
         }
 
         // ── CONFIRM ────────────────────────────
         public async Task<BookingResponseDto> ConfirmAsync(int bookingId)
         {
-            _logger.LogInformation("Confirm booking {BookingId}", bookingId);
             return await ChangeStatusAsync(bookingId, "Confirmed", new[] { "Pending" });
         }
 
         // ── COMPLETE ───────────────────────────
         public async Task<BookingResponseDto> CompleteAsync(int bookingId)
         {
-            _logger.LogInformation("Complete booking {BookingId}", bookingId);
             return await ChangeStatusAsync(bookingId, "Completed", new[] { "Confirmed" });
         }
 
         // ── CANCEL ─────────────────────────────
         public async Task<bool> CancelAsync(int bookingId)
         {
-            _logger.LogInformation("Cancel booking {BookingId}", bookingId);
-
             var booking = await _bookingRepo.GetByIdAsync(bookingId)
                 ?? throw new NotFoundException("Booking", bookingId);
 
             if (booking.Status == "Completed")
-                throw new BadRequestException("Cannot cancel a completed booking.");
+                throw new BadRequestException("Cannot cancel completed booking.");
 
             if (booking.Status == "Cancelled")
-                throw new BadRequestException("Booking already cancelled.");
+                throw new BadRequestException("Already cancelled.");
+
+            // ✅ RESTORE INVENTORY
+            var room = await _roomRepo.GetByIdAsync(booking.RoomId);
+            if (room != null)
+            {
+                room.AvailableRooms += booking.NumberOfRooms;
+                room.IsAvailable = true;
+
+                await _roomRepo.UpdateAsync(room.RoomId, room);
+            }
 
             booking.Status = "Cancelled";
-
             await _bookingRepo.UpdateAsync(bookingId, booking);
 
             return true;
         }
 
-        // ── PRIVATE HELPER ─────────────────────
+        // ── PRIVATE ────────────────────────────
         private async Task<BookingResponseDto> ChangeStatusAsync(int bookingId, string newStatus, string[] allowed)
         {
             var booking = await _bookingRepo.GetByIdAsync(bookingId)
                 ?? throw new NotFoundException("Booking", bookingId);
 
             if (!allowed.Contains(booking.Status))
-                throw new BadRequestException(
-                    $"Cannot change status from {booking.Status} to {newStatus}"
-                );
+                throw new BadRequestException($"Invalid status change {booking.Status} → {newStatus}");
 
             booking.Status = newStatus;
 

@@ -169,7 +169,6 @@ builder.Services.AddScoped<IUserService,         UserService>();
 builder.Services.AddScoped<IHotelService,        HotelService>();
 builder.Services.AddScoped<IRoomService,         RoomService>();
 builder.Services.AddScoped<IBookingService,      BookingService>();
-builder.Services.AddScoped<IBookingRoomService,  BookingRoomService>();
 builder.Services.AddScoped<IPaymentService,      PaymentService>();
 builder.Services.AddScoped<ICancellationService, CancellationService>();
 builder.Services.AddScoped<IReviewService,       ReviewService>();
@@ -177,6 +176,7 @@ builder.Services.AddScoped<IAmenityService,      AmenityService>();
 builder.Services.AddScoped<IHotelAmenityService, HotelAmenityService>();
 builder.Services.AddScoped<IWishlistService,     WishlistService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddScoped<JwtTokenHelper>();
 
 // ════════════════════════════════════════════════════════════════════════════

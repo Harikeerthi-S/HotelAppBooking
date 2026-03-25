@@ -31,44 +31,23 @@ namespace HotelBookingApp.Controllers
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
 
-                _logger.LogInformation("CreateBooking: User={UserId}, Hotel={HotelId}", dto.UserId, dto.HotelId);
-
                 var booking = await _bookingService.CreateAsync(dto);
 
-                return CreatedAtAction(nameof(GetById), new { bookingId = booking.BookingId }, booking);
+                return CreatedAtAction(nameof(GetById),
+                    new { bookingId = booking.BookingId }, booking);
             }
             catch (BadRequestException ex)
             {
-                _logger.LogWarning("CreateBooking BadRequest: {Message}", ex.Message);
-
-                return BadRequest(new ErrorResponseDto
-                {
-                    StatusCode = 400,
-                    Message = ex.Message,
-                    Timestamp = DateTime.UtcNow
-                });
+                return BadRequest(Error(ex.Message, 400));
             }
             catch (NotFoundException ex)
             {
-                _logger.LogWarning("CreateBooking NotFound: {Message}", ex.Message);
-
-                return NotFound(new ErrorResponseDto
-                {
-                    StatusCode = 404,
-                    Message = ex.Message,
-                    Timestamp = DateTime.UtcNow
-                });
+                return NotFound(Error(ex.Message, 404));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating booking");
-
-                return StatusCode(500, new ErrorResponseDto
-                {
-                    StatusCode = 500,
-                    Message = "An error occurred while creating the booking.",
-                    Timestamp = DateTime.UtcNow
-                });
+                return StatusCode(500, Error("Internal server error", 500));
             }
         }
 
@@ -79,120 +58,93 @@ namespace HotelBookingApp.Controllers
         {
             try
             {
-                _logger.LogInformation("GetBookingById: {BookingId}", bookingId);
-
                 var booking = await _bookingService.GetByIdAsync(bookingId);
-
                 return Ok(booking);
             }
             catch (NotFoundException ex)
             {
-                _logger.LogWarning("Booking not found: {BookingId}", bookingId);
-
-                return NotFound(new ErrorResponseDto
-                {
-                    StatusCode = 404,
-                    Message = ex.Message,
-                    Timestamp = DateTime.UtcNow
-                });
+                return NotFound(Error(ex.Message, 404));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching booking {BookingId}", bookingId);
-
-                return StatusCode(500, new ErrorResponseDto
-                {
-                    StatusCode = 500,
-                    Message = "An error occurred while retrieving the booking.",
-                    Timestamp = DateTime.UtcNow
-                });
+                return StatusCode(500, Error("Internal server error", 500));
             }
         }
 
-        // ?? GET ALL (PAGED) ? FIXED ???????????
+        // ?? GET ALL (PAGED) ????????????????????
         [HttpPost("all/paged")]
         [Authorize(Roles = "admin,hotelmanager")]
         public async Task<IActionResult> GetAll([FromBody] PagedRequestDto request)
         {
             try
             {
-                _logger.LogInformation("GetAllBookings");
-
                 var result = await _bookingService.GetAllAsync(request);
-
                 return Ok(result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching all bookings");
-
-                return StatusCode(500, new ErrorResponseDto
-                {
-                    StatusCode = 500,
-                    Message = "An error occurred while retrieving bookings.",
-                    Timestamp = DateTime.UtcNow
-                });
+                return StatusCode(500, Error("Internal server error", 500));
             }
         }
 
-        // ?? GET BY USER (PAGED) ????????????????
+        // ?? GET BY USER ????????????????????????
         [HttpPost("user/{userId:int}/paged")]
         [Authorize(Roles = "user,admin,hotelmanager")]
         public async Task<IActionResult> GetByUser(int userId, [FromBody] PagedRequestDto request)
         {
             try
             {
-                _logger.LogInformation("GetBookingsByUser: UserId={UserId}", userId);
-
                 var result = await _bookingService.GetByUserAsync(userId, request);
-
                 return Ok(result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching bookings for user {UserId}", userId);
-
-                return StatusCode(500, new ErrorResponseDto
-                {
-                    StatusCode = 500,
-                    Message = "An error occurred while retrieving bookings.",
-                    Timestamp = DateTime.UtcNow
-                });
+                return StatusCode(500, Error("Internal server error", 500));
             }
         }
 
-        // ?? GET BY HOTEL (PAGED) ???????????????
+        // ?? GET BY HOTEL ???????????????????????
         [HttpPost("hotel/{hotelId:int}/paged")]
         [Authorize(Roles = "admin,hotelmanager")]
         public async Task<IActionResult> GetByHotel(int hotelId, [FromBody] PagedRequestDto request)
         {
             try
             {
-                _logger.LogInformation("GetBookingsByHotel: HotelId={HotelId}", hotelId);
-
                 var result = await _bookingService.GetByHotelAsync(hotelId, request);
-
                 return Ok(result);
             }
             catch (NotFoundException ex)
             {
-                return NotFound(new ErrorResponseDto
-                {
-                    StatusCode = 404,
-                    Message = ex.Message,
-                    Timestamp = DateTime.UtcNow
-                });
+                return NotFound(Error(ex.Message, 404));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching bookings for hotel {HotelId}", hotelId);
+                return StatusCode(500, Error("Internal server error", 500));
+            }
+        }
 
-                return StatusCode(500, new ErrorResponseDto
-                {
-                    StatusCode = 500,
-                    Message = "An error occurred while retrieving bookings.",
-                    Timestamp = DateTime.UtcNow
-                });
+        // ?? GET PENDING BOOKINGS ???????????????
+        [HttpGet("hotel/{hotelId:int}/pending")]
+        [Authorize(Roles = "admin,hotelmanager")]
+        public async Task<IActionResult> GetPending(int hotelId)
+        {
+            try
+            {
+                var result = await _bookingService.GetPendingByHotelAsync(hotelId);
+                return Ok(result);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(Error(ex.Message, 404));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching pending bookings");
+                return StatusCode(500, Error("Internal server error", 500));
             }
         }
 
@@ -203,40 +155,21 @@ namespace HotelBookingApp.Controllers
         {
             try
             {
-                _logger.LogInformation("ConfirmBooking: {BookingId}", bookingId);
-
                 var booking = await _bookingService.ConfirmAsync(bookingId);
-
                 return Ok(booking);
             }
             catch (NotFoundException ex)
             {
-                return NotFound(new ErrorResponseDto
-                {
-                    StatusCode = 404,
-                    Message = ex.Message,
-                    Timestamp = DateTime.UtcNow
-                });
+                return NotFound(Error(ex.Message, 404));
             }
             catch (BadRequestException ex)
             {
-                return BadRequest(new ErrorResponseDto
-                {
-                    StatusCode = 400,
-                    Message = ex.Message,
-                    Timestamp = DateTime.UtcNow
-                });
+                return BadRequest(Error(ex.Message, 400));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error confirming booking {BookingId}", bookingId);
-
-                return StatusCode(500, new ErrorResponseDto
-                {
-                    StatusCode = 500,
-                    Message = "An error occurred while confirming the booking.",
-                    Timestamp = DateTime.UtcNow
-                });
+                _logger.LogError(ex, "Error confirming booking");
+                return StatusCode(500, Error("Internal server error", 500));
             }
         }
 
@@ -247,40 +180,21 @@ namespace HotelBookingApp.Controllers
         {
             try
             {
-                _logger.LogInformation("CompleteBooking: {BookingId}", bookingId);
-
                 var booking = await _bookingService.CompleteAsync(bookingId);
-
                 return Ok(booking);
             }
             catch (NotFoundException ex)
             {
-                return NotFound(new ErrorResponseDto
-                {
-                    StatusCode = 404,
-                    Message = ex.Message,
-                    Timestamp = DateTime.UtcNow
-                });
+                return NotFound(Error(ex.Message, 404));
             }
             catch (BadRequestException ex)
             {
-                return BadRequest(new ErrorResponseDto
-                {
-                    StatusCode = 400,
-                    Message = ex.Message,
-                    Timestamp = DateTime.UtcNow
-                });
+                return BadRequest(Error(ex.Message, 400));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error completing booking {BookingId}", bookingId);
-
-                return StatusCode(500, new ErrorResponseDto
-                {
-                    StatusCode = 500,
-                    Message = "An error occurred while completing the booking.",
-                    Timestamp = DateTime.UtcNow
-                });
+                _logger.LogError(ex, "Error completing booking");
+                return StatusCode(500, Error("Internal server error", 500));
             }
         }
 
@@ -291,41 +205,30 @@ namespace HotelBookingApp.Controllers
         {
             try
             {
-                _logger.LogInformation("CancelBooking: {BookingId}", bookingId);
-
                 await _bookingService.CancelAsync(bookingId);
-
                 return Ok(new { message = "Booking cancelled successfully." });
             }
             catch (NotFoundException ex)
             {
-                return NotFound(new ErrorResponseDto
-                {
-                    StatusCode = 404,
-                    Message = ex.Message,
-                    Timestamp = DateTime.UtcNow
-                });
+                return NotFound(Error(ex.Message, 404));
             }
             catch (BadRequestException ex)
             {
-                return BadRequest(new ErrorResponseDto
-                {
-                    StatusCode = 400,
-                    Message = ex.Message,
-                    Timestamp = DateTime.UtcNow
-                });
+                return BadRequest(Error(ex.Message, 400));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error cancelling booking {BookingId}", bookingId);
-
-                return StatusCode(500, new ErrorResponseDto
-                {
-                    StatusCode = 500,
-                    Message = "An error occurred while cancelling the booking.",
-                    Timestamp = DateTime.UtcNow
-                });
+                _logger.LogError(ex, "Error cancelling booking");
+                return StatusCode(500, Error("Internal server error", 500));
             }
         }
+
+        // ?? HELPER ?????????????????????????????
+        private static ErrorResponseDto Error(string message, int code) => new()
+        {
+            StatusCode = code,
+            Message = message,
+            Timestamp = DateTime.UtcNow
+        };
     }
 }

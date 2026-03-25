@@ -64,7 +64,7 @@ namespace HotelBookingApp.Controllers
 
         /// <summary>Assign an amenity to a hotel. Admin only.</summary>
         [HttpPost]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin,hotelmanager")]
         public async Task<IActionResult> Create([FromBody] CreateHotelAmenityDto dto)
         {
             try
@@ -98,7 +98,7 @@ namespace HotelBookingApp.Controllers
 
         /// <summary>Remove an amenity from a hotel. Admin only.</summary>
         [HttpDelete("{id:int}")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin,hotelmanager")]
         public async Task<IActionResult> Delete(int id)
         {
             try

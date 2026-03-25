@@ -48,6 +48,43 @@ namespace HotelBookingApp.Migrations
                     b.ToTable("Amenities");
                 });
 
+            modelBuilder.Entity("HotelBookingApp.Models.AuditLog", b =>
+                {
+                    b.Property<int>("AuditLogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AuditLogId"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Changes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("EntityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EntityName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("AuditLogId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AuditLogs");
+                });
+
             modelBuilder.Entity("HotelBookingApp.Models.Booking", b =>
                 {
                     b.Property<int>("BookingId")
@@ -92,36 +129,6 @@ namespace HotelBookingApp.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Bookings");
-                });
-
-            modelBuilder.Entity("HotelBookingApp.Models.BookingRoom", b =>
-                {
-                    b.Property<int>("BookingRoomId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BookingRoomId"));
-
-                    b.Property<int>("BookingId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("NumberOfRooms")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("PricePerNight")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("RoomId")
-                        .HasColumnType("int");
-
-                    b.HasKey("BookingRoomId");
-
-                    b.HasIndex("BookingId");
-
-                    b.HasIndex("RoomId");
-
-                    b.ToTable("BookingRooms");
                 });
 
             modelBuilder.Entity("HotelBookingApp.Models.Cancellation", b =>
@@ -332,6 +339,9 @@ namespace HotelBookingApp.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RoomId"));
 
+                    b.Property<int>("AvailableRooms")
+                        .HasColumnType("int");
+
                     b.Property<int>("Capacity")
                         .HasColumnType("int");
 
@@ -343,7 +353,9 @@ namespace HotelBookingApp.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<bool>("IsAvailable")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
 
                     b.Property<decimal>("PricePerNight")
                         .HasPrecision(18, 2)
@@ -357,9 +369,13 @@ namespace HotelBookingApp.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int>("TotalRooms")
+                        .HasColumnType("int");
+
                     b.HasKey("RoomId");
 
-                    b.HasIndex("HotelId");
+                    b.HasIndex("HotelId", "RoomNumber")
+                        .IsUnique();
 
                     b.ToTable("Rooms");
                 });
@@ -382,8 +398,8 @@ namespace HotelBookingApp.Migrations
                         .HasColumnType("varbinary(max)");
 
                     b.Property<string>("Phone")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("Role")
                         .IsRequired()
@@ -429,6 +445,16 @@ namespace HotelBookingApp.Migrations
                     b.ToTable("Wishlists");
                 });
 
+            modelBuilder.Entity("HotelBookingApp.Models.AuditLog", b =>
+                {
+                    b.HasOne("HotelBookingApp.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("HotelBookingApp.Models.Booking", b =>
                 {
                     b.HasOne("HotelBookingApp.Models.Hotel", "Hotel")
@@ -440,7 +466,7 @@ namespace HotelBookingApp.Migrations
                     b.HasOne("HotelBookingApp.Models.Room", "Room")
                         .WithMany("Bookings")
                         .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("HotelBookingApp.Models.User", "User")
@@ -454,25 +480,6 @@ namespace HotelBookingApp.Migrations
                     b.Navigation("Room");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("HotelBookingApp.Models.BookingRoom", b =>
-                {
-                    b.HasOne("HotelBookingApp.Models.Booking", "Booking")
-                        .WithMany("BookingRooms")
-                        .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("HotelBookingApp.Models.Room", "Room")
-                        .WithMany("BookingRooms")
-                        .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Booking");
-
-                    b.Navigation("Room");
                 });
 
             modelBuilder.Entity("HotelBookingApp.Models.Cancellation", b =>
@@ -583,8 +590,6 @@ namespace HotelBookingApp.Migrations
 
             modelBuilder.Entity("HotelBookingApp.Models.Booking", b =>
                 {
-                    b.Navigation("BookingRooms");
-
                     b.Navigation("Cancellations");
 
                     b.Navigation("Payments");
@@ -605,8 +610,6 @@ namespace HotelBookingApp.Migrations
 
             modelBuilder.Entity("HotelBookingApp.Models.Room", b =>
                 {
-                    b.Navigation("BookingRooms");
-
                     b.Navigation("Bookings");
                 });
 

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\HotelBookingApp.csproj": {}
+    "C:\\hotel\\HotelBookingApp\\HotelBookingApp Backend\\HotelBookingApp\\HotelBookingApp.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\HotelBookingApp.csproj": {
+    "C:\\hotel\\HotelBookingApp\\HotelBookingApp Backend\\HotelBookingApp\\HotelBookingApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\HotelBookingApp.csproj",
+        "projectUniqueName": "C:\\hotel\\HotelBookingApp\\HotelBookingApp Backend\\HotelBookingApp\\HotelBookingApp.csproj",
         "projectName": "HotelBookingApp",
-        "projectPath": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\HotelBookingApp.csproj",
+        "projectPath": "C:\\hotel\\HotelBookingApp\\HotelBookingApp Backend\\HotelBookingApp\\HotelBookingApp.csproj",
         "packagesPath": "C:\\Users\\Harikeerthi.S\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\obj\\",
+        "outputPath": "C:\\hotel\\HotelBookingApp\\HotelBookingApp Backend\\HotelBookingApp\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
