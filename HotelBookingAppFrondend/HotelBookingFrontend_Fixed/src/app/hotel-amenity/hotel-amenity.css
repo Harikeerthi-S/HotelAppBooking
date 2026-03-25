@@ -1,0 +1,9 @@
+.btn-primary-custom { background: linear-gradient(135deg,#e84393,#c2185b); border:none; color:#fff; box-shadow:0 4px 14px rgba(232,67,147,.3); transition:all .2s; }
+.btn-primary-custom:hover { transform:translateY(-1px); color:#fff; }
+.btn-primary-custom:disabled { opacity:.65; pointer-events:none; }
+.fw-600 { font-weight:600; }
+.fw-700 { font-weight:700; }
+.btn-xs { padding:3px 10px; font-size:.78rem; border-radius:20px; }
+.amenity-badge { background:#fce4ec; color:#c2185b; padding:3px 10px; border-radius:50px; font-size:.82rem; font-weight:600; }
+.amenity-chip { background:#f8f9fc; border:1px solid #dee2e6; border-radius:50px; padding:4px 12px; font-size:.82rem; display:inline-flex; align-items:center; gap:4px; }
+.hotel-amenity-group { background:#f8f9fc; }

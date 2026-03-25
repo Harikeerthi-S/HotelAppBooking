@@ -1,0 +1,16 @@
+.btn-primary-custom { background: linear-gradient(135deg,#e84393,#c2185b); border:none; color:#fff; box-shadow:0 4px 14px rgba(232,67,147,.3); transition:all .2s; }
+.btn-primary-custom:hover { transform:translateY(-1px); color:#fff; }
+.btn-primary-custom:disabled { opacity:.65; pointer-events:none; }
+.fw-600 { font-weight:600; }
+.fw-700 { font-weight:700; }
+.btn-xs { padding:3px 10px; font-size:.78rem; border-radius:20px; }
+.cost-preview { background:#fce4ec; }
+.br-card { background:#fff; transition:all .2s; }
+.br-card:hover { box-shadow:0 2px 12px rgba(0,0,0,.08); }
+.br-card.editing { border-color:#e84393 !important; background:#fce4ec; }
+.br-icon { font-size:2rem; }
+.st-pending   { background:#fff8e1; color:#f57f17; padding:3px 10px; border-radius:50px; font-size:.72rem; font-weight:700; text-transform:uppercase; }
+.st-confirmed { background:#e8f5e9; color:#2e7d32; padding:3px 10px; border-radius:50px; font-size:.72rem; font-weight:700; text-transform:uppercase; }
+.st-completed { background:#e3f2fd; color:#0277bd; padding:3px 10px; border-radius:50px; font-size:.72rem; font-weight:700; text-transform:uppercase; }
+.st-cancelled { background:#fce4ec; color:#c62828; padding:3px 10px; border-radius:50px; font-size:.72rem; font-weight:700; text-transform:uppercase; }
+.st-refunded  { background:#f3e5f5; color:#7b1fa2; padding:3px 10px; border-radius:50px; font-size:.72rem; font-weight:700; text-transform:uppercase; }

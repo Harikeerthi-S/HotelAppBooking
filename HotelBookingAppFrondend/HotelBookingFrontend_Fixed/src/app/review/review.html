@@ -1,0 +1,275 @@
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div>
+        <h1><i class="bi bi-star-fill me-2"></i>
+          @if (isUser) { My Reviews }
+          @else        { All Reviews }
+        </h1>
+        <p>
+          {{ filtered().length }} review{{ filtered().length !== 1 ? 's' : '' }}
+          @if (avgRating() > 0) { · Avg {{ avgRating() }} ⭐ }
+        </p>
+      </div>
+      <a routerLink="/hotels" class="btn btn-sm btn-outline-light rounded-pill">
+        <i class="bi bi-building me-1"></i>Browse Hotels
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+
+  <!-- WRITE REVIEW CARD (user role only) -->
+  @if (canWrite) {
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body p-4">
+        <h5 class="fw-700 mb-1">
+          <i class="bi bi-pencil-square text-primary me-2"></i>Write a Review
+        </h5>
+        <p class="text-muted small mb-3">Share your experience with a hotel you've visited.</p>
+
+        <div class="row g-3">
+          <!-- Hotel selector -->
+          <div class="col-md-4">
+            <label class="form-label fw-600 small">Hotel <span class="text-danger">*</span></label>
+            <select class="form-select form-select-sm"
+                    [value]="selectedHotelId()"
+                    (change)="selectedHotelId.set(+$any($event.target).value)">
+              <option value="0">— Select a hotel —</option>
+              @for (h of hotels(); track h.hotelId) {
+                <option [value]="h.hotelId">{{ h.hotelName }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Star rating picker -->
+          <div class="col-md-4">
+            <label class="form-label fw-600 small">Rating <span class="text-danger">*</span></label>
+            <div class="d-flex align-items-center gap-2 mt-1">
+              <div class="star-picker d-flex gap-1">
+                @for (s of starsArr; track s) {
+                  <button type="button" class="star-btn"
+                          [class.filled]="isStarFilled(s)"
+                          (click)="setRating(s)"
+                          (mouseenter)="hoverStar(s)"
+                          (mouseleave)="clearHover()">
+                    <i class="bi" [class.bi-star-fill]="isStarFilled(s)" [class.bi-star]="!isStarFilled(s)"></i>
+                  </button>
+                }
+              </div>
+              @if (newRating()) {
+                <span class="rating-label badge rounded-pill px-3">
+                  {{ ratingLabel(newRating()) }}
+                </span>
+              }
+            </div>
+          </div>
+
+          <!-- Comment -->
+          <div class="col-12">
+            <label class="form-label fw-600 small">
+              Comment <span class="text-danger">*</span>
+              <span class="text-muted fw-400 ms-1">(min 5 characters)</span>
+            </label>
+            <textarea class="form-control form-control-sm" rows="3"
+                      [value]="newComment()"
+                      (input)="newComment.set($any($event.target).value)"
+                      placeholder="Share your experience — what did you like or dislike?…"
+                      maxlength="2000"></textarea>
+            <div class="text-end text-muted mt-1" style="font-size:.72rem">
+              {{ newComment().length }}/2000
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <div class="col-12">
+            <button class="btn btn-primary-custom rounded-pill px-4"
+                    [disabled]="submitting()"
+                    (click)="submitReview()">
+              @if (submitting()) {
+                <span class="spinner-border spinner-border-sm me-2"></span>Submitting…
+              } @else {
+                <i class="bi bi-send me-2"></i>Submit Review
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- FILTERS + SUMMARY ROW -->
+  @if (!loading() && reviews().length > 0) {
+    <div class="row g-3 mb-4">
+
+      <!-- Rating distribution -->
+      <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <div class="avg-score">{{ avgRating() }}</div>
+              <div>
+                <div class="d-flex gap-1 mb-1">
+                  @for (s of displayStars(avgRating()); track $index) {
+                    <i class="bi" [class.bi-star-fill]="s" [class.bi-star]="!s"
+                       style="color:#f57f17;font-size:.85rem"></i>
+                  }
+                </div>
+                <div class="text-muted small">{{ filtered().length }} review{{ filtered().length !== 1 ? 's' : '' }}</div>
+              </div>
+            </div>
+            @for (d of ratingDist(); track d.star) {
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="text-muted small" style="width:14px">{{ d.star }}</span>
+                <i class="bi bi-star-fill" style="color:#f57f17;font-size:.7rem"></i>
+                <div class="rating-bar flex-grow-1">
+                  <div class="rating-bar-fill" [style.width.%]="d.pct"></div>
+                </div>
+                <span class="text-muted small" style="width:24px;text-align:right">{{ d.count }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="col-lg-8">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body p-4">
+            <h6 class="fw-700 mb-3"><i class="bi bi-funnel me-2"></i>Filter Reviews</h6>
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <label class="form-label small fw-600">By Star Rating</label>
+                <select class="form-select form-select-sm"
+                        [value]="filterRating()"
+                        (change)="filterRating.set(+$any($event.target).value)">
+                  <option value="0">All Ratings</option>
+                  @for (s of [5,4,3,2,1]; track s) {
+                    <option [value]="s">{{ s }} Star{{ s > 1 ? 's' : '' }} — {{ ratingLabel(s) }}</option>
+                  }
+                </select>
+              </div>
+              @if (!isUser) {
+                <div class="col-sm-6">
+                  <label class="form-label small fw-600">By Hotel</label>
+                  <select class="form-select form-select-sm"
+                          [value]="filterHotelId()"
+                          (change)="filterHotelId.set(+$any($event.target).value)">
+                    <option value="0">All Hotels</option>
+                    @for (h of hotels(); track h.hotelId) {
+                      <option [value]="h.hotelId">{{ h.hotelName }}</option>
+                    }
+                  </select>
+                </div>
+              }
+            </div>
+            @if (filterRating() || filterHotelId()) {
+              <button class="btn btn-sm btn-outline-secondary rounded-pill mt-3"
+                      (click)="clearFilters()">
+                <i class="bi bi-x-circle me-1"></i>Clear Filters
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+    </div>
+  }
+
+  <!-- REVIEWS LIST -->
+  @if (loading()) {
+    <div class="spinner-wrap"><div class="spinner-ring"></div></div>
+  } @else if (filtered().length === 0) {
+    <div class="empty-state card border-0 shadow-sm py-5">
+      <i class="bi bi-star empty-icon"></i>
+      @if (reviews().length === 0) {
+        <h5 class="fw-600 mt-2">No reviews yet</h5>
+        @if (canWrite) {
+          <p class="text-muted small">Write your first review above!</p>
+        } @else {
+          <p class="text-muted small">No reviews have been submitted yet.</p>
+        }
+      } @else {
+        <h5 class="fw-600 mt-2">No reviews match your filters</h5>
+        <p class="text-muted small">Try clearing the filters above.</p>
+        <button class="btn btn-sm btn-outline-primary rounded-pill mt-2" (click)="clearFilters()">
+          Clear Filters
+        </button>
+      }
+    </div>
+  } @else {
+    <div class="d-flex flex-column gap-3">
+      @for (r of filtered(); track r.reviewId) {
+        <div class="review-card card border-0 shadow-sm">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+
+              <!-- Left: Avatar + meta -->
+              <div class="d-flex align-items-start gap-3">
+                <div class="review-avatar-wrap">
+                  <div class="review-avatar" [class.mine]="r.userId === currentUser().userId">
+                    {{ getInitials(r) }}
+                  </div>
+                </div>
+                <div>
+                  <div class="fw-700 mb-1">
+                    @if (r.userId === currentUser().userId) {
+                      <span class="me-2">You</span>
+                      <span class="badge bg-primary-subtle text-primary rounded-pill" style="font-size:.68rem">Your Review</span>
+                    } @else {
+                      <span>Guest #{{ r.userId }}</span>
+                    }
+                  </div>
+
+                  <!-- Stars row -->
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <div class="d-flex gap-1">
+                      @for (s of displayStars(r.rating); track $index) {
+                        <i class="bi" [class.bi-star-fill]="s" [class.bi-star]="!s"
+                           style="color:#f57f17;font-size:.8rem"></i>
+                      }
+                    </div>
+                    <span class="badge rating-badge-{{ r.rating }} rounded-pill px-2" style="font-size:.7rem">
+                      {{ ratingLabel(r.rating) }}
+                    </span>
+                  </div>
+
+                  <!-- Hotel + date -->
+                  <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <a [routerLink]="['/hotels', r.hotelId]"
+                       class="small text-muted text-decoration-none">
+                      <i class="bi bi-building me-1"></i>{{ r.hotelName }}
+                    </a>
+                    <span class="text-muted small">·</span>
+                    <span class="text-muted small">
+                      <i class="bi bi-clock me-1"></i>{{ r.createdAt | date:'mediumDate' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: Delete button (admin/manager) -->
+              @if (canDelete) {
+                <button class="btn btn-sm btn-outline-danger rounded-pill"
+                        [disabled]="deletingId() === r.reviewId"
+                        (click)="deleteReview(r)">
+                  @if (deletingId() === r.reviewId) {
+                    <span class="spinner-border spinner-border-sm"></span>
+                  } @else {
+                    <i class="bi bi-trash3"></i>
+                  }
+                </button>
+              }
+            </div>
+
+            <!-- Comment body -->
+            <p class="review-comment mt-3 mb-0">{{ r.comment }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>

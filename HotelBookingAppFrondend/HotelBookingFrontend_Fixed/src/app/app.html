@@ -1,0 +1,45 @@
+<app-menu></app-menu>
+<router-outlet></router-outlet>
+
+<footer class="app-footer">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="footer-brand mb-2">🏨 StayEase</div>
+        <p class="small mb-0">Find and book the perfect hotel. Best prices guaranteed with free cancellation.</p>
+      </div>
+      <div class="col-6 col-lg-2">
+        <div class="fw-600 mb-2 text-white small">Company</div>
+        <ul class="list-unstyled small">
+          <li class="mb-1"><a href="#">About Us</a></li>
+          <li class="mb-1"><a href="#">Careers</a></li>
+          <li class="mb-1"><a href="#">Blog</a></li>
+        </ul>
+      </div>
+      <div class="col-6 col-lg-2">
+        <div class="fw-600 mb-2 text-white small">Support</div>
+        <ul class="list-unstyled small">
+          <li class="mb-1"><a href="#">Help Center</a></li>
+          <li class="mb-1"><a href="#">Cancellation</a></li>
+          <li class="mb-1"><a href="#">Safety</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-4">
+        <div class="fw-600 mb-2 text-white small">Popular Cities</div>
+        <div class="d-flex flex-wrap gap-2">
+          @for(city of cities; track city) {
+            <span class="badge bg-secondary bg-opacity-50 rounded-pill px-3 py-1 small">{{ city }}</span>
+          }
+        </div>
+      </div>
+    </div>
+    <hr style="border-color:rgba(255,255,255,.1);margin:24px 0 16px">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 small">
+      <span>© 2025 StayEase. All rights reserved.</span>
+      <div class="d-flex gap-3">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+      </div>
+    </div>
+  </div>
+</footer>

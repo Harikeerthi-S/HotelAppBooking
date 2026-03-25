@@ -1,0 +1,282 @@
+@if (loading()) {
+  <div class="spinner-wrap" style="min-height:60vh"><div class="spinner-ring"></div></div>
+} @else if (hotel()) {
+
+  <!-- HERO IMAGE -->
+  <div class="hotel-hero position-relative">
+    <img [src]="getImage()" [alt]="hotel()!.hotelName" class="hotel-hero-img w-100">
+    <div class="hotel-hero-overlay"></div>
+    <a routerLink="/hotels" class="btn btn-light btn-sm position-absolute top-0 start-0 m-3 rounded-pill">
+      <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+    <button class="btn btn-light btn-sm position-absolute top-0 end-0 m-3 rounded-pill"
+            (click)="toggleWishlist()">
+      <i class="bi me-1"
+         [class.bi-heart-fill]="wishlisted()"
+         [class.bi-heart]="!wishlisted()"
+         [style.color]="wishlisted() ? '#e84393' : ''"></i>
+      {{ wishlisted() ? 'Saved' : 'Save' }}
+    </button>
+    <div class="hotel-hero-info position-absolute bottom-0 start-0 p-4 text-white">
+      <div class="mb-2">
+        @for (s of getStars(hotel()!.starRating); track s) {
+          <i class="bi bi-star-fill text-warning me-1" style="font-size:.9rem"></i>
+        }
+        <span class="ms-1 small">{{ hotel()!.starRating }}-Star Hotel</span>
+      </div>
+      <h1 class="fw-bold mb-1" style="font-size:2rem">{{ hotel()!.hotelName }}</h1>
+      <p class="mb-0 opacity-85">
+        <i class="bi bi-geo-alt me-1"></i>{{ hotel()!.address }}, {{ hotel()!.location }}
+      </p>
+    </div>
+  </div>
+
+  <div class="container py-4">
+    <div class="row g-4">
+
+      <!-- LEFT COLUMN -->
+      <div class="col-lg-8">
+
+        <!-- Info chips -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-body p-4">
+            <h5 class="fw-700 mb-3">About This Hotel</h5>
+            <div class="row g-3">
+              <div class="col-6 col-md-3">
+                <div class="info-chip text-center p-3 rounded-3">
+                  <div class="fs-4">🏨</div>
+                  <div class="fw-700 text-primary mt-1">{{ hotel()!.totalRooms }}</div>
+                  <div class="small text-muted">Total Rooms</div>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="info-chip text-center p-3 rounded-3">
+                  <div class="fs-4">⭐</div>
+                  <div class="fw-700 text-primary mt-1">{{ hotel()!.starRating }}/5</div>
+                  <div class="small text-muted">Star Rating</div>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="info-chip text-center p-3 rounded-3">
+                  <div class="fs-4">📞</div>
+                  <div class="fw-600 text-primary mt-1 small">{{ hotel()!.contactNumber }}</div>
+                  <div class="small text-muted">Contact</div>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="info-chip text-center p-3 rounded-3">
+                  <div class="fs-4">🔄</div>
+                  <div class="fw-700 text-success mt-1">Free</div>
+                  <div class="small text-muted">Cancellation</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROOMS -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-body p-4">
+            <h5 class="fw-700 mb-3">Available Rooms</h5>
+            @if (rooms().length === 0) {
+              <p class="text-muted small">No rooms available at this time.</p>
+            } @else {
+              <div class="d-flex flex-column gap-3">
+                @for (room of rooms(); track room.roomId) {
+                  <div class="room-card d-flex justify-content-between align-items-center"
+                       [class.selected]="selectedRoom()?.roomId === room.roomId"
+                       (click)="selectRoom(room)">
+                    <div class="d-flex align-items-center gap-3">
+                      @if (room.imageUrl) {
+                        <img [src]="room.imageUrl" [alt]="room.roomType"
+                             class="rounded-3 object-fit-cover"
+                             style="width:72px;height:60px;object-fit:cover;"
+                             onerror="this.style.display='none'">
+                      } @else {
+                        <span class="fs-3">{{ getRoomIcon(room.roomType) }}</span>
+                      }
+                      <div>
+                        <div class="fw-600">{{ room.roomType }} Room</div>
+                        <div class="text-muted small">
+                          Room #{{ room.roomNumber }} &nbsp;·&nbsp;
+                          <i class="bi bi-people me-1"></i>{{ room.capacity }} guests
+                        </div>
+                        <span class="badge rounded-pill small mt-1 px-2"
+                              [class.bg-success]="room.isAvailable"
+                              [class.bg-danger]="!room.isAvailable">
+                          {{ room.isAvailable ? '✓ Available' : '✗ Unavailable' }}
+                        </span>
+                      </div>
+                    </div>
+                    <div class="text-end">
+                      <div class="price-tag">₹{{ room.pricePerNight.toLocaleString('en-IN') }}</div>
+                      <div class="per-night">per night</div>
+                      <button class="btn btn-sm mt-2 rounded-pill px-3"
+                              [class.btn-primary-custom]="selectedRoom()?.roomId !== room.roomId"
+                              [class.btn-success]="selectedRoom()?.roomId === room.roomId"
+                              [disabled]="!room.isAvailable"
+                              (click)="selectRoom(room)">
+                        {{ selectedRoom()?.roomId === room.roomId ? '✓ Selected' : 'Select' }}
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- REVIEWS -->
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-4">
+            <h5 class="fw-700 mb-3">Guest Reviews ({{ reviews().length }})</h5>
+
+            @if (reviews().length === 0) {
+              <p class="text-muted small">No reviews yet. Be the first to review!</p>
+            } @else {
+              <div class="d-flex flex-column gap-3 mb-4">
+                @for (r of reviews(); track r.reviewId) {
+                  <div class="review-item p-3 rounded-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="review-avatar">G</div>
+                        <div>
+                          <div class="fw-600 small">Guest #{{ r.userId }}</div>
+                          <div>
+                            @for (s of getStars(r.rating); track s) {
+                              <i class="bi bi-star-fill text-warning" style="font-size:.75rem"></i>
+                            }
+                          </div>
+                        </div>
+                      </div>
+                      <span class="badge bg-primary rounded-pill">{{ r.rating }}/5</span>
+                    </div>
+                    <p class="small text-secondary mb-0">{{ r.comment }}</p>
+                  </div>
+                }
+              </div>
+            }
+
+            @if (isLoggedIn() && getUserRole() === 'user') {
+              <div class="border-top pt-3">
+                <h6 class="fw-600 mb-3">Write a Review</h6>
+                <div class="mb-3">
+                  <label class="form-label">Rating</label>
+                  <select class="form-select form-select-sm"
+                          [value]="reviewRating()"
+                          (change)="reviewRating.set(+$any($event.target).value)">
+                    <option value="0">Select rating…</option>
+                    <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                    <option value="4">⭐⭐⭐⭐ Very Good</option>
+                    <option value="3">⭐⭐⭐ Good</option>
+                    <option value="2">⭐⭐ Fair</option>
+                    <option value="1">⭐ Poor</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Comment</label>
+                  <textarea class="form-control form-control-sm" rows="3"
+                            [value]="reviewComment()"
+                            (input)="reviewComment.set($any($event.target).value)"
+                            placeholder="Share your experience…"></textarea>
+                </div>
+                <button class="btn btn-sm btn-primary-custom rounded-pill px-4"
+                        [disabled]="reviewLoading()" (click)="submitReview()">
+                  @if (reviewLoading()) {
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                  }
+                  Submit Review
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- BOOKING SIDEBAR -->
+      <div class="col-lg-4">
+        <div class="card border-0 shadow-sm" style="position:sticky;top:76px">
+          <div class="card-body p-4">
+            <h5 class="fw-700 mb-1">Book This Hotel</h5>
+
+            @if (!selectedRoom()) {
+              <p class="text-muted small mb-3">← Select a room to continue</p>
+            } @else {
+              <div class="selected-room-info p-3 rounded-3 mb-3">
+                <div class="fw-700 text-primary">{{ selectedRoom()!.roomType }} Room</div>
+                <div class="small text-muted">Room #{{ selectedRoom()!.roomNumber }}</div>
+                <div class="price-tag mt-1">
+                  ₹{{ selectedRoom()!.pricePerNight.toLocaleString('en-IN') }}
+                  <span class="per-night">/night</span>
+                </div>
+              </div>
+            }
+
+            <div class="mb-3">
+              <label class="form-label">Check-in Date</label>
+              <input class="form-control form-control-sm" type="date"
+                     [value]="checkIn()" (input)="checkIn.set($any($event.target).value)"
+                     [min]="today">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Check-out Date</label>
+              <input class="form-control form-control-sm" type="date"
+                     [value]="checkOut()" (input)="checkOut.set($any($event.target).value)"
+                     [min]="checkIn() || today">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Number of Rooms</label>
+              <select class="form-select form-select-sm"
+                      [value]="numRooms()"
+                      (change)="numRooms.set(+$any($event.target).value)">
+                @for (n of [1,2,3,4,5]; track n) {
+                  <option [value]="n">{{ n }} Room{{ n > 1 ? 's' : '' }}</option>
+                }
+              </select>
+            </div>
+
+            @if (nights > 0 && selectedRoom()) {
+              <div class="price-breakdown p-3 rounded-3 mb-3">
+                <div class="d-flex justify-content-between small mb-1">
+                  <span>{{ nights }} nights × {{ numRooms() }} rooms</span>
+                  <span>₹{{ totalAmount.toLocaleString('en-IN') }}</span>
+                </div>
+                <hr class="my-2">
+                <div class="d-flex justify-content-between fw-700 text-primary">
+                  <span>Total</span>
+                  <span>₹{{ totalAmount.toLocaleString('en-IN') }}</span>
+                </div>
+              </div>
+            }
+
+            <button class="btn btn-primary-custom w-100 py-2 rounded-pill fw-600"
+                    [disabled]="!selectedRoom() || !checkIn() || !checkOut()"
+                    (click)="proceedToBook()">
+              <i class="bi bi-calendar-check me-2"></i>
+              {{ isLoggedIn() ? 'Book Now' : 'Login to Book' }}
+            </button>
+
+            <div class="mt-3 pt-3 border-top">
+              <div class="d-flex align-items-center gap-2 small text-muted mb-1">
+                <i class="bi bi-shield-check text-success"></i> Secure payment
+              </div>
+              <div class="d-flex align-items-center gap-2 small text-muted mb-1">
+                <i class="bi bi-arrow-counterclockwise text-info"></i> Free cancellation (24h)
+              </div>
+              <div class="d-flex align-items-center gap-2 small text-muted">
+                <i class="bi bi-tag text-warning"></i> No hidden charges
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+} @else {
+  <div class="empty-state" style="min-height:50vh">
+    <i class="bi bi-building-x empty-icon"></i>
+    <h5>Hotel not found</h5>
+    <a routerLink="/hotels" class="btn btn-sm btn-primary-custom rounded-pill mt-2">Browse Hotels</a>
+  </div>
+}

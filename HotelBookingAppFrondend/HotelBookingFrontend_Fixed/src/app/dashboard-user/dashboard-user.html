@@ -1,0 +1,381 @@
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div>
+        <h1>👋 My Dashboard</h1>
+        <p>Welcome back, <strong>{{ userName }}</strong>!</p>
+      </div>
+      <a routerLink="/hotels" class="btn btn-sm btn-outline-light rounded-pill">
+        <i class="bi bi-search me-1"></i>Browse Hotels
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+
+  <!-- STATS ROW -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="stat-card" style="border-left-color:#e84393">
+        <div class="stat-number" style="color:#e84393">{{ totalBookings() }}</div>
+        <div class="stat-label">Total Bookings</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card" style="border-left-color:#2e7d32">
+        <div class="stat-number" style="color:#2e7d32">{{ confirmedBookings() }}</div>
+        <div class="stat-label">Confirmed</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card" style="border-left-color:#0277bd">
+        <div class="stat-number" style="color:#0277bd; font-size:1.3rem">₹{{ totalSpent().toLocaleString('en-IN') }}</div>
+        <div class="stat-label">Total Spent</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card" style="border-left-color:#2e7d32">
+        <div class="stat-number" style="color:#2e7d32; font-size:1.3rem">₹{{ totalRefund().toLocaleString('en-IN') }}</div>
+        <div class="stat-label">Refunds Approved</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK LINKS -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-3 d-flex gap-2 flex-wrap">
+      <a routerLink="/hotels"        class="btn btn-sm btn-primary-custom rounded-pill"><i class="bi bi-search me-1"></i>Hotels</a>
+      <a routerLink="/wishlist"      class="btn btn-sm btn-outline-secondary rounded-pill"><i class="bi bi-heart me-1"></i>Wishlist</a>
+      <a routerLink="/cancellations" class="btn btn-sm btn-outline-secondary rounded-pill"><i class="bi bi-x-circle me-1"></i>Cancellations</a>
+      <a routerLink="/amenities"     class="btn btn-sm btn-outline-secondary rounded-pill"><i class="bi bi-stars me-1"></i>Amenities</a>
+      <a routerLink="/profile"       class="btn btn-sm btn-outline-secondary rounded-pill"><i class="bi bi-person me-1"></i>Profile</a>
+    </div>
+  </div>
+
+  <!-- TAB NAVIGATION -->
+  <div class="d-flex gap-2 mb-4 flex-wrap">
+    @for (t of [
+      {key:'bookings',      label:'Bookings',      icon:'bi-calendar-check',   badge: totalBookings()},
+      {key:'payments',      label:'Payments',      icon:'bi-credit-card',      badge: 0},
+      {key:'cancellations', label:'Cancellations', icon:'bi-x-circle',         badge: 0},
+      {key:'notifications', label:'Notifications', icon:'bi-bell',             badge: unreadCount()},
+      {key:'reviews',       label:'My Reviews',    icon:'bi-star',             badge: 0},
+      {key:'amenities',     label:'Amenities',     icon:'bi-stars',            badge: 0}
+    ]; track t.key) {
+      <button class="btn btn-sm rounded-pill tab-btn"
+              [class.active]="activeTab() === t.key"
+              (click)="switchTab(t.key)">
+        <i class="bi {{ t.icon }} me-1"></i>{{ t.label }}
+        @if (t.badge > 0) {
+          <span class="badge bg-danger rounded-pill ms-1">{{ t.badge }}</span>
+        }
+      </button>
+    }
+  </div>
+
+  <!-- ══════════════════ BOOKINGS TAB ══════════════════ -->
+  @if (activeTab() === 'bookings') {
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-700 mb-0">My Bookings</h5>
+          <button class="btn btn-sm btn-outline-secondary rounded-pill" (click)="loadBookings(1)">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+        </div>
+
+        @if (bookingLoading()) {
+          <div class="spinner-wrap"><div class="spinner-ring"></div></div>
+        } @else if (bookings().length === 0) {
+          <div class="empty-state">
+            <i class="bi bi-calendar-x empty-icon"></i>
+            <h6 class="fw-600">No bookings yet</h6>
+            <a routerLink="/hotels" class="btn btn-sm btn-primary-custom rounded-pill mt-2">Explore Hotels</a>
+          </div>
+        } @else {
+          <div class="d-flex flex-column gap-3">
+            @for (b of bookings(); track b.bookingId) {
+              <div class="booking-card">
+                <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
+                  <div>
+                    <div class="fw-700 mb-1">{{ b.hotelName }}</div>
+                    <div class="text-muted small">
+                      <i class="bi bi-calendar me-1"></i>{{ b.checkIn | date:'mediumDate' }} → {{ b.checkOut | date:'mediumDate' }}
+                    </div>
+                    <div class="text-muted small">Booking #{{ b.bookingId }} · {{ b.numberOfRooms }} room(s)</div>
+                  </div>
+                  <div class="text-end">
+                    <span class="status-badge" [ngClass]="statusClass(b.status)">{{ b.status }}</span>
+                    <div class="fw-700 text-primary mt-1">₹{{ b.totalAmount.toLocaleString('en-IN') }}</div>
+                  </div>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                  @if (b.status === 'Pending') {
+                    <a [routerLink]="['/payment', b.bookingId]" class="btn btn-sm btn-success rounded-pill">
+                      <i class="bi bi-credit-card me-1"></i>Pay Now
+                    </a>
+                    <button class="btn btn-sm btn-outline-danger rounded-pill" (click)="cancelBookingDirect(b)">Cancel</button>
+                  }
+                  @if (b.status === 'Confirmed') {
+                    <button class="btn btn-sm btn-outline-warning rounded-pill" (click)="openCancelForm(b)">
+                      <i class="bi bi-x-circle me-1"></i>Request Cancellation
+                    </button>
+                  }
+                  <a [routerLink]="['/booking-room', b.bookingId]" class="btn btn-sm btn-outline-secondary rounded-pill">
+                    <i class="bi bi-door-open me-1"></i>Rooms
+                  </a>
+                  <a [routerLink]="['/hotels', b.hotelId]" class="btn btn-sm btn-outline-secondary rounded-pill">
+                    <i class="bi bi-building me-1"></i>Hotel
+                  </a>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Pagination -->
+          <div class="d-flex justify-content-center gap-2 mt-3">
+            <button class="btn btn-sm btn-outline-secondary rounded-pill"
+                    [disabled]="bookingPage() <= 1" (click)="loadBookings(bookingPage() - 1)">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+            <span class="btn btn-sm btn-primary-custom rounded-pill px-3">{{ bookingPage() }}</span>
+            <button class="btn btn-sm btn-outline-secondary rounded-pill"
+                    [disabled]="bookingPage() >= (pagedBookings()?.totalPages ?? 1)"
+                    (click)="loadBookings(bookingPage() + 1)">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ══════════════════ PAYMENTS TAB ══════════════════ -->
+  @if (activeTab() === 'payments') {
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <h5 class="fw-700 mb-3"><i class="bi bi-credit-card me-2 text-primary"></i>My Payments</h5>
+        @if (payLoading()) {
+          <div class="spinner-wrap"><div class="spinner-ring"></div></div>
+        } @else if (payments().length === 0) {
+          <div class="empty-state">
+            <i class="bi bi-credit-card empty-icon"></i>
+            <h6 class="fw-600">No payment records</h6>
+            <p class="text-muted small">Payments will appear here after you book and pay.</p>
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table class="table table-hover align-middle small">
+              <thead class="table-light">
+                <tr><th>Payment ID</th><th>Booking</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr>
+              </thead>
+              <tbody>
+                @for (p of payments(); track p.paymentId) {
+                  <tr>
+                    <td>#{{ p.paymentId }}</td>
+                    <td>#{{ p.bookingId }}</td>
+                    <td class="fw-700 text-primary">₹{{ p.amount.toLocaleString('en-IN') }}</td>
+                    <td>{{ p.paymentMethod }}</td>
+                    <td><span class="status-badge" [ngClass]="payStatusClass(p.paymentStatus)">{{ p.paymentStatus }}</span></td>
+                    <td class="text-muted">{{ p.createdAt | date:'mediumDate' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ══════════════════ CANCELLATIONS TAB ══════════════════ -->
+  @if (activeTab() === 'cancellations') {
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-700 mb-0"><i class="bi bi-x-circle me-2 text-danger"></i>Cancellations</h5>
+          <button class="btn btn-sm btn-outline-danger rounded-pill" (click)="showCancelForm.set(true)">
+            <i class="bi bi-plus-circle me-1"></i>New Request
+          </button>
+        </div>
+
+        @if (cancelLoading()) {
+          <div class="spinner-wrap"><div class="spinner-ring"></div></div>
+        } @else if (cancellations().length === 0) {
+          <div class="empty-state">
+            <i class="bi bi-x-circle empty-icon"></i>
+            <h6 class="fw-600">No cancellations</h6>
+          </div>
+        } @else {
+          <div class="d-flex flex-column gap-3">
+            @for (c of cancellations(); track c.cancellationId) {
+              <div class="cancel-card p-3 rounded-3 border">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+                  <div>
+                    <span class="fw-700 text-primary me-2">#{{ c.cancellationId }}</span>
+                    <span class="cancel-badge" [ngClass]="cancelStatusClass(c.status)">{{ c.status }}</span>
+                    <div class="text-muted small mt-1">Booking #{{ c.bookingId }} · {{ c.cancellationDate | date:'mediumDate' }}</div>
+                  </div>
+                  @if (c.status === 'Approved' && c.refundAmount > 0) {
+                    <div class="refund-chip">
+                      💰 Refund: <strong>₹{{ c.refundAmount.toLocaleString('en-IN') }}</strong>
+                    </div>
+                  }
+                </div>
+                <div class="reason-box">{{ c.reason }}</div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ══════════════════ NOTIFICATIONS TAB ══════════════════ -->
+  @if (activeTab() === 'notifications') {
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-700 mb-0">
+            <i class="bi bi-bell me-2 text-primary"></i>Notifications
+            @if (unreadCount() > 0) {
+              <span class="badge bg-danger rounded-pill ms-1">{{ unreadCount() }} unread</span>
+            }
+          </h5>
+          <button class="btn btn-sm btn-outline-secondary rounded-pill" (click)="loadNotifications()">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+        </div>
+
+        @if (notifLoading()) {
+          <div class="spinner-wrap"><div class="spinner-ring"></div></div>
+        } @else if (notifications().length === 0) {
+          <div class="empty-state">
+            <i class="bi bi-bell-slash empty-icon"></i>
+            <h6 class="fw-600">No notifications</h6>
+          </div>
+        } @else {
+          <div class="d-flex flex-column gap-2">
+            @for (n of notifications(); track n.notificationId) {
+              <div class="notif-row d-flex align-items-start gap-3 p-3 rounded-3"
+                   [class.notif-unread]="!n.isRead">
+                <div class="notif-dot-wrap">
+                  @if (!n.isRead) { <div class="notif-dot"></div> }
+                </div>
+                <div class="flex-grow-1">
+                  <div class="small" [class.fw-600]="!n.isRead">{{ n.message }}</div>
+                  <div class="text-muted" style="font-size:.72rem">
+                    <i class="bi bi-clock me-1"></i>{{ n.createdAt | date:'medium' }}
+                  </div>
+                </div>
+                <div class="d-flex gap-1">
+                  @if (!n.isRead) {
+                    <button class="btn btn-sm btn-link p-0 text-primary" style="font-size:.78rem" (click)="markRead(n)">
+                      Mark read
+                    </button>
+                  }
+                  <button class="btn btn-sm btn-link p-0 text-muted ms-2" (click)="deleteNotif(n)">
+                    <i class="bi bi-x-lg" style="font-size:.8rem"></i>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ══════════════════ REVIEWS TAB ══════════════════ -->
+  @if (activeTab() === 'reviews') {
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-700 mb-0"><i class="bi bi-star me-2 text-warning"></i>My Reviews</h5>
+          <a routerLink="/reviews" class="btn btn-sm btn-outline-primary rounded-pill">
+            <i class="bi bi-plus me-1"></i>Write Review
+          </a>
+        </div>
+
+        @if (reviewLoading()) {
+          <div class="spinner-wrap"><div class="spinner-ring"></div></div>
+        } @else if (reviews().length === 0) {
+          <div class="empty-state">
+            <i class="bi bi-star empty-icon"></i>
+            <h6 class="fw-600">No reviews yet</h6>
+            <a routerLink="/reviews" class="btn btn-sm btn-primary-custom rounded-pill mt-2">Write a Review</a>
+          </div>
+        } @else {
+          <div class="d-flex flex-column gap-3">
+            @for (r of reviews(); track r.reviewId) {
+              <div class="review-item p-3 rounded-3">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <div class="d-flex gap-1">
+                    @for (s of stars(r.rating); track $index) {
+                      <i class="bi" [class.bi-star-fill]="s" [class.bi-star]="!s" style="color:#f57f17;font-size:.8rem"></i>
+                    }
+                  </div>
+                  <span class="badge bg-primary rounded-pill">{{ r.rating }}/5</span>
+                  <span class="text-muted small ms-auto">{{ r.createdAt | date:'mediumDate' }}</span>
+                </div>
+                <p class="small text-secondary mb-0">{{ r.comment }}</p>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ══════════════════ AMENITIES TAB ══════════════════ -->
+  @if (activeTab() === 'amenities') {
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <h5 class="fw-700 mb-3"><i class="bi bi-stars me-2 text-warning"></i>Available Amenities</h5>
+        @if (amenities().length === 0) {
+          <div class="empty-state"><i class="bi bi-stars empty-icon"></i><p>No amenities listed yet.</p></div>
+        } @else {
+          <div class="row g-3">
+            @for (a of amenities(); track a.amenityId) {
+              <div class="col-6 col-sm-4 col-md-3">
+                <div class="amenity-tile text-center p-3 rounded-3">
+                  <div class="fs-3 mb-1">{{ a.icon || '✨' }}</div>
+                  <div class="fw-600 small">{{ a.name }}</div>
+                  @if (a.description) {
+                    <div class="text-muted" style="font-size:.72rem">{{ a.description }}</div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+</div>
+
+<!-- CANCELLATION MODAL -->
+@if (showCancelForm()) {
+  <div class="modal-backdrop-custom">
+    <div class="modal-card card border-0 shadow-lg">
+      <div class="card-body p-4">
+        <h5 class="fw-700 mb-1"><i class="bi bi-x-circle text-danger me-2"></i>Request Cancellation</h5>
+        <p class="text-muted small mb-3">Booking #{{ formBookingId() }}. Please provide your reason.</p>
+        <textarea class="form-control mb-3" rows="3" maxlength="1000"
+                  [value]="formReason()"
+                  (input)="formReason.set($any($event.target).value)"
+                  placeholder="Reason for cancellation…"></textarea>
+        <div class="d-flex gap-2">
+          <button class="btn btn-danger rounded-pill flex-fill" [disabled]="cancelSubmitting()" (click)="submitCancellation()">
+            @if (cancelSubmitting()) { <span class="spinner-border spinner-border-sm me-2"></span>Submitting… }
+            @else { Submit }
+          </button>
+          <button class="btn btn-outline-secondary rounded-pill flex-fill" (click)="closeCancelForm()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

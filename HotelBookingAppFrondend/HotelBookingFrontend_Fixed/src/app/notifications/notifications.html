@@ -1,0 +1,76 @@
+<div class="page-header">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between">
+      <div>
+        <h1><i class="bi bi-bell-fill me-2"></i>Notifications</h1>
+        <p>{{ unreadCount }} unread message{{ unreadCount !== 1 ? 's' : '' }}</p>
+      </div>
+      @if (notifications().length > 0) {
+        <button class="btn btn-sm btn-outline-light rounded-pill" (click)="markAllRead()">
+          <i class="bi bi-check-all me-1"></i>Mark all read
+        </button>
+      }
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      @if (loading()) {
+        <div class="spinner-wrap"><div class="spinner-ring"></div></div>
+      } @else if (notifications().length === 0) {
+        <div class="empty-state card border-0 shadow-sm py-5">
+          <i class="bi bi-bell-slash empty-icon"></i>
+          <h5 class="fw-600 mt-2">No notifications yet</h5>
+          <p class="text-muted small">We'll notify you about bookings and updates.</p>
+          <a routerLink="/hotels" class="btn btn-sm btn-primary-custom rounded-pill px-4 mt-2">
+            Browse Hotels
+          </a>
+        </div>
+      } @else {
+        <div class="card border-0 shadow-sm overflow-hidden">
+          @for (n of notifications(); track n.notificationId; let last = $last) {
+            <div class="notif-row d-flex align-items-start gap-3 p-4"
+                 [class.unread]="!n.isRead"
+                 [class.border-bottom]="!last">
+
+              <div class="notif-icon" [class.notif-icon-unread]="!n.isRead">
+                <i class="bi bi-bell-fill" style="font-size:.9rem"></i>
+              </div>
+
+              <div class="flex-grow-1 min-w-0">
+                <p class="mb-1 small" [class.fw-600]="!n.isRead" [class.text-muted]="n.isRead">
+                  {{ n.message }}
+                </p>
+                <div class="text-muted" style="font-size:.75rem">
+                  <i class="bi bi-clock me-1"></i>{{ n.createdAt | date:'medium' }}
+                </div>
+                @if (!n.isRead) {
+                  <button class="btn btn-link btn-sm p-0 mt-1 text-primary"
+                          style="font-size:.78rem;text-decoration:none"
+                          (click)="markRead(n)">
+                    Mark as read
+                  </button>
+                }
+              </div>
+
+              <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                @if (!n.isRead) {
+                  <div class="unread-dot"></div>
+                }
+                <button class="btn btn-sm btn-link text-muted p-0"
+                        (click)="deleteNotification(n)" title="Delete">
+                  <i class="bi bi-x-lg" style="font-size:.85rem"></i>
+                </button>
+              </div>
+
+            </div>
+          }
+        </div>
+      }
+
+    </div>
+  </div>
+</div>

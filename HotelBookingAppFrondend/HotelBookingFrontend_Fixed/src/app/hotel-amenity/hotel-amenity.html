@@ -1,0 +1,176 @@
+<div class="page-header">
+  <div class="container">
+    <h1><i class="bi bi-stars me-2"></i>Hotel Amenities</h1>
+    <p>Assign amenities to hotels</p>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row g-4">
+
+    <!-- ASSIGN FORM -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <h6 class="fw-700 mb-3">
+            <i class="bi bi-plus-circle text-primary me-2"></i>Assign Amenity to Hotel
+          </h6>
+
+          <div class="mb-3">
+            <label class="form-label">Select Hotel</label>
+            <select class="form-select"
+                    [value]="selectedHotelId()"
+                    (change)="selectedHotelId.set(+$any($event.target).value); selectedAmenityId.set(0)">
+              <option [value]="0">— Choose a Hotel —</option>
+              @for (h of allHotels(); track h.hotelId) {
+                <option [value]="h.hotelId">{{ h.hotelName }} ({{ h.location }})</option>
+              }
+            </select>
+          </div>
+
+          @if (selectedHotelId() > 0) {
+            <div class="mb-3">
+              <label class="form-label">Select Amenity</label>
+              @if (getUnassignedAmenities(selectedHotelId()).length === 0) {
+                <div class="text-muted small p-2 bg-light rounded">
+                  All amenities are already assigned to this hotel.
+                </div>
+              } @else {
+                <select class="form-select"
+                        [value]="selectedAmenityId()"
+                        (change)="selectedAmenityId.set(+$any($event.target).value)">
+                  <option [value]="0">— Choose an Amenity —</option>
+                  @for (a of getUnassignedAmenities(selectedHotelId()); track a.amenityId) {
+                    <option [value]="a.amenityId">{{ a.icon || '⭐' }} {{ a.name }}</option>
+                  }
+                </select>
+              }
+            </div>
+          }
+
+          <button class="btn btn-primary-custom w-100 rounded-pill"
+                  (click)="assign()"
+                  [disabled]="saving() || !selectedHotelId() || !selectedAmenityId()">
+            @if (saving()) {
+              <span class="spinner-border spinner-border-sm me-2"></span>Assigning…
+            } @else {
+              <i class="bi bi-plus-circle me-2"></i>Assign Amenity
+            }
+          </button>
+        </div>
+      </div>
+
+      <!-- Summary stats -->
+      <div class="card border-0 shadow-sm mt-3">
+        <div class="card-body p-4">
+          <h6 class="fw-700 mb-3">Summary</h6>
+          <div class="d-flex justify-content-between mb-2 small">
+            <span class="text-muted">Total Assignments</span>
+            <span class="fw-600">{{ hotelAmenities().length }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2 small">
+            <span class="text-muted">Hotels with Amenities</span>
+            <span class="fw-600">{{ getUniqueHotelCount() }}</span>
+          </div>
+          <div class="d-flex justify-content-between small">
+            <span class="text-muted">Available Amenities</span>
+            <span class="fw-600">{{ allAmenities().length }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ASSIGNMENTS LIST -->
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-700 mb-0">
+              All Hotel-Amenity Assignments ({{ enrichedList().length }})
+            </h6>
+            <button class="btn btn-sm btn-outline-secondary rounded-pill" (click)="loadAll()">
+              <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
+          </div>
+
+          @if (loading()) {
+            <div class="spinner-wrap"><div class="spinner-ring"></div></div>
+          } @else if (enrichedList().length === 0) {
+            <div class="empty-state">
+              <i class="bi bi-stars empty-icon"></i>
+              <h6 class="fw-600">No assignments yet</h6>
+              <p class="small text-muted">Use the form to assign amenities to hotels.</p>
+            </div>
+          } @else {
+            <div class="table-responsive">
+              <table class="table table-hover align-middle small">
+                <thead class="table-light">
+                  <tr>
+                    <th>#</th>
+                    <th>Hotel</th>
+                    <th>Amenity</th>
+                    <th>ID</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of enrichedList(); track item.ha.hotelAmenityId) {
+                    <tr>
+                      <td class="text-muted">{{ item.ha.hotelAmenityId }}</td>
+                      <td>
+                        <div class="fw-600">{{ item.hotelName }}</div>
+                        <div class="text-muted" style="font-size:.72rem">Hotel #{{ item.ha.hotelId }}</div>
+                      </td>
+                      <td>
+                        <span class="amenity-badge">
+                          {{ getAmenityIcon(item.ha.amenityId) }} {{ item.amenityName }}
+                        </span>
+                      </td>
+                      <td class="text-muted">{{ item.ha.amenityId }}</td>
+                      <td>
+                        <button class="btn btn-xs btn-outline-danger rounded-pill"
+                                (click)="remove(item.ha)">
+                          <i class="bi bi-trash me-1"></i>Remove
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Grouped by hotel view -->
+      @if (allHotels().length > 0 && hotelAmenities().length > 0) {
+        <div class="card border-0 shadow-sm mt-4">
+          <div class="card-body p-4">
+            <h6 class="fw-700 mb-3">Amenities by Hotel</h6>
+            @for (hotel of allHotels(); track hotel.hotelId) {
+              @if (getHotelAmenities(hotel.hotelId).length > 0) {
+                <div class="hotel-amenity-group mb-3 p-3 rounded-3 border">
+                  <div class="fw-600 mb-2">
+                    <i class="bi bi-building me-2 text-primary"></i>{{ hotel.hotelName }}
+                    <span class="badge bg-primary rounded-pill ms-2 small">
+                      {{ getHotelAmenities(hotel.hotelId).length }}
+                    </span>
+                  </div>
+                  <div class="d-flex flex-wrap gap-2">
+                    @for (ha of getHotelAmenities(hotel.hotelId); track ha.hotelAmenityId) {
+                      <span class="amenity-chip">
+                        {{ getAmenityIcon(ha.amenityId) }}
+                        {{ allAmenities().find(a => a.amenityId === ha.amenityId)?.name ?? 'Amenity' }}
+                      </span>
+                    }
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+  </div>
+</div>

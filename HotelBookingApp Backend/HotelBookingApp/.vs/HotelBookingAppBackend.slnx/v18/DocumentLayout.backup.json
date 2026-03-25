@@ -1,0 +1,1107 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\models\\dtos\\createwishlistdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:models\\dtos\\createwishlistdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\models\\dtos\\createbookingroomdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:models\\dtos\\createbookingroomdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\services\\bookingroomservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:services\\bookingroomservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\services\\bookingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:services\\bookingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\services\\amenityservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:services\\amenityservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\models\\bookingroom.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:models\\bookingroom.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\models\\room.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:models\\room.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\models\\hotel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:models\\hotel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\services\\roomservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:services\\roomservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\controllers\\roomcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:controllers\\roomcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\controllers\\bookingcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:controllers\\bookingcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\controllers\\bookingroomcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:controllers\\bookingroomcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\controllers\\cancellationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:controllers\\cancellationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\interfaces\\iservices\\ibookingroomservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:interfaces\\iservices\\ibookingroomservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\services\\wishlistservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:services\\wishlistservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\controllers\\notificationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:controllers\\notificationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\services\\notificationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:services\\notificationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\services\\hotelamenityservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:services\\hotelamenityservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\models\\dtos\\registerrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:models\\dtos\\registerrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\controllers\\wishlistcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:controllers\\wishlistcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\controllers\\hotelcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:controllers\\hotelcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\controllers\\userscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:controllers\\userscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\controllers\\reviewcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:controllers\\reviewcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\controllers\\paymentcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:controllers\\paymentcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\controllers\\amenitiescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:controllers\\amenitiescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\context\\hotelbookingcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:context\\hotelbookingcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\controllers\\hotelamenitycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:controllers\\hotelamenitycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\services\\cancellationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:services\\cancellationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\interfaces\\iservices\\icancellationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:interfaces\\iservices\\icancellationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\interfaces\\iservices\\ibookingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:interfaces\\iservices\\ibookingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\services\\paymentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:services\\paymentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\interfaces\\iservices\\iuserservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:interfaces\\iservices\\iuserservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\models\\dtos\\pagedresponsedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:models\\dtos\\pagedresponsedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\models\\dtos\\createroomdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:models\\dtos\\createroomdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\models\\dtos\\roomresponsedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:models\\dtos\\roomresponsedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\models\\dtos\\roomfilterdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:models\\dtos\\roomfilterdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\interfaces\\iservices\\iamenityservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:interfaces\\iservices\\iamenityservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\services\\hotelservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:services\\hotelservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\interfaces\\iservices\\ipaymentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:interfaces\\iservices\\ipaymentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\helpers\\jwttokenhelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:helpers\\jwttokenhelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\interfaces\\iservices\\iwishlistservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:interfaces\\iservices\\iwishlistservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\interfaces\\iservices\\inotificationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:interfaces\\iservices\\inotificationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\models\\dtos\\createhoteldto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:models\\dtos\\createhoteldto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\interfaces\\iservices\\ihotelamenityservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:interfaces\\iservices\\ihotelamenityservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\interfaces\\iservices\\ireviewservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:interfaces\\iservices\\ireviewservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\models\\booking.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:models\\booking.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\delegates\\appdelegates.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:delegates\\appdelegates.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\interfaces\\iservices\\iroomservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:interfaces\\iservices\\iroomservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\interfaces\\iservices\\ihotelservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:interfaces\\iservices\\ihotelservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\interfaces\\iservices\\ipasswordservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:interfaces\\iservices\\ipasswordservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\interfaces\\iservices\\iauthservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:interfaces\\iservices\\iauthservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\middleware\\exceptionmiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:middleware\\exceptionmiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\exceptions\\appexceptions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:exceptions\\appexceptions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Migrations\\20260320062016_hotel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Migrations\\20260320062016_hotel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\repositories\\repository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:repositories\\repository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\hotelbookingapp.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:hotelbookingapp.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|c:\\users\\harikeerthi.s\\downloads\\hotelbookingapi-net10 (4)\\hotelbookingapi\\hotelbookingapp\\migrations\\20260320113827_hotel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BDE2148-44F4-1EAF-4673-3280F4A80638}|HotelBookingApp.csproj|solutionrelative:migrations\\20260320113827_hotel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Migrations\\20260320110025_Hotel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Migrations\\20260320110025_Hotel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 8,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "CreateBookingRoomDto.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\Dtos\\CreateBookingRoomDto.cs",
+              "RelativeDocumentMoniker": "Models\\Dtos\\CreateBookingRoomDto.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\Dtos\\CreateBookingRoomDto.cs",
+              "RelativeToolTip": "Models\\Dtos\\CreateBookingRoomDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-25T06:54:04.048Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "BookingRoomService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\BookingRoomService.cs",
+              "RelativeDocumentMoniker": "Services\\BookingRoomService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\BookingRoomService.cs",
+              "RelativeToolTip": "Services\\BookingRoomService.cs",
+              "ViewState": "AgIAAF8AAAAAAAAAAAAAwGoAAAAqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-23T08:56:28.944Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "BookingService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\BookingService.cs",
+              "RelativeDocumentMoniker": "Services\\BookingService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\BookingService.cs",
+              "RelativeToolTip": "Services\\BookingService.cs",
+              "ViewState": "AgIAAPMAAAAAAAAAAAAAwPwAAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-22T10:26:23.232Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Room.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\Room.cs",
+              "RelativeDocumentMoniker": "Models\\Room.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\Room.cs",
+              "RelativeToolTip": "Models\\Room.cs",
+              "ViewState": "AgIAAB8AAAAAAAAAAAAUwCEAAABCAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T09:39:55.722Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "BookingRoom.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\BookingRoom.cs",
+              "RelativeDocumentMoniker": "Models\\BookingRoom.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\BookingRoom.cs",
+              "RelativeToolTip": "Models\\BookingRoom.cs",
+              "ViewState": "AgIAABUAAAAAAAAAAAA2wBkAAABNAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T09:38:32.008Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Hotel.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\Hotel.cs",
+              "RelativeDocumentMoniker": "Models\\Hotel.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\Hotel.cs",
+              "RelativeToolTip": "Models\\Hotel.cs",
+              "ViewState": "AgIAACQAAAAAAAAAAAA0wCkAAABUAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T10:47:34.434Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "CreateWishlistDto.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\Dtos\\CreateWishlistDto.cs",
+              "RelativeDocumentMoniker": "Models\\Dtos\\CreateWishlistDto.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\Dtos\\CreateWishlistDto.cs",
+              "RelativeToolTip": "Models\\Dtos\\CreateWishlistDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-22T07:46:55.426Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "RoomService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\RoomService.cs",
+              "RelativeDocumentMoniker": "Services\\RoomService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\RoomService.cs",
+              "RelativeToolTip": "Services\\RoomService.cs",
+              "ViewState": "AgIAAKgAAAAAAAAAAAAAwLQAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T11:24:47.935Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "AmenityService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\AmenityService.cs",
+              "RelativeDocumentMoniker": "Services\\AmenityService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\AmenityService.cs",
+              "RelativeToolTip": "Services\\AmenityService.cs",
+              "ViewState": "AgIAAFcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-23T08:55:52.187Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "RoomController.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\RoomController.cs",
+              "RelativeDocumentMoniker": "Controllers\\RoomController.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\RoomController.cs",
+              "RelativeToolTip": "Controllers\\RoomController.cs",
+              "ViewState": "AgIAALAAAAAAAAAAAAAAwLwAAABEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-22T11:14:25.532Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "BookingController.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\BookingController.cs",
+              "RelativeDocumentMoniker": "Controllers\\BookingController.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\BookingController.cs",
+              "RelativeToolTip": "Controllers\\BookingController.cs",
+              "ViewState": "AgIAADcBAAAAAAAAAAAQwD4BAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-22T07:09:16.088Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "BookingRoomController.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\BookingRoomController.cs",
+              "RelativeDocumentMoniker": "Controllers\\BookingRoomController.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\BookingRoomController.cs",
+              "RelativeToolTip": "Controllers\\BookingRoomController.cs",
+              "ViewState": "AgIAAH8AAAAAAAAAAAAQwIMAAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T09:41:23.945Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "CancellationController.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\CancellationController.cs",
+              "RelativeDocumentMoniker": "Controllers\\CancellationController.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\CancellationController.cs",
+              "RelativeToolTip": "Controllers\\CancellationController.cs",
+              "ViewState": "AgIAAFQAAAAAAAAAAAAAAFoAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-22T11:11:23.823Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "IBookingRoomService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IBookingRoomService.cs",
+              "RelativeDocumentMoniker": "Interfaces\\IServices\\IBookingRoomService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IBookingRoomService.cs",
+              "RelativeToolTip": "Interfaces\\IServices\\IBookingRoomService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T09:24:10.766Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "WishlistService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\WishlistService.cs",
+              "RelativeDocumentMoniker": "Services\\WishlistService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\WishlistService.cs",
+              "RelativeToolTip": "Services\\WishlistService.cs",
+              "ViewState": "AgIAACYAAAAAAAAAAAAQwC4AAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-22T07:36:05.095Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "NotificationController.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\NotificationController.cs",
+              "RelativeDocumentMoniker": "Controllers\\NotificationController.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\NotificationController.cs",
+              "RelativeToolTip": "Controllers\\NotificationController.cs",
+              "ViewState": "AgIAABMAAAAAAAAAAAAAAPEAAABEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T15:33:05.828Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "NotificationService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\NotificationService.cs",
+              "RelativeDocumentMoniker": "Services\\NotificationService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\NotificationService.cs",
+              "RelativeToolTip": "Services\\NotificationService.cs",
+              "ViewState": "AgIAADwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T15:33:51.077Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "HotelAmenityService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\HotelAmenityService.cs",
+              "RelativeDocumentMoniker": "Services\\HotelAmenityService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\HotelAmenityService.cs",
+              "RelativeToolTip": "Services\\HotelAmenityService.cs",
+              "ViewState": "AgIAAEsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-22T07:08:56.406Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "HotelController.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\HotelController.cs",
+              "RelativeDocumentMoniker": "Controllers\\HotelController.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\HotelController.cs",
+              "RelativeToolTip": "Controllers\\HotelController.cs",
+              "ViewState": "AgIAAKIAAAAAAAAAAAAAAKwAAAAxAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-22T11:12:09.012Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "WishlistController.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\WishlistController.cs",
+              "RelativeDocumentMoniker": "Controllers\\WishlistController.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\WishlistController.cs",
+              "RelativeToolTip": "Controllers\\WishlistController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T15:37:26.476Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "UsersController.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\UsersController.cs",
+              "RelativeDocumentMoniker": "Controllers\\UsersController.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\UsersController.cs",
+              "RelativeToolTip": "Controllers\\UsersController.cs",
+              "ViewState": "AgIAAHQAAAAAAAAAAAAAAGQAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T06:26:04.143Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "User.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\User.cs",
+              "RelativeDocumentMoniker": "Models\\User.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\User.cs",
+              "RelativeToolTip": "Models\\User.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAXAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T15:35:58.003Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "RegisterRequestDto.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\Dtos\\RegisterRequestDto.cs",
+              "RelativeDocumentMoniker": "Models\\Dtos\\RegisterRequestDto.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\Dtos\\RegisterRequestDto.cs",
+              "RelativeToolTip": "Models\\Dtos\\RegisterRequestDto.cs",
+              "ViewState": "AgIAAAgAAAAAAAAAAAAAABMAAAAUAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-24T06:18:24.045Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "ReviewController.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\ReviewController.cs",
+              "RelativeDocumentMoniker": "Controllers\\ReviewController.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\ReviewController.cs",
+              "RelativeToolTip": "Controllers\\ReviewController.cs",
+              "ViewState": "AgIAAGsAAAAAAAAAAAAAAGsAAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-22T11:12:55.287Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "PaymentController.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\PaymentController.cs",
+              "RelativeDocumentMoniker": "Controllers\\PaymentController.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\PaymentController.cs",
+              "RelativeToolTip": "Controllers\\PaymentController.cs",
+              "ViewState": "AgIAABsAAAAAAAAAAAAAALsAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-22T11:12:47.315Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\AuthController.cs",
+              "RelativeDocumentMoniker": "Controllers\\AuthController.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\AuthController.cs",
+              "RelativeToolTip": "Controllers\\AuthController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T06:56:22.676Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "AmenitiesController.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\AmenitiesController.cs",
+              "RelativeDocumentMoniker": "Controllers\\AmenitiesController.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\AmenitiesController.cs",
+              "RelativeToolTip": "Controllers\\AmenitiesController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAIcAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T07:29:53.097Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "HotelBookingContext.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Context\\HotelBookingContext.cs",
+              "RelativeDocumentMoniker": "Context\\HotelBookingContext.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Context\\HotelBookingContext.cs",
+              "RelativeToolTip": "Context\\HotelBookingContext.cs",
+              "ViewState": "AgIAAFIAAAAAAAAAAAAAAFsAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T07:29:48.332Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "HotelAmenityController.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\HotelAmenityController.cs",
+              "RelativeDocumentMoniker": "Controllers\\HotelAmenityController.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Controllers\\HotelAmenityController.cs",
+              "RelativeToolTip": "Controllers\\HotelAmenityController.cs",
+              "ViewState": "AgIAAGcAAAAAAAAAAAAQwHMAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-23T06:20:03.808Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-03-22T19:51:33.596Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 31,
+              "Title": "ICancellationService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\ICancellationService.cs",
+              "RelativeDocumentMoniker": "Interfaces\\IServices\\ICancellationService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\ICancellationService.cs",
+              "RelativeToolTip": "Interfaces\\IServices\\ICancellationService.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAABUAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T10:36:24.423Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 32,
+              "Title": "IBookingService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IBookingService.cs",
+              "RelativeDocumentMoniker": "Interfaces\\IServices\\IBookingService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IBookingService.cs",
+              "RelativeToolTip": "Interfaces\\IServices\\IBookingService.cs",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAAAA4AAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T09:20:20.103Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 30,
+              "Title": "CancellationService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\CancellationService.cs",
+              "RelativeDocumentMoniker": "Services\\CancellationService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\CancellationService.cs",
+              "RelativeToolTip": "Services\\CancellationService.cs",
+              "ViewState": "AgIAAJcAAAAAAAAAAAAQwKoAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-22T19:50:06.006Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 33,
+              "Title": "UserService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\UserService.cs",
+              "RelativeDocumentMoniker": "Services\\UserService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\UserService.cs",
+              "RelativeToolTip": "Services\\UserService.cs",
+              "ViewState": "AgIAADAAAAAAAAAAAAAAABgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T06:28:46.517Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 34,
+              "Title": "PaymentService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\PaymentService.cs",
+              "RelativeDocumentMoniker": "Services\\PaymentService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\PaymentService.cs",
+              "RelativeToolTip": "Services\\PaymentService.cs",
+              "ViewState": "AgIAAHIAAAAAAAAAAAAAANAAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-22T16:49:39.88Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 36,
+              "Title": "IUserService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IUserService.cs",
+              "RelativeDocumentMoniker": "Interfaces\\IServices\\IUserService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IUserService.cs",
+              "RelativeToolTip": "Interfaces\\IServices\\IUserService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T09:14:54.481Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 35,
+              "Title": "AuthService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\AuthService.cs",
+              "RelativeDocumentMoniker": "Services\\AuthService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\AuthService.cs",
+              "RelativeToolTip": "Services\\AuthService.cs",
+              "ViewState": "AgIAAC8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T06:33:19.418Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 37,
+              "Title": "PagedResponseDto.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\Dtos\\PagedResponseDto.cs",
+              "RelativeDocumentMoniker": "Models\\Dtos\\PagedResponseDto.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\Dtos\\PagedResponseDto.cs",
+              "RelativeToolTip": "Models\\Dtos\\PagedResponseDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAxAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-23T06:10:33.27Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 38,
+              "Title": "CreateRoomDto.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\Dtos\\CreateRoomDto.cs",
+              "RelativeDocumentMoniker": "Models\\Dtos\\CreateRoomDto.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\Dtos\\CreateRoomDto.cs",
+              "RelativeToolTip": "Models\\Dtos\\CreateRoomDto.cs",
+              "ViewState": "AgIAABAAAAAAAAAAAAAAABUAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T11:25:34.755Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 39,
+              "Title": "RoomResponseDto.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\Dtos\\RoomResponseDto.cs",
+              "RelativeDocumentMoniker": "Models\\Dtos\\RoomResponseDto.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\Dtos\\RoomResponseDto.cs",
+              "RelativeToolTip": "Models\\Dtos\\RoomResponseDto.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAgAAAAyAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T11:26:45.096Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 40,
+              "Title": "RoomFilterDto.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\Dtos\\RoomFilterDto.cs",
+              "RelativeDocumentMoniker": "Models\\Dtos\\RoomFilterDto.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\Dtos\\RoomFilterDto.cs",
+              "RelativeToolTip": "Models\\Dtos\\RoomFilterDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-23T05:28:54.897Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 41,
+              "Title": "IAmenityService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IAmenityService.cs",
+              "RelativeDocumentMoniker": "Interfaces\\IServices\\IAmenityService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IAmenityService.cs",
+              "RelativeToolTip": "Interfaces\\IServices\\IAmenityService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T10:38:42.252Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 42,
+              "Title": "HotelService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\HotelService.cs",
+              "RelativeDocumentMoniker": "Services\\HotelService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Services\\HotelService.cs",
+              "RelativeToolTip": "Services\\HotelService.cs",
+              "ViewState": "AgIAAI4AAAAAAAAAAAAAAJQAAAAxAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T06:57:08.344Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 43,
+              "Title": "IPaymentService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IPaymentService.cs",
+              "RelativeDocumentMoniker": "Interfaces\\IServices\\IPaymentService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IPaymentService.cs",
+              "RelativeToolTip": "Interfaces\\IServices\\IPaymentService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T10:32:53.107Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 44,
+              "Title": "JwtTokenHelper.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Helpers\\JwtTokenHelper.cs",
+              "RelativeDocumentMoniker": "Helpers\\JwtTokenHelper.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Helpers\\JwtTokenHelper.cs",
+              "RelativeToolTip": "Helpers\\JwtTokenHelper.cs",
+              "ViewState": "AgIAACIAAAAAAAAAAAAQwCsAAAArAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-22T07:24:49.99Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 45,
+              "Title": "IWishlistService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IWishlistService.cs",
+              "RelativeDocumentMoniker": "Interfaces\\IServices\\IWishlistService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IWishlistService.cs",
+              "RelativeToolTip": "Interfaces\\IServices\\IWishlistService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T10:40:52.149Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 62,
+              "Title": "20260320113827_Hotel.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Migrations\\20260320113827_Hotel.cs",
+              "RelativeDocumentMoniker": "Migrations\\20260320113827_Hotel.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Migrations\\20260320113827_Hotel.cs",
+              "RelativeToolTip": "Migrations\\20260320113827_Hotel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T11:38:27.378Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 47,
+              "Title": "CreateHotelDto.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\Dtos\\CreateHotelDto.cs",
+              "RelativeDocumentMoniker": "Models\\Dtos\\CreateHotelDto.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\Dtos\\CreateHotelDto.cs",
+              "RelativeToolTip": "Models\\Dtos\\CreateHotelDto.cs",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAAABsAAAAgAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T11:25:32.418Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 46,
+              "Title": "INotificationService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\INotificationService.cs",
+              "RelativeDocumentMoniker": "Interfaces\\IServices\\INotificationService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\INotificationService.cs",
+              "RelativeToolTip": "Interfaces\\IServices\\INotificationService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T10:41:39.337Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 63,
+              "Title": "20260320110025_Hotel.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Migrations\\20260320110025_Hotel.cs",
+              "RelativeDocumentMoniker": "Migrations\\20260320110025_Hotel.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Migrations\\20260320110025_Hotel.cs",
+              "RelativeToolTip": "Migrations\\20260320110025_Hotel.cs",
+              "ViewState": "AgIAAKQBAAAAAAAAAAAAAAYAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T11:00:26.182Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 48,
+              "Title": "IHotelAmenityService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IHotelAmenityService.cs",
+              "RelativeDocumentMoniker": "Interfaces\\IServices\\IHotelAmenityService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IHotelAmenityService.cs",
+              "RelativeToolTip": "Interfaces\\IServices\\IHotelAmenityService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T10:39:40.908Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 49,
+              "Title": "IReviewService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IReviewService.cs",
+              "RelativeDocumentMoniker": "Interfaces\\IServices\\IReviewService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IReviewService.cs",
+              "RelativeToolTip": "Interfaces\\IServices\\IReviewService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T10:37:29.324Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 50,
+              "Title": "Booking.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\Booking.cs",
+              "RelativeDocumentMoniker": "Models\\Booking.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Models\\Booking.cs",
+              "RelativeToolTip": "Models\\Booking.cs",
+              "ViewState": "AgIAAAIAAAAAAAAAAAAAACgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T09:42:37.51Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 54,
+              "Title": "IPasswordService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IPasswordService.cs",
+              "RelativeDocumentMoniker": "Interfaces\\IServices\\IPasswordService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IPasswordService.cs",
+              "RelativeToolTip": "Interfaces\\IServices\\IPasswordService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T09:10:55.725Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 55,
+              "Title": "IAuthService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IAuthService.cs",
+              "RelativeDocumentMoniker": "Interfaces\\IServices\\IAuthService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IAuthService.cs",
+              "RelativeToolTip": "Interfaces\\IServices\\IAuthService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T07:32:49.26Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 51,
+              "Title": "AppDelegates.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Delegates\\AppDelegates.cs",
+              "RelativeDocumentMoniker": "Delegates\\AppDelegates.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Delegates\\AppDelegates.cs",
+              "RelativeToolTip": "Delegates\\AppDelegates.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T07:30:38.72Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 53,
+              "Title": "IHotelService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IHotelService.cs",
+              "RelativeDocumentMoniker": "Interfaces\\IServices\\IHotelService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IHotelService.cs",
+              "RelativeToolTip": "Interfaces\\IServices\\IHotelService.cs",
+              "ViewState": "AgIAAAEAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T09:16:52.961Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 52,
+              "Title": "IRoomService.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IRoomService.cs",
+              "RelativeDocumentMoniker": "Interfaces\\IServices\\IRoomService.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Interfaces\\IServices\\IRoomService.cs",
+              "RelativeToolTip": "Interfaces\\IServices\\IRoomService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T09:18:43.068Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 56,
+              "Title": "ExceptionMiddleware.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Middleware\\ExceptionMiddleware.cs",
+              "RelativeDocumentMoniker": "Middleware\\ExceptionMiddleware.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Middleware\\ExceptionMiddleware.cs",
+              "RelativeToolTip": "Middleware\\ExceptionMiddleware.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAABKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T07:31:31.489Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 57,
+              "Title": "AppExceptions.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Exceptions\\AppExceptions.cs",
+              "RelativeDocumentMoniker": "Exceptions\\AppExceptions.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Exceptions\\AppExceptions.cs",
+              "RelativeToolTip": "Exceptions\\AppExceptions.cs",
+              "ViewState": "AgIAADMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T07:31:18.253Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 58,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAKIAAAAAAAAAAAAAAOYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T06:22:02.486Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 59,
+              "Title": "20260320062016_hotel.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Migrations\\20260320062016_hotel.cs",
+              "RelativeDocumentMoniker": "Migrations\\20260320062016_hotel.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Migrations\\20260320062016_hotel.cs",
+              "RelativeToolTip": "Migrations\\20260320062016_hotel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T06:20:16.398Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 60,
+              "Title": "Repository.cs",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Repositories\\Repository.cs",
+              "RelativeDocumentMoniker": "Repositories\\Repository.cs",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\Repositories\\Repository.cs",
+              "RelativeToolTip": "Repositories\\Repository.cs",
+              "ViewState": "AgIAAAcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-20T06:15:31.415Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 61,
+              "Title": "HotelBookingApp",
+              "DocumentMoniker": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\HotelBookingApp.csproj",
+              "RelativeDocumentMoniker": "HotelBookingApp.csproj",
+              "ToolTip": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelBookingAPI-NET10 (4)\\HotelBookingAPI\\HotelBookingApp\\HotelBookingApp.csproj",
+              "RelativeToolTip": "HotelBookingApp.csproj",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-03-20T06:15:27.19Z"
+            }
+          ]
+        },
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{e1b7d1f8-9b3c-49b1-8f4f-bfc63a88835d}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

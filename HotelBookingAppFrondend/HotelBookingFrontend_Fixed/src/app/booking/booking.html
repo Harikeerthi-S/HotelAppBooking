@@ -1,0 +1,97 @@
+<div class="page-header">
+  <div class="container">
+    <h1><i class="bi bi-calendar-check me-2"></i>Confirm Booking</h1>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+
+          @if (hotel() && room()) {
+            <div class="hotel-summary p-3 rounded-3 mb-4">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <div class="fw-700 fs-5">{{ hotel()!.hotelName }}</div>
+                  <div class="text-muted small">
+                    <i class="bi bi-geo-alt me-1"></i>{{ hotel()!.location }}
+                  </div>
+                  <div class="text-muted small mt-1">
+                    {{ room()!.roomType }} Room &nbsp;·&nbsp;
+                    Room #{{ room()!.roomNumber }} &nbsp;·&nbsp;
+                    {{ room()!.capacity }} guests max
+                  </div>
+                </div>
+                <div class="text-end">
+                  <div class="price-tag">₹{{ room()!.pricePerNight.toLocaleString('en-IN') }}</div>
+                  <div class="per-night">per night</div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Check-in Date</label>
+              <input class="form-control" type="date"
+                     [value]="checkIn()"
+                     (input)="checkIn.set($any($event.target).value)"
+                     [min]="today">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Check-out Date</label>
+              <input class="form-control" type="date"
+                     [value]="checkOut()"
+                     (input)="checkOut.set($any($event.target).value)"
+                     [min]="checkIn() || today">
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label">Number of Rooms</label>
+            <select class="form-select"
+                    [value]="numRooms()"
+                    (change)="numRooms.set(+$any($event.target).value)">
+              @for (n of [1,2,3,4,5]; track n) {
+                <option [value]="n">{{ n }} Room{{ n > 1 ? 's' : '' }}</option>
+              }
+            </select>
+          </div>
+
+          @if (nights > 0 && room()) {
+            <div class="price-breakdown p-3 rounded-3 mb-4">
+              <div class="fw-700 text-primary mb-3">Price Breakdown</div>
+              <div class="d-flex justify-content-between small mb-2">
+                <span>₹{{ room()!.pricePerNight.toLocaleString('en-IN') }} × {{ nights }} nights × {{ numRooms() }} rooms</span>
+                <span class="fw-600">₹{{ totalAmount.toLocaleString('en-IN') }}</span>
+              </div>
+              <hr class="my-2">
+              <div class="d-flex justify-content-between fw-700 text-primary">
+                <span>Total Amount</span>
+                <span class="fs-5">₹{{ totalAmount.toLocaleString('en-IN') }}</span>
+              </div>
+            </div>
+          }
+
+          <button class="btn btn-primary-custom w-100 py-2 rounded-pill fw-600"
+                  [disabled]="loading() || !checkIn() || !checkOut()"
+                  (click)="confirmBooking()">
+            @if (loading()) {
+              <span class="spinner-border spinner-border-sm me-2"></span>Creating booking…
+            } @else {
+              <i class="bi bi-calendar-check me-2"></i>Confirm Booking
+            }
+          </button>
+
+          <div class="text-center mt-3">
+            <a [routerLink]="['/hotels', hotel()?.hotelId]" class="text-muted small">
+              <i class="bi bi-arrow-left me-1"></i>Back to hotel
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

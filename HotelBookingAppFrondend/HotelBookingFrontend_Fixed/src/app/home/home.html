@@ -1,0 +1,119 @@
+<!-- HERO -->
+<section class="hero-section">
+  <div class="container py-5 text-center">
+
+    <h1 class="hero-title">
+      Find Your Perfect <span class="text-warning">Stay</span>
+    </h1>
+
+    <!-- SEARCH -->
+    <div class="search-card mt-4">
+      <div class="row g-2">
+
+        <!-- CITY -->
+        <div class="col-md-6">
+          <select class="form-select"
+                  (change)="onCityChange($any($event.target).value)">
+            <option value="">Select City</option>
+            @for (city of cities; track city.name) {
+              <option [value]="city.name">{{ city.name }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- AMENITIES -->
+        <div class="col-md-3">
+          <select class="form-select"
+                  (change)="onAmenityChange($any($event.target).value)">
+            <option value="">Amenities</option>
+            @for (a of amenities(); track a.amenityId) {
+              <option [value]="a.amenityId">{{ a.name }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- SEARCH -->
+        <div class="col-md-3">
+          <button class="btn btn-primary-custom w-100" (click)="search()">
+            Search
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- 🔥 POPULAR DESTINATIONS -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <h2 class="fw-bold mb-3">Popular Destinations</h2>
+
+    <div class="row g-4">
+      @for (city of cities; track city.name) {
+        <div class="col-6 col-md-4 col-lg-2">
+
+          <div class="card text-center p-3 city-card"
+               (click)="searchByCity(city.name)"
+               style="cursor:pointer">
+
+            <div style="font-size:2rem">{{ city.emoji }}</div>
+            <div class="fw-600 mt-2">{{ city.name }}</div>
+            <small class="text-muted">{{ city.count }} hotels</small>
+
+          </div>
+
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED HOTELS -->
+<section class="py-5">
+  <div class="container">
+
+    @if (loading()) {
+      <div class="spinner-wrap">
+        <div class="spinner-ring"></div>
+      </div>
+    } @else {
+
+      <div class="row g-4">
+        @for (hotel of hotels(); track hotel.hotelId) {
+
+          <div class="col-md-4">
+            <div class="card h-100">
+
+              <!-- IMAGE -->
+              <div class="position-relative">
+                <img [src]="getHotelImage(hotel)" class="w-100">
+
+                <!-- ⭐ RATING -->
+                <span class="badge bg-warning position-absolute bottom-0 start-0 m-2">
+                  ⭐ {{ hotel.starRating }}
+                </span>
+              </div>
+
+              <!-- BODY -->
+              <div class="p-3">
+                <h6>{{ hotel.hotelName }}</h6>
+                <p class="text-muted small">{{ hotel.location }}</p>
+
+                <div class="text-end mt-2">
+                  <a [routerLink]="['/hotels', hotel.hotelId]"
+                     class="btn btn-primary-custom btn-sm">
+                    Book Now
+                  </a>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        }
+      </div>
+    }
+  </div>
+</section>

@@ -1,0 +1,305 @@
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div>
+        <h1><i class="bi bi-stars me-2"></i>Amenities</h1>
+        <p>{{ amenities().length }} amenity{{ amenities().length !== 1 ? 's' : '' }} available</p>
+      </div>
+      @if (isAdmin) {
+        <button class="btn btn-sm btn-outline-light rounded-pill" (click)="openCreate(); activeTab.set('manage')">
+          <i class="bi bi-plus-circle me-1"></i>Add Amenity
+        </button>
+      }
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+
+  <!-- TAB NAV (admin sees extra tabs) -->
+  <ul class="nav nav-pills mb-4 gap-2 flex-wrap">
+    <li class="nav-item">
+      <button class="nav-link rounded-pill px-4"
+              [class.active]="activeTab() === 'browse'"
+              (click)="activeTab.set('browse')">
+        <i class="bi bi-grid me-1"></i>Browse
+      </button>
+    </li>
+    @if (isAdmin) {
+      <li class="nav-item">
+        <button class="nav-link rounded-pill px-4"
+                [class.active]="activeTab() === 'manage'"
+                (click)="activeTab.set('manage')">
+          <i class="bi bi-pencil-square me-1"></i>Manage
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link rounded-pill px-4"
+                [class.active]="activeTab() === 'assign'"
+                (click)="activeTab.set('assign')">
+          <i class="bi bi-link-45deg me-1"></i>Hotel Assignments
+          @if (assignments().length > 0) {
+            <span class="badge bg-primary ms-1 rounded-pill">{{ assignments().length }}</span>
+          }
+        </button>
+      </li>
+    }
+  </ul>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       TAB 1: BROWSE (public)
+       ════════════════════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'browse') {
+
+    <!-- Search bar -->
+    <div class="mb-4 search-wrap">
+      <div class="input-group input-group-sm" style="max-width:340px">
+        <span class="input-group-text bg-white border-end-0">
+          <i class="bi bi-search text-muted"></i>
+        </span>
+        <input class="form-control border-start-0" type="text"
+               placeholder="Search amenities…"
+               [value]="searchTerm()"
+               (input)="searchTerm.set($any($event.target).value)">
+        @if (searchTerm()) {
+          <button class="btn btn-outline-secondary border-start-0" type="button"
+                  (click)="searchTerm.set('')">
+            <i class="bi bi-x"></i>
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="spinner-wrap"><div class="spinner-ring"></div></div>
+    } @else if (filteredAmenities().length === 0) {
+      <div class="empty-state card border-0 shadow-sm py-5">
+        <i class="bi bi-stars empty-icon"></i>
+        <h5 class="fw-600 mt-2">No amenities found</h5>
+        @if (searchTerm()) {
+          <p class="text-muted small">No matches for "{{ searchTerm() }}"</p>
+          <button class="btn btn-sm btn-outline-primary rounded-pill mt-2" (click)="searchTerm.set('')">Clear Search</button>
+        } @else {
+          <p class="text-muted small">No amenities have been added yet.</p>
+        }
+      </div>
+    } @else {
+      <div class="row g-3">
+        @for (a of filteredAmenities(); track a.amenityId) {
+          <div class="col-sm-6 col-md-4 col-lg-3">
+            <div class="amenity-card card border-0 shadow-sm h-100">
+              <div class="card-body p-4 text-center">
+                <div class="amenity-icon-wrap mb-3">{{ a.icon || '✨' }}</div>
+                <h6 class="fw-700 mb-1">{{ a.name }}</h6>
+                @if (a.description) {
+                  <p class="text-muted small mb-0">{{ a.description }}</p>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       TAB 2: MANAGE (admin only — create / edit / delete)
+       ════════════════════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'manage' && isAdmin) {
+
+    <!-- Create / Edit inline form -->
+    @if (showAmenForm()) {
+      <div class="card border-0 shadow-sm mb-4 form-panel">
+        <div class="card-body p-4">
+          <h5 class="fw-700 mb-3">
+            <i class="bi bi-{{ editMode() ? 'pencil-square' : 'plus-circle' }} text-primary me-2"></i>
+            {{ editMode() ? 'Edit Amenity' : 'New Amenity' }}
+          </h5>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label fw-600 small">Name <span class="text-danger">*</span></label>
+              <input class="form-control form-control-sm" maxlength="100"
+                     [value]="formName()"
+                     (input)="formName.set($any($event.target).value)"
+                     placeholder="e.g. Free Wi-Fi">
+            </div>
+            <div class="col-md-5">
+              <label class="form-label fw-600 small">Description</label>
+              <input class="form-control form-control-sm" maxlength="500"
+                     [value]="formDesc()"
+                     (input)="formDesc.set($any($event.target).value)"
+                     placeholder="Brief description…">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-600 small">
+                Icon (emoji) &nbsp;
+                <span class="icon-preview">{{ iconPreview(formIcon()) }}</span>
+              </label>
+              <input class="form-control form-control-sm" maxlength="10"
+                     [value]="formIcon()"
+                     (input)="formIcon.set($any($event.target).value)"
+                     placeholder="e.g. 📶 🏊 🍽️">
+            </div>
+            <div class="col-12 d-flex gap-2">
+              <button class="btn btn-primary-custom rounded-pill px-4"
+                      [disabled]="submitting()" (click)="submitAmenity()">
+                @if (submitting()) { <span class="spinner-border spinner-border-sm me-2"></span>Saving… }
+                @else              { <i class="bi bi-check-circle me-2"></i>{{ editMode() ? 'Update' : 'Create' }} }
+              </button>
+              <button class="btn btn-outline-secondary rounded-pill px-4" (click)="closeAmenForm()">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Add new button (when form is closed) -->
+    @if (!showAmenForm()) {
+      <div class="mb-3">
+        <button class="btn btn-primary-custom rounded-pill px-4" (click)="openCreate()">
+          <i class="bi bi-plus-circle me-2"></i>Add New Amenity
+        </button>
+      </div>
+    }
+
+    <!-- Amenities table -->
+    @if (loading()) {
+      <div class="spinner-wrap"><div class="spinner-ring"></div></div>
+    } @else if (amenities().length === 0) {
+      <div class="empty-state card border-0 shadow-sm py-5">
+        <i class="bi bi-stars empty-icon"></i>
+        <h5 class="fw-600 mt-2">No amenities yet</h5>
+        <p class="text-muted small">Add your first amenity above.</p>
+      </div>
+    } @else {
+      <div class="card border-0 shadow-sm overflow-hidden">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th style="width:56px">Icon</th>
+              <th>Name</th>
+              <th class="d-none d-md-table-cell">Description</th>
+              <th style="width:140px" class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (a of amenities(); track a.amenityId) {
+              <tr>
+                <td class="text-center fs-5">{{ a.icon || '✨' }}</td>
+                <td class="fw-600 align-middle">{{ a.name }}</td>
+                <td class="text-muted small align-middle d-none d-md-table-cell">
+                  {{ a.description || '—' }}
+                </td>
+                <td class="text-end align-middle">
+                  <button class="btn btn-sm btn-outline-primary rounded-pill me-1"
+                          (click)="openEdit(a)">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger rounded-pill"
+                          [disabled]="deletingId() === a.amenityId"
+                          (click)="deleteAmenity(a)">
+                    @if (deletingId() === a.amenityId) {
+                      <span class="spinner-border spinner-border-sm"></span>
+                    } @else {
+                      <i class="bi bi-trash3"></i>
+                    }
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       TAB 3: HOTEL ASSIGNMENTS (admin only)
+       ════════════════════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'assign' && isAdmin) {
+
+    <!-- Assign form -->
+    <div class="card border-0 shadow-sm mb-4 form-panel">
+      <div class="card-body p-4">
+        <h5 class="fw-700 mb-1">
+          <i class="bi bi-link-45deg text-primary me-2"></i>Assign Amenity to Hotel
+        </h5>
+        <p class="text-muted small mb-3">Link an amenity to a hotel so guests can see what's available.</p>
+        <div class="row g-3 align-items-end">
+          <div class="col-sm-5">
+            <label class="form-label fw-600 small">Hotel <span class="text-danger">*</span></label>
+            <select class="form-select form-select-sm"
+                    [value]="assignHotelId()"
+                    (change)="assignHotelId.set(+$any($event.target).value)">
+              <option value="0">— Select hotel —</option>
+              @for (h of hotels(); track h.hotelId) {
+                <option [value]="h.hotelId">{{ h.hotelName }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-sm-5">
+            <label class="form-label fw-600 small">Amenity <span class="text-danger">*</span></label>
+            <select class="form-select form-select-sm"
+                    [value]="assignAmenityId()"
+                    (change)="assignAmenityId.set(+$any($event.target).value)">
+              <option value="0">— Select amenity —</option>
+              @for (a of amenities(); track a.amenityId) {
+                <option [value]="a.amenityId">{{ a.icon || '✨' }} {{ a.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-sm-2">
+            <button class="btn btn-primary-custom rounded-pill w-100"
+                    [disabled]="assigning()" (click)="assignToHotel()">
+              @if (assigning()) { <span class="spinner-border spinner-border-sm"></span> }
+              @else             { <i class="bi bi-plus-circle"></i> Assign }
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assignments grouped by hotel -->
+    @if (assignments().length === 0) {
+      <div class="empty-state card border-0 shadow-sm py-5">
+        <i class="bi bi-link-45deg empty-icon"></i>
+        <h5 class="fw-600 mt-2">No assignments yet</h5>
+        <p class="text-muted small">Use the form above to assign amenities to hotels.</p>
+      </div>
+    } @else {
+      <div class="d-flex flex-column gap-3">
+        @for (group of assignmentsByHotel(); track group.hotelId) {
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center gap-2">
+              <i class="bi bi-building text-primary"></i>
+              <span class="fw-700">{{ group.hotelName }}</span>
+              <span class="badge bg-primary rounded-pill ms-auto">{{ group.items.length }} amenit{{ group.items.length !== 1 ? 'ies' : 'y' }}</span>
+            </div>
+            <div class="card-body p-3">
+              <div class="d-flex flex-wrap gap-2">
+                @for (item of group.items; track item.hotelAmenityId) {
+                  <div class="amenity-tag d-flex align-items-center gap-2">
+                    <span>{{ item.amenityIcon }}</span>
+                    <span class="small fw-600">{{ item.amenityName }}</span>
+                    <button class="btn btn-sm btn-link text-danger p-0 ms-1"
+                            [disabled]="removingId() === item.hotelAmenityId"
+                            (click)="removeAssignment(item)"
+                            title="Remove">
+                      @if (removingId() === item.hotelAmenityId) {
+                        <span class="spinner-border spinner-border-sm" style="width:12px;height:12px"></span>
+                      } @else {
+                        <i class="bi bi-x-circle-fill" style="font-size:.8rem"></i>
+                      }
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+
+</div>

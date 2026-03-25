@@ -1,0 +1,10 @@
+.fw-600 { font-weight: 600; }
+.btn-primary-custom {
+  background: linear-gradient(135deg, #e84393, #c2185b);
+  color: #fff;
+  border: none;
+}
+.btn-primary-custom:hover {
+  opacity: .9;
+  color: #fff;
+}

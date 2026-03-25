@@ -1,0 +1,175 @@
+<div class="page-header">
+  <div class="container">
+    <div class="d-flex align-items-center gap-3">
+      <a routerLink="/home" class="btn btn-sm btn-light rounded-pill">
+        <i class="bi bi-arrow-left"></i>
+      </a>
+      <div>
+        <h1>🏨 Explore Hotels</h1>
+        <p>{{ paged()?.totalRecords ?? 0 }} properties found</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row g-4">
+
+    <!-- FILTER SIDEBAR -->
+    <div class="col-lg-3">
+      <div class="card border-0 shadow-sm p-3">
+        <h6 class="fw-700 mb-3">
+          <i class="bi bi-funnel text-primary me-2"></i>Filters
+        </h6>
+
+        <div class="mb-3">
+          <label class="form-label">Destination</label>
+          <input class="form-control form-control-sm" type="text"
+                 [value]="fLocation()"
+                 (input)="fLocation.set($any($event.target).value)"
+                 placeholder="City or hotel name">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Min Star Rating</label>
+          <select class="form-select form-select-sm"
+                  [value]="fMinRating()"
+                  (change)="fMinRating.set($any($event.target).value)">
+            <option value="">Any Rating</option>
+            <option value="3">3★ and above</option>
+            <option value="4">4★ and above</option>
+            <option value="5">5★ Only</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Price Range (₹/night)</label>
+          <div class="row g-2">
+            <div class="col-6">
+              <input class="form-control form-control-sm" type="number"
+                     [value]="fMinPrice()"
+                     (input)="fMinPrice.set($any($event.target).value)"
+                     placeholder="Min">
+            </div>
+            <div class="col-6">
+              <input class="form-control form-control-sm" type="number"
+                     [value]="fMaxPrice()"
+                     (input)="fMaxPrice.set($any($event.target).value)"
+                     placeholder="Max">
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary-custom btn-sm flex-fill rounded-pill" (click)="applyFilter()">
+            Apply
+          </button>
+          <button class="btn btn-outline-secondary btn-sm rounded-pill" (click)="clearFilter()">
+            Clear
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOTEL GRID -->
+    <div class="col-lg-9">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="text-muted small">
+          Showing {{ hotels().length }} of {{ paged()?.totalRecords ?? 0 }} hotels
+        </span>
+        <select class="form-select form-select-sm w-auto"
+                [value]="sortBy()"
+                (change)="sortBy.set($any($event.target).value); onSortChange()">
+          <option value="rating">Rating: High to Low</option>
+          <option value="name">Name: A to Z</option>
+        </select>
+      </div>
+
+      @if (loading()) {
+        <div class="spinner-wrap"><div class="spinner-ring"></div></div>
+      } @else if (hotels().length === 0) {
+        <div class="empty-state card border-0 shadow-sm">
+          <i class="bi bi-building empty-icon"></i>
+          <h5 class="fw-600">No hotels found</h5>
+          <p class="small">Try adjusting your filters</p>
+          <button class="btn btn-sm btn-outline-primary rounded-pill" (click)="clearFilter()">
+            Clear Filters
+          </button>
+        </div>
+      } @else {
+        <div class="row g-4">
+          @for (hotel of hotels(); track hotel.hotelId) {
+            <div class="col-md-6 col-xl-4">
+              <div class="card hotel-card h-100">
+                
+                <!-- IMAGE -->
+                <div class="hotel-img-wrap position-relative overflow-hidden">
+                  <img [src]="getImage(hotel)" [alt]="hotel.hotelName" class="hotel-img w-100"
+                       onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=200&fit=crop'">
+
+                  <button class="btn btn-sm btn-light position-absolute top-0 end-0 m-2 rounded-circle p-1"
+                          style="width:32px;height:32px"
+                          (click)="toggleWishlist(hotel, $event)">
+                    <i class="bi"
+                       [class.bi-heart-fill]="isWishlisted(hotel.hotelId)"
+                       [class.bi-heart]="!isWishlisted(hotel.hotelId)"
+                       [style.color]="isWishlisted(hotel.hotelId) ? '#e84393' : '#888'"></i>
+                  </button>
+
+                  <span class="position-absolute bottom-0 start-0 m-2 badge bg-warning text-dark fw-600">
+                    <i class="bi bi-star-fill"></i> {{ hotel.starRating }}
+                  </span>
+                </div>
+
+                <!-- CONTENT -->
+                <div class="card-body p-3 d-flex flex-column">
+                  <h6 class="fw-700 mb-1">{{ hotel.hotelName }}</h6>
+                  <p class="text-muted small mb-auto">
+                    <i class="bi bi-geo-alt"></i> {{ hotel.location }}
+                  </p>
+
+                  <!-- ONLY BOOK BUTTON (PRICE REMOVED) -->
+                  <div class="d-flex justify-content-end align-items-center mt-3 pt-2 border-top">
+                    <a [routerLink]="['/hotels', hotel.hotelId]"
+                       class="btn btn-sm btn-primary-custom rounded-pill px-3">
+                      Book
+                    </a>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- PAGINATION -->
+        @if ((paged()?.totalPages ?? 0) > 1) {
+          <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+              <li class="page-item" [class.disabled]="page() <= 1">
+                <button class="page-link rounded-pill me-1" (click)="loadHotels(page() - 1)">
+                  <i class="bi bi-chevron-left"></i>
+                </button>
+              </li>
+
+              @for (p of getPages(); track p) {
+                <li class="page-item" [class.active]="p === page()">
+                  <button class="page-link rounded-pill mx-1" (click)="loadHotels(p)">
+                    {{ p }}
+                  </button>
+                </li>
+              }
+
+              <li class="page-item" [class.disabled]="page() >= (paged()?.totalPages ?? 1)">
+                <button class="page-link rounded-pill ms-1" (click)="loadHotels(page() + 1)">
+                  <i class="bi bi-chevron-right"></i>
+                </button>
+              </li>
+            </ul>
+          </nav>
+        }
+      }
+    </div>
+
+  </div>
+</div>

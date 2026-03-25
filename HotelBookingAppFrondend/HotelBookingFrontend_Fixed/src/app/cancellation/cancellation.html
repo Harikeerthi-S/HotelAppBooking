@@ -1,0 +1,251 @@
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div>
+        <h1><i class="bi bi-x-circle-fill me-2"></i>Cancellations</h1>
+        <p>{{ cancellations().length }} total · {{ totalPending() }} pending · {{ totalApproved() }} approved</p>
+      </div>
+      @if (isUser) {
+        <button class="btn btn-sm btn-outline-light rounded-pill" (click)="openForm()">
+          <i class="bi bi-plus-circle me-1"></i>New Request
+        </button>
+      }
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+
+  <!-- SUMMARY CARDS -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="stat-card" style="border-left-color:#f57f17">
+        <div class="stat-number" style="color:#f57f17">{{ totalPending() }}</div>
+        <div class="stat-label">⏳ Pending</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card" style="border-left-color:#2e7d32">
+        <div class="stat-number" style="color:#2e7d32">{{ totalApproved() }}</div>
+        <div class="stat-label">✅ Approved</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card" style="border-left-color:#c62828">
+        <div class="stat-number" style="color:#c62828">
+          {{ cancellations().length - totalPending() - totalApproved() }}
+        </div>
+        <div class="stat-label">❌ Rejected</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card" style="border-left-color:#0277bd">
+        <div class="stat-number" style="color:#0277bd; font-size:1.3rem">
+          ₹{{ totalRefund().toLocaleString('en-IN') }}
+        </div>
+        <div class="stat-label">💰 Total Refund</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREATE FORM PANEL (user only) -->
+  @if (showForm() && isUser) {
+    <div class="card border-0 shadow-sm mb-4 form-panel">
+      <div class="card-body p-4">
+        <h5 class="fw-700 mb-1"><i class="bi bi-pencil-square text-danger me-2"></i>New Cancellation Request</h5>
+        <p class="text-muted small mb-3">Select a booking and provide your reason for cancellation.</p>
+
+        <div class="row g-3">
+          <div class="col-md-5">
+            <label class="form-label fw-600 small">Booking <span class="text-danger">*</span></label>
+            @if (bookings().length === 0) {
+              <div class="text-muted small mt-1">No eligible bookings (Pending or Confirmed only).</div>
+            } @else {
+              <select class="form-select form-select-sm"
+                      [value]="formBookingId()"
+                      (change)="formBookingId.set(+$any($event.target).value)">
+                <option value="0">— Select booking —</option>
+                @for (b of bookings(); track b.bookingId) {
+                  <option [value]="b.bookingId">{{ bookingLabel(b) }}</option>
+                }
+              </select>
+            }
+          </div>
+
+          <div class="col-12">
+            <label class="form-label fw-600 small">
+              Reason <span class="text-danger">*</span>
+              <span class="text-muted fw-400 ms-1">(min 5 chars, max 1000)</span>
+            </label>
+            <textarea class="form-control form-control-sm" rows="3" maxlength="1000"
+                      [value]="formReason()"
+                      (input)="formReason.set($any($event.target).value)"
+                      placeholder="Please describe why you want to cancel this booking…"></textarea>
+            <div class="text-end text-muted mt-1" style="font-size:.72rem">{{ formReason().length }}/1000</div>
+          </div>
+
+          <div class="col-12 d-flex gap-2">
+            <button class="btn btn-danger rounded-pill px-4" [disabled]="submitting()" (click)="submitCancellation()">
+              @if (submitting()) { <span class="spinner-border spinner-border-sm me-2"></span>Submitting… }
+              @else              { <i class="bi bi-send me-2"></i>Submit Request }
+            </button>
+            <button class="btn btn-outline-secondary rounded-pill px-4" (click)="closeForm()">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- FILTER BAR -->
+  @if (!loading() && cancellations().length > 0) {
+    <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+      <span class="text-muted small fw-600">Filter:</span>
+      <button class="btn btn-sm rounded-pill"
+              [class.btn-secondary]="!filterStatus()"
+              [class.btn-outline-secondary]="filterStatus()"
+              (click)="filterStatus.set('')">All ({{ cancellations().length }})</button>
+      @for (s of STATUS_OPTIONS; track s) {
+        <button class="btn btn-sm rounded-pill"
+                [class.btn-primary-custom]="filterStatus() === s"
+                [class.btn-outline-secondary]="filterStatus() !== s"
+                (click)="filterStatus.set(filterStatus() === s ? '' : s)">
+          {{ statusIcon(s) }} {{ s }}
+        </button>
+      }
+    </div>
+  }
+
+  <!-- CANCELLATIONS LIST -->
+  @if (loading()) {
+    <div class="spinner-wrap"><div class="spinner-ring"></div></div>
+  } @else if (filtered().length === 0) {
+    <div class="empty-state card border-0 shadow-sm py-5">
+      <i class="bi bi-x-circle empty-icon"></i>
+      @if (cancellations().length === 0) {
+        <h5 class="fw-600 mt-2">No cancellations yet</h5>
+        @if (isUser) {
+          <p class="text-muted small">Use the "New Request" button to request a cancellation.</p>
+        }
+      } @else {
+        <h5 class="fw-600 mt-2">No results for "{{ filterStatus() }}"</h5>
+        <button class="btn btn-sm btn-outline-primary rounded-pill mt-2" (click)="filterStatus.set('')">Clear filter</button>
+      }
+    </div>
+  } @else {
+    <div class="d-flex flex-column gap-3">
+      @for (item of filtered(); track item.cancellationId) {
+        <div class="cancel-card card border-0 shadow-sm">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+
+              <!-- Left info -->
+              <div class="flex-grow-1">
+                <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                  <span class="cancel-id fw-700">#{{ item.cancellationId }}</span>
+                  <span class="cancel-badge" [ngClass]="statusClass(item.status)">
+                    {{ statusIcon(item.status) }} {{ item.status }}
+                  </span>
+                  @if (item.status === 'Approved' && item.refundAmount > 0) {
+                    <span class="refund-chip">
+                      💰 Refund: ₹{{ item.refundAmount.toLocaleString('en-IN') }}
+                    </span>
+                  }
+                </div>
+
+                <div class="fw-600 mb-1">
+                  <i class="bi bi-building me-1 text-muted"></i>{{ item.hotelName }}
+                </div>
+
+                <div class="text-muted small mb-2">
+                  <i class="bi bi-calendar3 me-1"></i>
+                  Booking #{{ item.bookingId }} &nbsp;·&nbsp;
+                  <i class="bi bi-clock me-1"></i>
+                  {{ item.cancellationDate | date:'mediumDate' }}
+                </div>
+
+                <div class="reason-box">
+                  <i class="bi bi-chat-left-text me-2 text-muted"></i>{{ item.reason }}
+                </div>
+              </div>
+
+              <!-- Admin action -->
+              @if (isAdmin) {
+                <button class="btn btn-sm btn-outline-primary rounded-pill"
+                        (click)="openStatusModal(item)">
+                  <i class="bi bi-pencil me-1"></i>Update Status
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- PAGINATION -->
+    @if (totalPages() > 1) {
+      <div class="d-flex justify-content-center gap-2 mt-4">
+        <button class="btn btn-sm btn-outline-secondary rounded-pill"
+                [disabled]="page() <= 1" (click)="goPage(page() - 1)">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        @for (p of [].constructor(totalPages()); track $index) {
+          <button class="btn btn-sm rounded-pill"
+                  [class.btn-primary-custom]="page() === $index + 1"
+                  [class.btn-outline-secondary]="page() !== $index + 1"
+                  (click)="goPage($index + 1)">{{ $index + 1 }}</button>
+        }
+        <button class="btn btn-sm btn-outline-secondary rounded-pill"
+                [disabled]="page() >= totalPages()" (click)="goPage(page() + 1)">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    }
+  }
+</div>
+
+<!-- UPDATE STATUS MODAL (admin only) -->
+@if (showStatusModal() && activeItem()) {
+  <div class="modal-backdrop-custom">
+    <div class="modal-card card border-0 shadow-lg">
+      <div class="card-body p-4">
+        <h5 class="fw-700 mb-1"><i class="bi bi-pencil-square text-primary me-2"></i>Update Cancellation Status</h5>
+        <p class="text-muted small mb-3">
+          Cancellation #{{ activeItem()!.cancellationId }} — {{ activeItem()!.hotelName }}
+        </p>
+
+        <div class="mb-3">
+          <label class="form-label fw-600 small">Status <span class="text-danger">*</span></label>
+          <select class="form-select form-select-sm"
+                  [value]="modalStatus()"
+                  (change)="modalStatus.set($any($event.target).value)">
+            @for (s of STATUS_OPTIONS; track s) {
+              <option [value]="s">{{ statusIcon(s) }} {{ s }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-600 small">
+            Refund Amount (₹)
+            <span class="text-muted fw-400 ms-1">— set to 0 if no refund</span>
+          </label>
+          <input type="number" class="form-control form-control-sm" min="0"
+                 [value]="modalRefund()"
+                 (input)="modalRefund.set(+$any($event.target).value)">
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary-custom rounded-pill flex-fill"
+                  [disabled]="updating()" (click)="updateStatus()">
+            @if (updating()) { <span class="spinner-border spinner-border-sm me-2"></span>Saving… }
+            @else            { <i class="bi bi-check-circle me-2"></i>Save }
+          </button>
+          <button class="btn btn-outline-secondary rounded-pill flex-fill" (click)="closeStatusModal()">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
