@@ -105,7 +105,7 @@ export class Amenities implements OnDestroy {
 
   // ── Load hotels for assignment dropdown (admin) ────────────────────────────
   loadHotels(): void {
-    this.api.apiGetHotelsPaged({ pageNumber: 1, pageSize: 200 }).subscribe({
+    this.api.apiGetHotelsPaged({ pageNumber: 1, pageSize: 100 }).subscribe({
       next: res => this.hotels.set(res.data || []),
       error: ()  => {}
     });

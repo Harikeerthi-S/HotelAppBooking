@@ -62,6 +62,75 @@ namespace HotelBookingApp.Services
             return list.OrderByDescending(n => n.CreatedAt).Select(MapToDto).ToList();
         }
 
+        // ── GET ALL (Admin) ───────────────────────────────────────────────
+        public async Task<IEnumerable<NotificationResponseDto>> GetAllAsync()
+        {
+            var all = await _notificationRepo.GetAllAsync();
+            return all.OrderByDescending(n => n.CreatedAt).Select(MapToDto).ToList();
+        }
+
+        // ── PAGED (all) ───────────────────────────────────────────────────
+        public async Task<PagedResponseDto<NotificationResponseDto>> GetPagedAsync(PagedRequestDto request)
+        {
+            request.PageNumber = Math.Max(1, request.PageNumber);
+            request.PageSize   = Math.Clamp(request.PageSize, 1, 10);
+
+            var all = await _notificationRepo.GetAllAsync();
+            var ordered = all.OrderByDescending(n => n.CreatedAt).ToList();
+            var total = ordered.Count;
+            var data = ordered
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .Select(MapToDto)
+                .ToList();
+
+            return new PagedResponseDto<NotificationResponseDto>
+            {
+                Data         = data,
+                PageNumber   = request.PageNumber,
+                PageSize     = request.PageSize,
+                TotalRecords = total,
+                TotalPages   = (int)Math.Ceiling((double)total / request.PageSize)
+            };
+        }
+
+        // ── PAGED BY USER ─────────────────────────────────────────────────
+        public async Task<PagedResponseDto<NotificationResponseDto>> GetPagedByUserAsync(int userId, PagedRequestDto request)
+        {
+            request.PageNumber = Math.Max(1, request.PageNumber);
+            request.PageSize   = Math.Clamp(request.PageSize, 1, 100);
+
+            var list = await _notificationRepo.FindAllAsync(n => n.UserId == userId);
+            var ordered = list.OrderByDescending(n => n.CreatedAt).ToList();
+            var total = ordered.Count;
+            var data = ordered
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .Select(MapToDto)
+                .ToList();
+
+            return new PagedResponseDto<NotificationResponseDto>
+            {
+                Data         = data,
+                PageNumber   = request.PageNumber,
+                PageSize     = request.PageSize,
+                TotalRecords = total,
+                TotalPages   = (int)Math.Ceiling((double)total / request.PageSize)
+            };
+        }
+
+        public async Task<int> GetUnreadCountForUserAsync(int userId)
+        {
+            var list = await _notificationRepo.FindAllAsync(n => n.UserId == userId && !n.IsRead);
+            return list.Count();
+        }
+
+        public async Task<int> GetUnreadCountAllAsync()
+        {
+            var list = await _notificationRepo.FindAllAsync(n => !n.IsRead);
+            return list.Count();
+        }
+
         // ── MARK AS READ ──────────────────────────────────────────────────
         public async Task<bool> MarkAsReadAsync(int notificationId)
         {

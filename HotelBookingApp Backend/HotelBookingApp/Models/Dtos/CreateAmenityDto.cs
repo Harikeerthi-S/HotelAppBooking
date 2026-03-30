@@ -11,7 +11,7 @@ namespace HotelBookingApp.Models.Dtos
         [MaxLength(500)]
         public string? Description { get; set; }
 
-        [MaxLength(50)]
+        [MaxLength(500)]
         public string? Icon { get; set; }
     }
 }

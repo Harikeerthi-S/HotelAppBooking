@@ -1,4 +1,4 @@
-﻿using HotelBookingApp.Models.Dtos;
+using HotelBookingApp.Models.Dtos;
 
 public interface IPaymentService
 {
@@ -11,6 +11,8 @@ public interface IPaymentService
     Task<IEnumerable<PaymentResponseDto>> GetAllAsync();
 
     Task<PagedResponseDto<PaymentResponseDto>> GetPagedAsync(PagedRequestDto request);
+
+    Task<PagedResponseDto<PaymentResponseDto>> GetPagedByUserAsync(int userId, PagedRequestDto request);
 
     Task<PaymentResponseDto?> UpdateStatusAsync(int paymentId, string newStatus);
 }

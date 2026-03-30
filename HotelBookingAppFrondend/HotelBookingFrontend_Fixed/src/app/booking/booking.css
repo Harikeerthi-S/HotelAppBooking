@@ -7,3 +7,9 @@
 .btn-primary-custom:disabled { opacity: .65; pointer-events: none; }
 .fw-600 { font-weight: 600; }
 .fw-700 { font-weight: 700; }
+
+/* ── Availability badges ── */
+.avail-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 50px; font-size: .75rem; font-weight: 600; }
+.avail-ok   { background: #e8f5e9; color: #2e7d32; }
+.avail-low  { background: #fff8e1; color: #f57f17; }
+.avail-none { background: #fce4ec; color: #c62828; }

@@ -39,8 +39,25 @@ namespace HotelBookingApp.Controllers
             }
         }
 
+        /// <summary>Get amenities assigned to a specific hotel. Public.</summary>
+        [HttpGet("hotel/{hotelId:int}", Order = 0)]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetByHotel(int hotelId)
+        {
+            try
+            {
+                var list = await _service.GetByHotelAsync(hotelId);
+                return Ok(list);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching amenities for hotel {HotelId}", hotelId);
+                return StatusCode(500, new ErrorResponseDto { StatusCode = 500, Message = "Error retrieving hotel amenities.", Timestamp = DateTime.UtcNow });
+            }
+        }
+
         /// <summary>Get a hotel-amenity assignment by ID. Admin and HotelManager.</summary>
-        [HttpGet("{id:int}")]
+        [HttpGet("{id:int}", Order = 1)]
         [Authorize(Roles = "admin,hotelmanager")]
         public async Task<IActionResult> GetById(int id)
         {

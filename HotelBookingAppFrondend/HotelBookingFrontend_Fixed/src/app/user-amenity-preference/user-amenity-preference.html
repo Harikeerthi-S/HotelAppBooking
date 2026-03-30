@@ -1,0 +1,122 @@
+<div class="page-header">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div>
+        <h1><i class="bi bi-stars me-2"></i>Amenity Preferences</h1>
+        <p>{{ isAdmin ? 'Manage all user amenity requests' : 'Select amenities you prefer in your stays' }}</p>
+      </div>
+      @if (pendingCount > 0) {
+        <span class="badge badge-pending px-3 py-2 fs-6">
+          <i class="bi bi-hourglass-split me-1"></i>{{ pendingCount }} Pending
+        </span>
+      }
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+
+  <!-- Add preference (user only) -->
+  @if (!isAdmin) {
+    <div class="card border-0 shadow-sm mb-4 p-4">
+      <h6 class="fw-600 mb-3"><i class="bi bi-plus-circle me-2 text-pink"></i>Add Amenity Preference</h6>
+      <div class="d-flex gap-2 flex-wrap">
+        <select class="form-select form-select-sm" style="max-width:260px"
+                [ngModel]="selectedId()"
+                (ngModelChange)="selectedId.set($event ? +$event : null)">
+          <option [ngValue]="null">— Select amenity —</option>
+          @for (a of availableAmenities(); track a.amenityId) {
+            <option [ngValue]="a.amenityId">{{ a.icon }} {{ a.name }}</option>
+          }
+        </select>
+        <button class="btn btn-primary-custom btn-sm rounded-pill px-4"
+                (click)="addPreference()"
+                [disabled]="!selectedId() || submitting()">
+          @if (submitting()) { <span class="spinner-border spinner-border-sm me-1"></span> }
+          Add
+        </button>
+      </div>
+      @if (availableAmenities().length === 0 && amenities().length > 0) {
+        <p class="text-muted small mt-2 mb-0">
+          <i class="bi bi-check-all me-1"></i>You've added all available amenities.
+        </p>
+      }
+    </div>
+  }
+
+  <!-- Filter tabs -->
+  <div class="d-flex gap-2 mb-3 flex-wrap">
+    @for (tab of ['all','pending','approved','rejected']; track tab) {
+      <button class="btn btn-sm rounded-pill filter-tab"
+              [class.active]="filterStatus() === tab"
+              (click)="filterStatus.set(tab)">
+        {{ tab | titlecase }}
+        @if (tab === 'pending' && pendingCount > 0) {
+          <span class="ms-1 badge bg-danger rounded-pill" style="font-size:.65rem">{{ pendingCount }}</span>
+        }
+      </button>
+    }
+  </div>
+
+  <!-- List -->
+  @if (loading()) {
+    <div class="spinner-wrap"><div class="spinner-ring"></div></div>
+  } @else if (filtered.length === 0) {
+    <div class="empty-state card border-0 shadow-sm py-5">
+      <i class="bi bi-stars empty-icon"></i>
+      <h5 class="fw-600 mt-2">No preferences found</h5>
+      <p class="text-muted small">
+        {{ filterStatus() === 'all' ? 'Add your first amenity preference above.' : 'No ' + filterStatus() + ' preferences.' }}
+      </p>
+    </div>
+  } @else {
+    <div class="row g-3">
+      @for (pref of filtered; track pref.preferenceId) {
+        <div class="col-md-6 col-lg-4">
+          <div class="pref-card card border-0 shadow-sm h-100">
+            <div class="card-body d-flex flex-column gap-2">
+
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="amenity-icon">{{ pref.amenityIcon || '✨' }}</span>
+                  <span class="fw-600">{{ pref.amenityName }}</span>
+                </div>
+                <span class="badge {{ statusBadge(pref.status) }}">
+                  <i class="bi {{ statusIcon(pref.status) }} me-1"></i>{{ pref.status }}
+                </span>
+              </div>
+
+              @if (isAdmin) {
+                <div class="text-muted small">
+                  <i class="bi bi-person me-1"></i>{{ pref.userName }}
+                </div>
+              }
+
+              <div class="text-muted" style="font-size:.75rem">
+                <i class="bi bi-clock me-1"></i>{{ pref.createdAt | date:'mediumDate' }}
+              </div>
+
+              <div class="d-flex gap-2 mt-auto pt-1">
+                @if (isAdmin && pref.status === 'Pending') {
+                  <button class="btn btn-sm btn-success rounded-pill flex-fill" (click)="approve(pref)">
+                    <i class="bi bi-check-lg me-1"></i>Approve
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger rounded-pill flex-fill" (click)="reject(pref)">
+                    <i class="bi bi-x-lg me-1"></i>Reject
+                  </button>
+                }
+                @if (!isAdmin || pref.status !== 'Pending') {
+                  <button class="btn btn-sm btn-outline-secondary rounded-pill ms-auto" (click)="remove(pref)">
+                    <i class="bi bi-trash3 me-1"></i>Remove
+                  </button>
+                }
+              </div>
+
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>

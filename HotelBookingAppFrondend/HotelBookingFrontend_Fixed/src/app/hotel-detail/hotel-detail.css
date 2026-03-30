@@ -8,6 +8,8 @@
 .room-card { border: 2px solid #dee2e6; border-radius: 10px; padding: 14px; cursor: pointer; transition: all .2s; }
 .room-card:hover { border-color: #e84393; background: #fce4ec; }
 .room-card.selected { border-color: #e84393; background: #fce4ec; }
+.room-card.room-unavailable { opacity: .6; cursor: not-allowed; background: #f8f8f8; }
+.room-card.room-unavailable:hover { border-color: #dee2e6; background: #f8f8f8; }
 .review-item { background: #f8f9fc; }
 .review-avatar { width: 34px; height: 34px; border-radius: 50%; background: #e84393; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .85rem; }
 .selected-room-info { background: #fce4ec; }
@@ -18,3 +20,7 @@
 .btn-primary-custom:hover { transform: translateY(-1px); color: #fff; }
 .btn-primary-custom:disabled { opacity: .65; pointer-events: none; }
 .opacity-85 { opacity: .85; }
+
+/* ── Hotel amenity tiles ── */
+.amenity-detail-tile { background:#f8f9fc; border:1px solid #eee; transition:all .2s; }
+.amenity-detail-tile:hover { background:#fce4ec; border-color:#e84393; transform:translateY(-2px); }

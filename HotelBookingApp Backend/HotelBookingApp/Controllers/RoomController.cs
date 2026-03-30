@@ -27,7 +27,7 @@ namespace HotelBookingApp.Controllers
         }
 
         // GET BY ID
-        [HttpGet("{roomId}")]
+        [HttpGet("{roomId:int}")]
         public async Task<IActionResult> GetById(int roomId)
         {
             var room = await _roomService.GetByIdAsync(roomId);
@@ -45,7 +45,7 @@ namespace HotelBookingApp.Controllers
         }
 
         // UPDATE
-        [HttpPut("{roomId}")]
+        [HttpPut("{roomId:int}")]
         [Authorize(Roles = "admin,hotelmanager")]
         public async Task<IActionResult> Update(int roomId, [FromBody] CreateRoomDto dto)
         {
@@ -54,7 +54,7 @@ namespace HotelBookingApp.Controllers
         }
 
         // DELETE (Deactivate)
-        [HttpDelete("{roomId}")]
+        [HttpDelete("{roomId:int}")]
         [Authorize(Roles = "admin,hotelmanager")]
         public async Task<IActionResult> Deactivate(int roomId)
         {
@@ -68,6 +68,36 @@ namespace HotelBookingApp.Controllers
         {
             var rooms = await _roomService.FilterAsync(filter);
             return Ok(rooms);
+        }
+
+        // CHECK DATE-RANGE AVAILABILITY
+        [HttpGet("{roomId:int}/availability")]
+        [AllowAnonymous]
+        public async Task<IActionResult> CheckAvailability(
+            int roomId,
+            [FromQuery] string checkIn,
+            [FromQuery] string checkOut)
+        {
+            try
+            {
+                if (!DateTime.TryParse(checkIn, out var ciDate) ||
+                    !DateTime.TryParse(checkOut, out var coDate))
+                    return BadRequest(new { message = "Invalid date format. Use YYYY-MM-DD." });
+
+                if (ciDate >= coDate)
+                    return BadRequest(new { message = "Check-out must be after check-in." });
+
+                var available = await _roomService.IsAvailableForDatesAsync(roomId, ciDate, coDate);
+                return Ok(new { roomId, checkIn = ciDate, checkOut = coDate, isAvailable = available });
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
     }
 }

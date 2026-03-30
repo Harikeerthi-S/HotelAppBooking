@@ -2,18 +2,20 @@ using System.Net;
 using System.Text.Json;
 using HotelBookingApp.Exceptions;
 using HotelBookingApp.Models.Dtos;
+using Microsoft.EntityFrameworkCore;
 
 namespace HotelBookingApp.Middleware
 {
     /// <summary>
     /// Global exception middleware — catches all unhandled exceptions and
-    /// maps them to structured JSON error responses (400 / 401 / 403 / 404 / 409 / 422 / 500).
+    /// maps them to structured JSON error responses.
+    /// Handles: App exceptions, EF Core errors, cancellation, and generic 500s.
     /// </summary>
     public class ExceptionMiddleware
     {
-        private readonly RequestDelegate _next;
+        private readonly RequestDelegate             _next;
         private readonly ILogger<ExceptionMiddleware> _logger;
-        private readonly IHostEnvironment _env;
+        private readonly IHostEnvironment            _env;
 
         public ExceptionMiddleware(
             RequestDelegate next,
@@ -33,6 +35,16 @@ namespace HotelBookingApp.Middleware
             }
             catch (Exception ex)
             {
+                // Don't log cancellation as errors — client disconnected
+                if (ex is OperationCanceledException or TaskCanceledException)
+                {
+                    _logger.LogWarning("Request cancelled: {Method} {Path}",
+                        context.Request.Method, context.Request.Path);
+                    if (!context.Response.HasStarted)
+                        context.Response.StatusCode = 499; // Client Closed Request
+                    return;
+                }
+
                 _logger.LogError(ex,
                     "Unhandled exception on {Method} {Path}: {Message}",
                     context.Request.Method,
@@ -45,18 +57,36 @@ namespace HotelBookingApp.Middleware
 
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
+            if (context.Response.HasStarted)
+            {
+                _logger.LogWarning("Response already started — cannot write error response.");
+                return;
+            }
+
             context.Response.ContentType = "application/json";
 
             var (statusCode, message) = exception switch
             {
-                BadRequestException     e => (HttpStatusCode.BadRequest,          e.Message),
-                UnauthorizedException   e => (HttpStatusCode.Unauthorized,        e.Message),
-                ForbiddenException      e => (HttpStatusCode.Forbidden,           e.Message),
-                NotFoundException       e => (HttpStatusCode.NotFound,            e.Message),
-                AlreadyExistsException  e => (HttpStatusCode.Conflict,            e.Message),
-                ValidationException     e => (HttpStatusCode.UnprocessableEntity, e.Message),
-                _                         => (HttpStatusCode.InternalServerError,
-                                              "An unexpected error occurred. Please try again later.")
+                // ── App-defined exceptions ────────────────────────────────
+                BadRequestException    e => (HttpStatusCode.BadRequest,          e.Message),
+                UnauthorizedException  e => (HttpStatusCode.Unauthorized,        e.Message),
+                ForbiddenException     e => (HttpStatusCode.Forbidden,           e.Message),
+                NotFoundException      e => (HttpStatusCode.NotFound,            e.Message),
+                AlreadyExistsException e => (HttpStatusCode.Conflict,            e.Message),
+                ValidationException    e => (HttpStatusCode.UnprocessableEntity, e.Message),
+
+                // ── EF Core / DB exceptions ───────────────────────────────
+                DbUpdateConcurrencyException =>
+                    (HttpStatusCode.Conflict,
+                     "The record was modified by another user. Please refresh and try again."),
+
+                DbUpdateException dbEx =>
+                    (HttpStatusCode.BadRequest,
+                     ExtractDbMessage(dbEx)),
+
+                // ── Generic fallback ──────────────────────────────────────
+                _ => (HttpStatusCode.InternalServerError,
+                      "An unexpected error occurred. Please try again later.")
             };
 
             context.Response.StatusCode = (int)statusCode;
@@ -65,7 +95,7 @@ namespace HotelBookingApp.Middleware
             {
                 StatusCode = (int)statusCode,
                 Message    = message,
-                Details    = _env.IsDevelopment() ? exception.StackTrace : null,
+                Details    = _env.IsDevelopment() ? exception.ToString() : null,
                 Timestamp  = DateTime.UtcNow
             };
 
@@ -76,9 +106,26 @@ namespace HotelBookingApp.Middleware
 
             await context.Response.WriteAsync(json);
         }
+
+        /// <summary>Extracts a user-friendly message from EF Core DbUpdateException.</summary>
+        private static string ExtractDbMessage(DbUpdateException ex)
+        {
+            var inner = ex.InnerException?.Message ?? ex.Message;
+
+            // SQL Server constraint violations
+            if (inner.Contains("UNIQUE") || inner.Contains("duplicate key"))
+                return "A record with this value already exists.";
+            if (inner.Contains("FOREIGN KEY") || inner.Contains("REFERENCE"))
+                return "This operation violates a data relationship constraint.";
+            if (inner.Contains("Cannot insert the value NULL"))
+                return "A required field is missing.";
+            if (inner.Contains("String or binary data would be truncated"))
+                return "One or more values exceed the maximum allowed length.";
+
+            return "A database error occurred. Please check your input and try again.";
+        }
     }
 
-    // Extension method for clean registration in Program.cs
     public static class ExceptionMiddlewareExtensions
     {
         public static IApplicationBuilder UseGlobalExceptionHandler(this IApplicationBuilder app)

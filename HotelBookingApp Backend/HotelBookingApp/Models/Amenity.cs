@@ -15,7 +15,7 @@ namespace HotelBookingApp.Models
         public string? Description { get; set; }
 
         /// <summary>Emoji or icon identifier, e.g. "📶", "🏊", "💪"</summary>
-        [MaxLength(50)]
+        [MaxLength(100)]
         public string? Icon { get; set; }
 
         public ICollection<HotelAmenity>? HotelAmenities { get; set; }

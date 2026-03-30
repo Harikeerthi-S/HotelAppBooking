@@ -209,13 +209,13 @@
               <!-- Left: Avatar + meta -->
               <div class="d-flex align-items-start gap-3">
                 <div class="review-avatar-wrap">
-                  <div class="review-avatar" [class.mine]="r.userId === currentUser().userId">
+                  <div class="review-avatar" [class.mine]="r.userId === currentUserId">
                     {{ getInitials(r) }}
                   </div>
                 </div>
                 <div>
                   <div class="fw-700 mb-1">
-                    @if (r.userId === currentUser().userId) {
+                    @if (r.userId === currentUserId) {
                       <span class="me-2">You</span>
                       <span class="badge bg-primary-subtle text-primary rounded-pill" style="font-size:.68rem">Your Review</span>
                     } @else {

@@ -36,6 +36,10 @@ namespace HotelBookingApp.Controllers
                 return CreatedAtAction(nameof(GetById),
                     new { bookingId = booking.BookingId }, booking);
             }
+            catch (AlreadyExistsException ex)
+            {
+                return Conflict(Error(ex.Message, 409));
+            }
             catch (BadRequestException ex)
             {
                 return BadRequest(Error(ex.Message, 400));

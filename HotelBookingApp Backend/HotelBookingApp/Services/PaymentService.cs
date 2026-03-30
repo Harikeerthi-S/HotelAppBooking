@@ -11,7 +11,8 @@ namespace HotelBookingApp.Services
     {
         private readonly IRepository<int, Payment> _paymentRepo;
         private readonly IRepository<int, Booking> _bookingRepo;
-        private readonly ILogger<PaymentService> _logger;
+        private readonly IAuditLogService          _audit;
+        private readonly ILogger<PaymentService>   _logger;
 
         private readonly PaymentStatusResolverDelegate _statusResolver =
             AppDelegateFactory.DefaultPaymentStatusResolver;
@@ -25,12 +26,21 @@ namespace HotelBookingApp.Services
         public PaymentService(
             IRepository<int, Payment> paymentRepo,
             IRepository<int, Booking> bookingRepo,
-            ILogger<PaymentService> logger)
+            IAuditLogService          audit,
+            ILogger<PaymentService>   logger)
         {
             _paymentRepo = paymentRepo;
             _bookingRepo = bookingRepo;
-            _logger = logger;
+            _audit       = audit;
+            _logger      = logger;
         }
+
+        private void Log(string action, int? entityId, int? userId = null, string? changes = null)
+            => _ = _audit.CreateAsync(new CreateAuditLogDto
+            {
+                UserId = userId, Action = action, EntityName = "Payment",
+                EntityId = entityId, Changes = changes
+            });
 
         // ─────────────────────────────────────────────
         // ✅ MAKE PAYMENT
@@ -71,19 +81,37 @@ namespace HotelBookingApp.Services
 
             var created = await _paymentRepo.AddAsync(payment);
 
-            // 🔥 Sync booking status
-            booking.Status = status switch
+            // Sync booking status — use clean copy to avoid EF tracking conflicts
+            try
             {
-                "Completed" => "Confirmed",
-                "Failed" => "Payment Failed",
-                _ => booking.Status
-            };
-
-            await _bookingRepo.UpdateAsync(booking.BookingId, booking);
+                var bookingCopy = new Booking
+                {
+                    BookingId     = booking.BookingId,
+                    UserId        = booking.UserId,
+                    HotelId       = booking.HotelId,
+                    RoomId        = booking.RoomId,
+                    NumberOfRooms = booking.NumberOfRooms,
+                    CheckIn       = booking.CheckIn,
+                    CheckOut      = booking.CheckOut,
+                    TotalAmount   = booking.TotalAmount,
+                    Status        = status switch
+                    {
+                        "Completed" => "Confirmed",
+                        "Failed"    => "Pending",
+                        _           => booking.Status
+                    }
+                };
+                await _bookingRepo.UpdateAsync(booking.BookingId, bookingCopy);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not sync booking status after payment {PaymentId}", created.PaymentId);
+            }
 
             _logger.LogInformation("Payment created: {PaymentId} Status={Status}",
                 created.PaymentId, created.PaymentStatus);
-
+            Log("PaymentCreated", created.PaymentId, booking.UserId,
+                $"Booking:{dto.BookingId} ₹{dto.Amount} {dto.PaymentMethod} Status:{status}");
             return MapToDto(created);
         }
 
@@ -137,7 +165,7 @@ namespace HotelBookingApp.Services
         public async Task<PagedResponseDto<PaymentResponseDto>> GetPagedAsync(PagedRequestDto request)
         {
             request.PageNumber = Math.Max(1, request.PageNumber);
-            request.PageSize = Math.Clamp(request.PageSize, 1, 100);
+            request.PageSize = Math.Clamp(request.PageSize, 1, 10);
 
             var all = await _paymentRepo.GetAllAsync();
 
@@ -153,7 +181,42 @@ namespace HotelBookingApp.Services
                 Data = data,
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize,
-                TotalRecords = all.Count()
+                TotalRecords = all.Count(),
+                TotalPages   = (int)Math.Ceiling((double)all.Count() / request.PageSize)
+            };
+        }
+
+        // ─────────────────────────────────────────────
+        // ✅ GET PAGED BY USER (payments for bookings owned by user)
+        // ─────────────────────────────────────────────
+        public async Task<PagedResponseDto<PaymentResponseDto>> GetPagedByUserAsync(int userId, PagedRequestDto request)
+        {
+            request.PageNumber = Math.Max(1, request.PageNumber);
+            request.PageSize   = Math.Clamp(request.PageSize, 1, 100);
+
+            var allPayments = await _paymentRepo.GetAllAsync();
+            var allBookings = await _bookingRepo.GetAllAsync();
+            var userBookingIds = allBookings.Where(b => b.UserId == userId).Select(b => b.BookingId).ToHashSet();
+
+            var filtered = allPayments
+                .Where(p => userBookingIds.Contains(p.BookingId))
+                .OrderByDescending(p => p.CreatedAt)
+                .ToList();
+
+            var total = filtered.Count;
+            var data    = filtered
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .Select(MapToDto)
+                .ToList();
+
+            return new PagedResponseDto<PaymentResponseDto>
+            {
+                Data         = data,
+                PageNumber   = request.PageNumber,
+                PageSize     = request.PageSize,
+                TotalRecords = total,
+                TotalPages   = (int)Math.Ceiling((double)total / request.PageSize)
             };
         }
 
@@ -170,27 +233,58 @@ namespace HotelBookingApp.Services
             var payment = await _paymentRepo.GetByIdAsync(paymentId)
                           ?? throw new NotFoundException("Payment", paymentId);
 
-            payment.PaymentStatus = status;
-
-            await _paymentRepo.UpdateAsync(paymentId, payment);
-
-            // 🔥 Sync booking
-            var booking = await _bookingRepo.GetByIdAsync(payment.BookingId);
-
-            if (booking != null)
+            // Create a clean copy without navigation properties to avoid EF tracking conflicts
+            var updated = new Payment
             {
-                booking.Status = status switch
-                {
-                    "Completed" => "Confirmed",
-                    "Failed" => "Payment Failed",
-                    "Refunded" => "Refunded",
-                    _ => booking.Status
-                };
+                PaymentId     = payment.PaymentId,
+                BookingId     = payment.BookingId,
+                Amount        = payment.Amount,
+                PaymentMethod = payment.PaymentMethod,
+                PaymentStatus = status,
+                CreatedAt     = payment.CreatedAt
+            };
 
-                await _bookingRepo.UpdateAsync(booking.BookingId, booking);
+            await _paymentRepo.UpdateAsync(paymentId, updated);
+            Log("PaymentStatusUpdated", paymentId, null, $"Status→{status}");
+
+            // Sync booking status
+            try
+            {
+                var booking = await _bookingRepo.GetByIdAsync(payment.BookingId);
+                if (booking != null)
+                {
+                    var newBookingStatus = status switch
+                    {
+                        "Completed" => "Confirmed",
+                        "Failed"    => "Pending",
+                        "Refunded"  => "Cancelled",
+                        _           => booking.Status
+                    };
+
+                    if (booking.Status != newBookingStatus)
+                    {
+                        var bookingCopy = new Booking
+                        {
+                            BookingId     = booking.BookingId,
+                            UserId        = booking.UserId,
+                            HotelId       = booking.HotelId,
+                            RoomId        = booking.RoomId,
+                            NumberOfRooms = booking.NumberOfRooms,
+                            CheckIn       = booking.CheckIn,
+                            CheckOut      = booking.CheckOut,
+                            TotalAmount   = booking.TotalAmount,
+                            Status        = newBookingStatus
+                        };
+                        await _bookingRepo.UpdateAsync(booking.BookingId, bookingCopy);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not sync booking status for payment {PaymentId}", paymentId);
             }
 
-            return MapToDto(payment);
+            return MapToDto(updated);
         }
 
         // ─────────────────────────────────────────────

@@ -1,9 +1,8 @@
 import { Component, inject, signal, computed } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { finalize } from 'rxjs/operators';
+import { CommonModule, DatePipe, SlicePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
 import { APIService } from '../services/api.service';
 import { ToastrService } from 'ngx-toastr';
 import { HotelModel } from '../models/hotel.model';
@@ -14,21 +13,18 @@ import { AmenityModel } from '../models/amenity.model';
 import { PaymentModel } from '../models/payment.model';
 import { ReviewModel } from '../models/review.model';
 import { CancellationModel } from '../models/cancellation.model';
-import { BookingRoomModel, CreateBookingRoomModel } from '../models/booking-room.model';
+import { AuditLogModel } from '../models/audit-log.model';
+import { NotificationModel } from '../models/notification.model';
+import { PagedResponse } from '../models/paged.model';
+import { UserAmenityPreferenceModel } from '../models/user-amenity-preference.model';
 
 interface CancellationItem extends CancellationModel { hotelName: string; }
 
-// Enrich BookingRoom with room label and booking info for display
-interface BookingRoomItem extends BookingRoomModel {
-  roomLabel:   string;   // e.g. "Room #101 — Standard"
-  hotelName:   string;
-  bookingStatus: string;
-}
-
+const PS = 10;
 @Component({
   selector: 'app-dashboard-admin',
   standalone: true,
-  imports: [CommonModule, DatePipe, FormsModule, RouterLink],
+  imports: [CommonModule, DatePipe, SlicePipe, FormsModule, RouterLink],
   templateUrl: './dashboard-admin.html',
   styleUrl:    './dashboard-admin.css'
 })
@@ -37,284 +33,392 @@ export class DashboardAdmin {
   private toast = inject(ToastrService);
 
   activeTab = signal('Hotels');
-  readonly tabs = [
-    'Hotels','Rooms','Users','Bookings','Booking Rooms',
-    'Amenities','Hotel Amenities','Payments','Reviews','Cancellations'
-  ];
+  readonly tabs = ['Hotels','Rooms','Users','Bookings','Amenities','User Preferences','Hotel Amenities','Payments','Reviews','Cancellations','Notifications','Audit Logs'];
   saving = signal(false);
 
-  // ── Data signals ───────────────────────────────────────────────────────────
+  // ── Data ──────────────────────────────────────────────────────────────────
   hotels        = signal<HotelModel[]>([]);
+  hotelsForRoomForm = signal<HotelModel[]>([]);
   rooms         = signal<RoomModel[]>([]);
   users         = signal<UserModel[]>([]);
+  usersForDropdown = signal<UserModel[]>([]);
   bookings      = signal<BookingModel[]>([]);
   amenities     = signal<AmenityModel[]>([]);
   payments      = signal<PaymentModel[]>([]);
   reviews       = signal<ReviewModel[]>([]);
   cancellations = signal<CancellationItem[]>([]);
-  bookingRooms  = signal<BookingRoomItem[]>([]);
+  notifications = signal<NotificationModel[]>([]);
+  auditLogs     = signal<AuditLogModel[]>([]);
 
-  // ── Loading guards ─────────────────────────────────────────────────────────
-  bookingsLoaded      = signal(false);
-  reviewsLoaded       = signal(false);
-  cancellationsLoaded = signal(false);
-  bookingRoomsLoaded  = signal(false);
+  // ── Paged metadata ────────────────────────────────────────────────────────
+  hotelsMeta    = signal<PagedResponse<HotelModel> | null>(null);
+  roomsMeta     = signal<PagedResponse<RoomModel> | null>(null);
+  bookingsMeta  = signal<PagedResponse<BookingModel> | null>(null);
+  reviewsMeta   = signal<PagedResponse<ReviewModel> | null>(null);
+  cancelMeta    = signal<PagedResponse<CancellationModel> | null>(null);
+  auditMeta     = signal<PagedResponse<AuditLogModel> | null>(null);
 
-  // ── Booking Rooms form ─────────────────────────────────────────────────────
-  editBrId  = signal<number | null>(null);   // null = create mode
-  brf = signal<CreateBookingRoomModel>({
-    bookingId:     0,
-    roomId:        0,
-    pricePerNight: 0,
-    numberOfRooms: 1
+  // ── Page numbers ──────────────────────────────────────────────────────────
+  hotelsPage    = signal(1);
+
+  // ── Hotel filters ─────────────────────────────────────────────────────────
+  readonly cityOptions = ['Mumbai','Delhi','Goa','Bangalore','Jaipur','Chennai','Hyderabad','Kolkata','Pune','Ahmedabad'];
+  readonly priceRanges = [
+    { label:'Under ₹1,000',      min:'',     max:'1000'  },
+    { label:'₹1,000 – ₹3,000',  min:'1000', max:'3000'  },
+    { label:'₹3,000 – ₹6,000',  min:'3000', max:'6000'  },
+    { label:'₹6,000 – ₹10,000', min:'6000', max:'10000' },
+    { label:'Above ₹10,000',     min:'10000',max:''      },
+  ];
+  hfLocation       = signal('');
+  hfMinRating      = signal('');
+  hfMinPrice       = signal('');
+  hfMaxPrice       = signal('');
+  hfPriceRange     = signal('');
+
+  onHotelPriceRange(val: string): void {
+    this.hfPriceRange.set(val);
+    if (!val) { this.hfMinPrice.set(''); this.hfMaxPrice.set(''); return; }
+    const r = this.priceRanges.find(x => `${x.min}-${x.max}` === val);
+    if (r) { this.hfMinPrice.set(r.min); this.hfMaxPrice.set(r.max); }
+  }
+  clearHotelFilter(): void {
+    this.hfLocation.set(''); this.hfMinRating.set('');
+    this.hfMinPrice.set(''); this.hfMaxPrice.set(''); this.hfPriceRange.set('');
+    this.loadHotels(1);
+  }
+  roomsPage     = signal(1);
+  bookingsPage  = signal(1);
+  reviewsPage   = signal(1);
+  cancelPage    = signal(1);
+  auditPage     = signal(1);
+  usersPage     = signal(1);
+  paymentsPage  = signal(1);
+  notifPage     = signal(1);
+
+  // ── Loading ───────────────────────────────────────────────────────────────
+  hotelsLoading    = signal(false);
+  roomsLoading     = signal(false);
+  bookingsLoading  = signal(false);
+  reviewsLoading   = signal(false);
+  cancelLoading    = signal(false);
+  auditLoading     = signal(false);
+
+  // ── Room filter ───────────────────────────────────────────────────────────
+  readonly roomTypeOptions = ['Standard','Deluxe','Suite','Single','Double'];
+  roomFilter = signal<{ roomType: string; hotelId: string; onlyAvailable: boolean }>({
+    roomType: '', hotelId: '', onlyAvailable: false
   });
-  brFilterBookingId = signal(0);   // 0 = show all
+  roomIsFiltered = computed(() => {
+    const f = this.roomFilter();
+    return !!(f.roomType || f.hotelId || f.onlyAvailable);
+  });
+  applyRoomFilter(): void { this.loadRooms(1); }
+  clearRoomFilter(): void {
+    this.roomFilter.set({ roomType: '', hotelId: '', onlyAvailable: false });
+    this.loadRooms(1);
+  }
 
-  // ── Hotel / Room form signals ──────────────────────────────────────────────
+  // ── Review filter ──────────────────────────────────────────────────────────
+  reviewFilter = signal<{ hotelId: string; userId: string; rating: string }>({
+    hotelId: '', userId: '', rating: ''
+  });
+  reviewIsFiltered = computed(() => {
+    const f = this.reviewFilter();
+    return !!(f.hotelId || f.userId || f.rating);
+  });
+  applyReviewFilter(): void { this.loadReviews(1); }
+  clearReviewFilter(): void {
+    this.reviewFilter.set({ hotelId: '', userId: '', rating: '' });
+    this.loadReviews(1);
+  }
+  readonly auditActionOptions = [
+    'BookingCreated','BookingConfirmed','BookingCompleted','BookingCancelled',
+    'HotelCreated','HotelUpdated','HotelDeactivated',
+    'RoomCreated','RoomUpdated','RoomDeactivated',
+    'PaymentCreated','PaymentStatusUpdated',
+    'CancellationRequested','CancellationStatusUpdated',
+    'ReviewCreated','ReviewDeleted'
+  ];
+  readonly auditEntityOptions = ['Hotel','Room','Booking','Payment','Review','Cancellation','User','Amenity'];
+  auditFilter = signal<{ action:string; entityName:string; userId?:number; entityId?:number; fromDate:string; toDate:string }>({
+    action:'', entityName:'', userId:undefined, entityId:undefined, fromDate:'', toDate:''
+  });
+  auditIsFiltered = computed(() => {
+    const f = this.auditFilter();
+    return !!(f.action || f.entityName || f.userId || f.entityId || f.fromDate || f.toDate);
+  });
+  notifLoading     = signal(false);
+  notifSending     = signal(false);
+  userPrefLoading  = signal(false);
+  userAmenityPreferences = signal<UserAmenityPreferenceModel[]>([]);
+  userPrefPage     = signal(1);
+  readonly PREF_PS = 10;
+  pagedUserPrefs   = computed(() => this.userAmenityPreferences().slice((this.userPrefPage()-1)*this.PREF_PS, this.userPrefPage()*this.PREF_PS));
+  userPrefTotalPages = computed(() => Math.max(1, Math.ceil(this.userAmenityPreferences().length / this.PREF_PS)));
+  /** Disables Approve/Reject while a request is in flight for that row */
+  userPrefActionPendingId = signal<number | null>(null);
+
+  // ── Client-side pagination (Users, Payments, Notifications) ───────────────
+  readonly CPS = 10;
+  pagedUsers    = computed(() => this._slice(this.users(),    this.usersPage()));
+  pagedPayments = computed(() => this._slice(this.payments(), this.paymentsPage()));
+  pagedNotifs   = computed(() => this._slice(this.notifications(), this.notifPage()));
+  usersTotalPages    = computed(() => Math.ceil(this.users().length    / this.CPS) || 1);
+  paymentsTotalPages = computed(() => Math.ceil(this.payments().length / this.CPS) || 1);
+  notifTotalPages    = computed(() => Math.ceil(this.notifications().length / this.CPS) || 1);
+
+  private _slice<T>(arr: T[], page: number): T[] {
+    return arr.slice((page - 1) * this.CPS, page * this.CPS);
+  }
+
+  // Smart paginator
+  visiblePages(current: number, total: number): number[] {
+    if (total < 1) return [];
+    if (total === 1) return [1];
+    const set = new Set([1, total, current, current - 1, current + 1]);
+    const sorted = Array.from(set).filter(p => p >= 1 && p <= total).sort((a, b) => a - b);
+    const result: number[] = [];
+    for (let i = 0; i < sorted.length; i++) {
+      if (i > 0 && sorted[i] - sorted[i - 1] > 1) result.push(-1);
+      result.push(sorted[i]);
+    }
+    return result;
+  }
+
+  // ── Forms ─────────────────────────────────────────────────────────────────
   editHotelId = signal<number | null>(null);
   editRoomId  = signal<number | null>(null);
-
   hf = signal({ hotelName:'', location:'', address:'', starRating:3, totalRooms:10, contactNumber:'', imagePath:'' });
   rf = signal({ hotelId:0, roomNumber:1, roomType:'Standard', pricePerNight:1000, capacity:2, imageUrl:'' });
   af = signal({ name:'', description:'', icon:'' });
+  notifForm = signal({ userId: 0, message: '' });
 
-  // ── Cancellation modal ─────────────────────────────────────────────────────
+  // ── Cancellation modal ────────────────────────────────────────────────────
   activeCancelId  = signal(0);
   modalStatus     = signal('');
   modalRefund     = signal(0);
   showCancelModal = signal(false);
   updatingCancel  = signal(false);
 
-  // ── Computed stats ─────────────────────────────────────────────────────────
+  // ── Confirm Modal ─────────────────────────────────────────────────────────
+  showConfirmModal  = signal(false);
+  confirmTitle      = signal('');
+  confirmMessage    = signal('');
+  confirmIcon       = signal('bi-exclamation-triangle-fill');
+  confirmColor      = signal('text-danger');
+  private _confirmCallback: (() => void) | null = null;
+
+  openConfirm(title: string, message: string, onConfirm: () => void, icon = 'bi-exclamation-triangle-fill', color = 'text-danger'): void {
+    this.confirmTitle.set(title);
+    this.confirmMessage.set(message);
+    this.confirmIcon.set(icon);
+    this.confirmColor.set(color);
+    this._confirmCallback = onConfirm;
+    this.showConfirmModal.set(true);
+  }
+  closeConfirm(): void { this.showConfirmModal.set(false); this._confirmCallback = null; }
+  doConfirm(): void { this._confirmCallback?.(); this.showConfirmModal.set(false); this._confirmCallback = null; }
+
+  // ── Stats ─────────────────────────────────────────────────────────────────
   totalRevenue = computed(() =>
     this.payments().filter(p => p.paymentStatus === 'Completed').reduce((s, p) => s + (p.amount ?? 0), 0)
   );
   totalRefunds = computed(() =>
     this.cancellations().filter(c => c.status === 'Approved').reduce((s, c) => s + (c.refundAmount ?? 0), 0)
   );
-
-  /** Booking rooms filtered by booking ID (0 = all) */
-  filteredBookingRooms = computed(() => {
-    const fid = this.brFilterBookingId();
-    return fid > 0
-      ? this.bookingRooms().filter(br => br.bookingId === fid)
-      : this.bookingRooms();
-  });
+  unreadCount = computed(() => this.notifications().filter(n => !n.isRead).length);
+  adminUnreadCount = computed(() => this.notifications().filter(n => !n.isRead).length);
 
   constructor() { this.loadAll(); }
 
-  // ── Startup load (always-eager) ────────────────────────────────────────────
+  // ── Startup ───────────────────────────────────────────────────────────────
   loadAll(): void {
-    this.api.apiGetHotelsPaged({ pageNumber:1, pageSize:100 }).subscribe({
-      next: r => this.hotels.set(r.data ?? []), error: () => {}
+    this.loadHotels(1);
+    this.loadRooms(1);
+    this.loadAuditLogs(1);
+    this.api.apiGetAllUsers().subscribe({ next: u => { const l = u ?? []; this.users.set(l); this.usersForDropdown.set(l); this.usersPage.set(1); }, error: () => {} });
+    this.api.apiGetAmenities().subscribe({ next: a => this.amenities.set(a ?? []), error: () => {} });
+    this.api.apiGetPaymentsPaged({ pageNumber: 1, pageSize: 100 }).subscribe({
+      next: r => { this.payments.set(r.data ?? []); this.paymentsPage.set(1); },
+      error: () => {}
     });
-    this.api.apiGetRooms().subscribe({
-      next: r => this.rooms.set(r ?? []), error: () => {}
-    });
-    this.api.apiGetAllUsers().subscribe({
-      next: u => this.users.set(u ?? []), error: () => {}
-    });
-    this.api.apiGetAmenities().subscribe({
-      next: a => this.amenities.set(a ?? []), error: () => {}
-    });
-    this.api.apiGetAllPayments().subscribe({
-      next: p => this.payments.set(p ?? []), error: () => {}
+    this.refreshHotelsForRoomForm();
+  }
+
+  private refreshHotelsForRoomForm(): void {
+    this.api.apiGetHotelsPaged({ pageNumber: 1, pageSize: 1000 }).subscribe({
+      next: r => this.hotelsForRoomForm.set(r.data ?? []),
+      error: () => {}
     });
   }
 
-  // ── Lazy loaders ───────────────────────────────────────────────────────────
-
-  /** POST /api/booking/all/paged  — admin only */
-  loadBookings(): void {
-    if (this.bookingsLoaded()) return;
-    this.bookingsLoaded.set(true);
-    this.api.apiGetAllBookingsPaged({ pageNumber:1, pageSize:100 }).subscribe({
-      next: r => this.bookings.set(r.data ?? []),
-      error: () => this.bookingsLoaded.set(false)
+  // ── Paged loaders ─────────────────────────────────────────────────────────
+  loadHotels(page: number): void {
+    this.hotelsLoading.set(true); this.hotelsPage.set(page);
+    const loc = this.hfLocation().trim();
+    const rat = this.hfMinRating() ? +this.hfMinRating() : undefined;
+    const min = this.hfMinPrice()  ? +this.hfMinPrice()  : undefined;
+    const max = this.hfMaxPrice()  ? +this.hfMaxPrice()  : undefined;
+    const hasFilter = loc || rat || min || max;
+    const req = { pageNumber: page, pageSize: PS };
+    const obs = hasFilter
+      ? this.api.apiFilterHotels({ location: loc || undefined, minRating: rat, minPrice: min, maxPrice: max }, req)
+      : this.api.apiGetHotelsPaged(req);
+    obs.subscribe({
+      next: r => { this.hotels.set(r.data ?? []); this.hotelsMeta.set(r); this.hotelsLoading.set(false); },
+      error: () => this.hotelsLoading.set(false)
     });
   }
 
-  /** POST /api/review/all/paged  — admin/manager */
-  loadReviews(): void {
-    if (this.reviewsLoaded()) return;
-    this.reviewsLoaded.set(true);
-    this.api.apiGetAllReviewsPaged({ pageNumber:1, pageSize:10 }).subscribe({
-      next: r => this.reviews.set(r.data ?? []),
-      error: () => this.reviewsLoaded.set(false)
+  loadRooms(page: number): void {
+    this.roomsLoading.set(true); this.roomsPage.set(page);
+    const f = this.roomFilter();
+    const hotelId = f.hotelId ? +f.hotelId : undefined;
+    this.api.apiGetRoomsPaged({ pageNumber: page, pageSize: PS }, hotelId).subscribe({
+      next: r => {
+        // Client-side filter for roomType and availability
+        let data = r.data ?? [];
+        if (f.roomType)      data = data.filter(rm => rm.roomType === f.roomType);
+        if (f.onlyAvailable) data = data.filter(rm => rm.isAvailable);
+        this.rooms.set(data);
+        this.roomsMeta.set(r);
+        this.roomsLoading.set(false);
+      },
+      error: () => this.roomsLoading.set(false)
     });
   }
 
-  /** POST /api/cancellation/paged  — admin/manager */
-  loadCancellations(): void {
-    if (this.cancellationsLoaded()) return;
-    this.cancellationsLoaded.set(true);
-    this.api.apiGetAllCancellationsPaged({ pageNumber:1, pageSize:10 }).subscribe({
+  loadBookings(page: number): void {
+    this.bookingsLoading.set(true); this.bookingsPage.set(page);
+    this.api.apiGetAllBookingsPaged({ pageNumber: page, pageSize: PS }).subscribe({
+      next: r => { this.bookings.set(r.data ?? []); this.bookingsMeta.set(r); this.bookingsLoading.set(false); },
+      error: () => this.bookingsLoading.set(false)
+    });
+  }
+
+  loadReviews(page: number): void {
+    this.reviewsLoading.set(true); this.reviewsPage.set(page);
+    const f = this.reviewFilter();
+    const filter = {
+      hotelId: f.hotelId ? +f.hotelId : undefined,
+      userId:  f.userId  ? +f.userId  : undefined,
+      rating:  f.rating  ? +f.rating  : undefined
+    };
+    this.api.apiGetReviewsPaged(filter, { pageNumber: page, pageSize: PS }).subscribe({
+      next: r => { this.reviews.set(r.data ?? []); this.reviewsMeta.set(r); this.reviewsLoading.set(false); },
+      error: () => this.reviewsLoading.set(false)
+    });
+  }
+
+  loadCancellations(page: number): void {
+    this.cancelLoading.set(true); this.cancelPage.set(page);
+    this.api.apiGetAllCancellationsPaged({ pageNumber: page, pageSize: PS }).subscribe({
       next: res => {
-        const all = res.data ?? [];
-        const enriched: CancellationItem[] = all.map(c => ({
+        this.cancelMeta.set(res);
+        this.cancellations.set((res.data ?? []).map(c => ({
           ...c,
-          hotelName: this.bookings().find(b => b.bookingId === c.bookingId)?.hotelName
-                     ?? `Booking #${c.bookingId}`
-        }));
-        this.cancellations.set(enriched);
+          hotelName: this.bookings().find(b => b.bookingId === c.bookingId)?.hotelName ?? `Booking #${c.bookingId}`
+        })));
+        this.cancelLoading.set(false);
       },
-      error: () => this.cancellationsLoaded.set(false)
+      error: () => this.cancelLoading.set(false)
     });
   }
 
-  /**
-   * Booking Rooms loader.
-   * Strategy:
-   *   1. Take all loaded bookings (up to 50 for performance).
-   *   2. For each booking call GET /api/bookingroom/booking/{bookingId}.
-   *   3. Merge, enrich with room label + hotel name, sort by bookingId.
-   * API: GET /api/bookingroom/booking/{bookingId}  [Authorize(Roles="user,admin,hotelmanager")]
-   */
-  loadBookingRooms(): void {
-    if (this.bookingRoomsLoaded()) return;
-    // Make sure bookings are loaded first so we can enrich
-    if (!this.bookingsLoaded()) {
-      this.loadBookings();
-    }
-    this.bookingRoomsLoaded.set(true);
+  loadAuditLogs(page?: number): void {
+    const p = page ?? this.auditPage();
+    this.auditLoading.set(true);
+    this.auditPage.set(p);
 
-    const bookingIds = this.bookings().map(b => b.bookingId).slice(0, 50);
+    const raw = this.auditFilter();
+    const hasFilter = !!(raw.action || raw.entityName || raw.userId || raw.entityId || raw.fromDate || raw.toDate);
 
-    if (!bookingIds.length) {
-      // No bookings loaded yet — wait then retry once
-      setTimeout(() => {
-        this.bookingRoomsLoaded.set(false);
-        const ids = this.bookings().map(b => b.bookingId).slice(0, 50);
-        if (!ids.length) { this.bookingRooms.set([]); return; }
-        this._fetchBookingRoomsForIds(ids);
-      }, 800);
-      return;
+    if (hasFilter) {
+      // Build filter object with only non-empty values + paging
+      const filterBody: Record<string, unknown> = { pageNumber: p, pageSize: PS };
+      if (raw.action)     filterBody['action']     = raw.action;
+      if (raw.entityName) filterBody['entityName'] = raw.entityName;
+      if (raw.userId)     filterBody['userId']     = raw.userId;
+      if (raw.entityId)   filterBody['entityId']   = raw.entityId;
+      if (raw.fromDate)   filterBody['fromDate']   = raw.fromDate;
+      if (raw.toDate)     filterBody['toDate']     = raw.toDate + 'T23:59:59';
+
+      // Call backend directly — POST /api/auditlog/filter/paged with combined body
+      this.api.apiFilterAuditLogsPaged(filterBody as any, { pageNumber: p, pageSize: PS }).subscribe({
+        next: r => { this.auditLogs.set(r.data ?? []); this.auditMeta.set(r); this.auditLoading.set(false); },
+        error: (e) => { this.toast.error(e?.error?.message || 'Filter failed.', 'Error'); this.auditLoading.set(false); }
+      });
+    } else {
+      this.api.apiGetAllAuditLogsPaged({ pageNumber: p, pageSize: PS }).subscribe({
+        next: r => { this.auditLogs.set(r.data ?? []); this.auditMeta.set(r); this.auditLoading.set(false); },
+        error: (e) => { this.toast.error(e?.error?.message || 'Failed to load audit logs.', 'Error'); this.auditLoading.set(false); }
+      });
     }
-    this._fetchBookingRoomsForIds(bookingIds);
   }
 
-  private _fetchBookingRoomsForIds(ids: number[]): void {
-    const reqs = ids.map(id =>
-      this.api.apiGetBookingRoomsByBookingId(id).pipe(
-        catchError(() => of([] as BookingRoomModel[]))
-      )
-    );
-    forkJoin(reqs).subscribe({
-      next: results => {
-        const flat = results.flat();
-        const enriched: BookingRoomItem[] = flat.map(br => {
-          const room    = this.rooms().find(r => r.roomId === br.roomId);
-          const booking = this.bookings().find(b => b.bookingId === br.bookingId);
-          return {
-            ...br,
-            roomLabel:     room    ? `#${room.roomNumber} — ${room.roomType}` : `Room #${br.roomId}`,
-            hotelName:     booking?.hotelName ?? `Booking #${br.bookingId}`,
-            bookingStatus: booking?.status    ?? '—'
-          };
-        });
-        // Sort by bookingId for a predictable order
-        enriched.sort((a, b) => a.bookingId - b.bookingId);
-        this.bookingRooms.set(enriched);
-      },
-      error: () => this.bookingRoomsLoaded.set(false)
+  applyAuditFilter(): void { this.loadAuditLogs(1); }
+  clearAuditFilter(): void {
+    this.auditFilter.set({ action: '', entityName: '', userId: undefined, entityId: undefined, fromDate: '', toDate: '' });
+    this.loadAuditLogs(1);
+  }
+
+  loadNotifications(): void {
+    this.notifLoading.set(true);
+    this.api.apiGetAllNotifications().subscribe({
+      next: n => { this.notifications.set(n ?? []); this.notifPage.set(1); this.notifLoading.set(false); },
+      error: () => this.notifLoading.set(false)
     });
   }
 
-  // ── Tab switch ─────────────────────────────────────────────────────────────
   switchTab(t: string): void {
     this.activeTab.set(t);
-    if (t === 'Bookings')      this.loadBookings();
-    if (t === 'Booking Rooms') { this.loadBookings(); this.loadBookingRooms(); }
-    if (t === 'Reviews')       this.loadReviews();
-    if (t === 'Cancellations') { this.loadBookings(); this.loadCancellations(); }
+    if (t === 'Hotels'        && !this.hotelsMeta())   this.loadHotels(1);
+    if (t === 'Rooms'         && !this.roomsMeta())    this.loadRooms(1);
+    if (t === 'Bookings'      && !this.bookingsMeta()) this.loadBookings(1);
+    if (t === 'Reviews'       && !this.reviewsMeta())  this.loadReviews(1);
+    if (t === 'Cancellations' && !this.cancelMeta())   { this.loadBookings(1); this.loadCancellations(1); }
+    if (t === 'Notifications')                         this.loadNotifications();
+    if (t === 'Audit Logs' && !this.auditMeta())      this.loadAuditLogs(1);
+    if (t === 'User Preferences')                     this.loadUserAmenityPreferences();
   }
 
-  // ── Booking Room CRUD ──────────────────────────────────────────────────────
-
-  /** Populate the form when admin clicks Edit on a booking-room row. */
-  editBookingRoom(br: BookingRoomItem): void {
-    this.editBrId.set(br.bookingRoomId);
-    this.brf.set({
-      bookingId:     br.bookingId,
-      roomId:        br.roomId,
-      pricePerNight: br.pricePerNight,
-      numberOfRooms: br.numberOfRooms
+  loadUserAmenityPreferences(): void {
+    this.userPrefLoading.set(true);
+    this.api.apiGetAllAmenityPreferences().subscribe({
+      next: list => { this.userAmenityPreferences.set(list ?? []); this.userPrefPage.set(1); this.userPrefLoading.set(false); },
+      error: () => { this.userPrefLoading.set(false); }
     });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  resetBrf(): void {
-    this.editBrId.set(null);
-    this.brf.set({ bookingId:0, roomId:0, pricePerNight:0, numberOfRooms:1 });
-  }
-
-  /**
-   * Save booking-room (create or update).
-   * POST /api/bookingroom          [Authorize(Roles="user,admin")]
-   * PUT  /api/bookingroom/{id}     [Authorize(Roles="user,admin")]
-   */
-  saveBookingRoom(): void {
-    const f = this.brf();
-    if (!f.bookingId)        { this.toast.warning('Please select a booking.'); return; }
-    if (!f.roomId)           { this.toast.warning('Please select a room.');    return; }
-    if (f.pricePerNight <= 0){ this.toast.warning('Price per night must be > 0.'); return; }
-    if (f.numberOfRooms < 1) { this.toast.warning('Number of rooms must be at least 1.'); return; }
-
-    this.saving.set(true);
-
-    const obs = this.editBrId()
-      ? this.api.apiUpdateBookingRoom(this.editBrId()!, f)
-      : this.api.apiCreateBookingRoom(f);
-
-    obs.subscribe({
-      next: result => {
-        const room    = this.rooms().find(r => r.roomId === result.roomId);
-        const booking = this.bookings().find(b => b.bookingId === result.bookingId);
-        const item: BookingRoomItem = {
-          ...result,
-          roomLabel:     room    ? `#${room.roomNumber} — ${room.roomType}` : `Room #${result.roomId}`,
-          hotelName:     booking?.hotelName ?? `Booking #${result.bookingId}`,
-          bookingStatus: booking?.status    ?? '—'
-        };
-
-        if (this.editBrId()) {
-          this.bookingRooms.update(l => l.map(x => x.bookingRoomId === item.bookingRoomId ? item : x));
-          this.toast.success('Booking room updated!');
-        } else {
-          this.bookingRooms.update(l => [...l, item].sort((a, b) => a.bookingId - b.bookingId));
-          this.toast.success('Booking room added!');
-        }
-        this.resetBrf();
-        this.saving.set(false);
-      },
-      error: e => {
-        this.saving.set(false);
-        this.toast.error(e?.error?.message || 'Failed to save booking room.', 'Error');
+  approveUserPref(p: UserAmenityPreferenceModel): void {
+    this.userPrefActionPendingId.set(p.preferenceId);
+    this.api.apiApproveAmenityPreference(p.preferenceId).pipe(finalize(() => this.userPrefActionPendingId.set(null))).subscribe({
+      next: updated => {
+        this.userAmenityPreferences.update(arr => arr.map(x => (x.preferenceId === p.preferenceId ? updated : x)));
+        this.toast.success(`Approved: ${p.userName} → ${p.amenityName}`);
       }
     });
   }
 
-  /**
-   * DELETE /api/bookingroom/{id}  [Authorize(Roles="user,admin")]
-   */
-  deleteBookingRoom(br: BookingRoomItem): void {
-    if (!confirm(`Remove Room ${br.roomLabel} from Booking #${br.bookingId}?`)) return;
-    this.api.apiDeleteBookingRoom(br.bookingRoomId).subscribe({
-      next: () => {
-        this.bookingRooms.update(l => l.filter(x => x.bookingRoomId !== br.bookingRoomId));
-        this.toast.success('Booking room removed.');
-      },
-      error: e => this.toast.error(e?.error?.message || 'Error removing booking room.', 'Error')
+  rejectUserPref(p: UserAmenityPreferenceModel): void {
+    this.userPrefActionPendingId.set(p.preferenceId);
+    this.api.apiRejectAmenityPreference(p.preferenceId).pipe(finalize(() => this.userPrefActionPendingId.set(null))).subscribe({
+      next: updated => {
+        this.userAmenityPreferences.update(arr => arr.map(x => (x.preferenceId === p.preferenceId ? updated : x)));
+        this.toast.success(`Rejected: ${p.userName} → ${p.amenityName}`);
+      }
     });
   }
 
-  /** Convenience: auto-fill price when admin picks a room in the BR form */
-  onBrRoomSelect(roomId: number): void {
-    const room = this.rooms().find(r => r.roomId === roomId);
-    this.brf.update(f => ({ ...f, roomId, pricePerNight: room?.pricePerNight ?? 0 }));
+  userPrefStatusClass(s: string | undefined): string {
+    const x = (s || 'Pending').toLowerCase();
+    if (x === 'approved') return 'bg-success';
+    if (x === 'rejected') return 'bg-danger';
+    return 'bg-warning text-dark';
   }
 
-  // ── Hotel CRUD ─────────────────────────────────────────────────────────────
+  // ── Hotel CRUD ────────────────────────────────────────────────────────────
   saveHotel(): void {
     const f = this.hf();
     if (!f.hotelName.trim()) { this.toast.warning('Hotel name is required.'); return; }
@@ -324,7 +428,7 @@ export class DashboardAdmin {
       ? this.api.apiUpdateHotel(this.editHotelId()!, { ...f, starRating:+f.starRating, totalRooms:+f.totalRooms })
       : this.api.apiCreateHotel({ ...f, starRating:+f.starRating, totalRooms:+f.totalRooms });
     obs.subscribe({
-      next: () => { this.saving.set(false); this.toast.success(this.editHotelId() ? 'Hotel updated!' : 'Hotel created!'); this.resetHotel(); this.loadAll(); },
+      next: () => { this.saving.set(false); this.toast.success(this.editHotelId() ? 'Hotel updated!' : 'Hotel created!'); this.resetHotel(); this.loadHotels(1); this.refreshHotelsForRoomForm(); },
       error: e  => { this.saving.set(false); this.toast.error(e?.error?.message || 'Failed to save hotel.', 'Error'); }
     });
   }
@@ -334,24 +438,28 @@ export class DashboardAdmin {
   }
   resetHotel(): void { this.editHotelId.set(null); this.hf.set({ hotelName:'', location:'', address:'', starRating:3, totalRooms:10, contactNumber:'', imagePath:'' }); }
   deleteHotel(h: HotelModel): void {
-    if (!confirm(`Delete hotel "${h.hotelName}"? This cannot be undone.`)) return;
-    this.api.apiDeleteHotel(h.hotelId).subscribe({
-      next: () => { this.toast.success('Hotel deleted.'); this.loadAll(); },
-      error: e  => this.toast.error(e?.error?.message || 'Failed to delete hotel.', 'Error')
-    });
+    this.openConfirm(
+      'Delete Hotel',
+      `Are you sure you want to delete "${h.hotelName}"? This action cannot be undone.`,
+      () => this.api.apiDeleteHotel(h.hotelId).subscribe({
+        next: () => { this.toast.success('Hotel deleted.'); this.loadHotels(this.hotelsPage()); this.refreshHotelsForRoomForm(); },
+        error: e  => this.toast.error(e?.error?.message || 'Failed to delete hotel.', 'Error')
+      })
+    );
   }
 
-  // ── Room CRUD ──────────────────────────────────────────────────────────────
+  // ── Room CRUD ─────────────────────────────────────────────────────────────
   saveRoom(): void {
     const f = this.rf();
-    if (!f.hotelId)         { this.toast.warning('Please select a hotel.'); return; }
-    if (f.pricePerNight < 1){ this.toast.warning('Price per night must be at least ₹1.'); return; }
+    if (!f.hotelId)          { this.toast.warning('Please select a hotel.'); return; }
+    if (f.pricePerNight < 1) { this.toast.warning('Price per night must be at least ₹1.'); return; }
     this.saving.set(true);
+    const payload = { hotelId:+f.hotelId, roomNumber:+f.roomNumber, roomType:f.roomType, pricePerNight:+f.pricePerNight, capacity:+f.capacity, imageUrl:f.imageUrl||undefined };
     const obs = this.editRoomId()
-      ? this.api.apiUpdateRoom(this.editRoomId()!, { ...f, hotelId:+f.hotelId, pricePerNight:+f.pricePerNight, capacity:+f.capacity })
-      : this.api.apiCreateRoom({ ...f, hotelId:+f.hotelId, pricePerNight:+f.pricePerNight, capacity:+f.capacity });
+      ? this.api.apiUpdateRoom(this.editRoomId()!, payload)
+      : this.api.apiCreateRoom(payload);
     obs.subscribe({
-      next: () => { this.saving.set(false); this.toast.success(this.editRoomId() ? 'Room updated!' : 'Room created!'); this.resetRoom(); this.loadAll(); },
+      next: () => { this.saving.set(false); this.toast.success(this.editRoomId() ? 'Room updated!' : 'Room created!'); this.resetRoom(); this.loadRooms(1); },
       error: e  => { this.saving.set(false); this.toast.error(e?.error?.message || 'Failed to save room.', 'Error'); }
     });
   }
@@ -361,23 +469,35 @@ export class DashboardAdmin {
   }
   resetRoom(): void { this.editRoomId.set(null); this.rf.set({ hotelId:0, roomNumber:1, roomType:'Standard', pricePerNight:1000, capacity:2, imageUrl:'' }); }
   deleteRoom(r: RoomModel): void {
-    if (!confirm('Deactivate this room?')) return;
-    this.api.apiDeleteRoom(r.roomId).subscribe({
-      next: () => { this.rooms.update(l => l.map(x => x.roomId === r.roomId ? { ...x, isAvailable: false } : x)); this.toast.success('Room deactivated.'); },
-      error: e  => this.toast.error(e?.error?.message || 'Error.', 'Error')
-    });
+    this.openConfirm(
+      'Deactivate Room',
+      `Are you sure you want to deactivate Room #${r.roomNumber}? It will no longer be available for booking.`,
+      () => this.api.apiDeleteRoom(r.roomId).subscribe({
+        next: () => { this.rooms.update(l => l.map(x => x.roomId === r.roomId ? { ...x, isAvailable: false } : x)); this.toast.success('Room deactivated.'); },
+        error: e  => this.toast.error(e?.error?.message || 'Error.', 'Error')
+      }),
+      'bi-slash-circle-fill', 'text-warning'
+    );
   }
 
-  // ── Users ──────────────────────────────────────────────────────────────────
+  // ── Users ─────────────────────────────────────────────────────────────────
   deleteUser(u: UserModel): void {
-    if (!confirm(`Delete user "${u.userName}"? This cannot be undone.`)) return;
-    this.api.apiDeleteUser(u.userId).subscribe({
-      next: () => { this.users.update(l => l.filter(x => x.userId !== u.userId)); this.toast.success('User deleted.'); },
-      error: e  => this.toast.error(e?.error?.message || 'Error.', 'Error')
-    });
+    this.openConfirm(
+      'Delete User',
+      `Are you sure you want to delete user "${u.userName}"? This will permanently remove the account.`,
+      () => this.api.apiDeleteUser(u.userId).subscribe({
+        next: () => {
+          this.users.update(l => l.filter(x => x.userId !== u.userId));
+          this.usersForDropdown.update(l => l.filter(x => x.userId !== u.userId));
+          if (this.usersPage() > this.usersTotalPages()) this.usersPage.set(this.usersTotalPages());
+          this.toast.success('User deleted.');
+        },
+        error: e  => this.toast.error(e?.error?.message || 'Error.', 'Error')
+      })
+    );
   }
 
-  // ── Booking actions ────────────────────────────────────────────────────────
+  // ── Booking actions ───────────────────────────────────────────────────────
   confirmBooking(b: BookingModel): void {
     this.api.apiConfirmBooking(b.bookingId).subscribe({
       next: () => { this.bookings.update(l => l.map(x => x.bookingId === b.bookingId ? { ...x, status:'Confirmed' } : x)); this.toast.success('Booking confirmed!'); },
@@ -391,7 +511,7 @@ export class DashboardAdmin {
     });
   }
 
-  // ── Amenities ──────────────────────────────────────────────────────────────
+  // ── Amenities ─────────────────────────────────────────────────────────────
   saveAmenity(): void {
     const a = this.af();
     if (!a.name.trim()) { this.toast.warning('Amenity name is required.'); return; }
@@ -402,14 +522,17 @@ export class DashboardAdmin {
     });
   }
   deleteAmenity(a: AmenityModel): void {
-    if (!confirm(`Delete amenity "${a.name}"?`)) return;
-    this.api.apiDeleteAmenity(a.amenityId).subscribe({
-      next: () => { this.amenities.update(l => l.filter(x => x.amenityId !== a.amenityId)); this.toast.success('Amenity deleted.'); },
-      error: e  => this.toast.error(e?.error?.message || 'Error.', 'Error')
-    });
+    this.openConfirm(
+      'Delete Amenity',
+      `Are you sure you want to delete amenity "${a.name}"? It will be removed from all hotels.`,
+      () => this.api.apiDeleteAmenity(a.amenityId).subscribe({
+        next: () => { this.amenities.update(l => l.filter(x => x.amenityId !== a.amenityId)); this.toast.success('Amenity deleted.'); },
+        error: e  => this.toast.error(e?.error?.message || 'Error.', 'Error')
+      })
+    );
   }
 
-  // ── Payments ───────────────────────────────────────────────────────────────
+  // ── Payments ──────────────────────────────────────────────────────────────
   updatePaymentStatus(p: PaymentModel, e: Event): void {
     const s = (e.target as HTMLSelectElement).value;
     if (!s) return;
@@ -419,16 +542,19 @@ export class DashboardAdmin {
     });
   }
 
-  // ── Reviews ────────────────────────────────────────────────────────────────
+  // ── Reviews ───────────────────────────────────────────────────────────────
   deleteReview(r: ReviewModel): void {
-    if (!confirm('Delete this review?')) return;
-    this.api.apiDeleteReview(r.reviewId).subscribe({
-      next: () => { this.reviews.update(l => l.filter(x => x.reviewId !== r.reviewId)); this.toast.success('Review deleted.'); },
-      error: e  => this.toast.error(e?.error?.message || 'Error.', 'Error')
-    });
+    this.openConfirm(
+      'Delete Review',
+      'Are you sure you want to delete this review? This action cannot be undone.',
+      () => this.api.apiDeleteReview(r.reviewId).subscribe({
+        next: () => { this.reviews.update(l => l.filter(x => x.reviewId !== r.reviewId)); this.toast.success('Review deleted.'); },
+        error: e  => this.toast.error(e?.error?.message || 'Error.', 'Error')
+      })
+    );
   }
 
-  // ── Cancellation modal ─────────────────────────────────────────────────────
+  // ── Cancellation modal ────────────────────────────────────────────────────
   openCancelModal(c: CancellationItem): void {
     this.activeCancelId.set(c.cancellationId);
     this.modalStatus.set(c.status);
@@ -443,9 +569,7 @@ export class DashboardAdmin {
     this.updatingCancel.set(true);
     this.api.apiUpdateCancellationStatus(this.activeCancelId(), this.modalStatus(), this.modalRefund()).subscribe({
       next: u => {
-        this.cancellations.update(l => l.map(x => x.cancellationId === u.cancellationId
-          ? { ...x, status: u.status, refundAmount: u.refundAmount } : x
-        ));
+        this.cancellations.update(l => l.map(x => x.cancellationId === u.cancellationId ? { ...x, status: u.status, refundAmount: u.refundAmount } : x));
         this.updatingCancel.set(false);
         this.closeCancelModal();
         this.toast.success(`Status updated to "${u.status}".`);
@@ -454,10 +578,45 @@ export class DashboardAdmin {
     });
   }
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
+  // ── Notifications ─────────────────────────────────────────────────────────
+  sendNotification(): void {
+    const f = this.notifForm();
+    if (!f.userId || f.userId < 1) { this.toast.warning('Please select a user.'); return; }
+    if (!f.message.trim())         { this.toast.warning('Message is required.'); return; }
+    this.notifSending.set(true);
+    this.api.apiCreateNotification(f.userId, f.message.trim()).subscribe({
+      next: n => {
+        this.notifications.update(l => [n, ...l]);
+        this.notifForm.set({ userId: 0, message: '' });
+        this.notifSending.set(false);
+        this.toast.success('Notification sent!');
+      },
+      error: e => { this.notifSending.set(false); this.toast.error(e?.error?.message || 'Failed to send.', 'Error'); }
+    });
+  }
+
+  deleteNotification(n: NotificationModel): void {
+    this.openConfirm(
+      'Delete Notification',
+      'Are you sure you want to delete this notification?',
+      () => this.api.apiDeleteNotification(n.notificationId).subscribe({
+        next: () => { this.notifications.update(l => l.filter(x => x.notificationId !== n.notificationId)); this.toast.info('Deleted.'); },
+        error: e => this.toast.error(e?.error?.message || 'Error.', 'Error')
+      }),
+      'bi-bell-slash-fill', 'text-secondary'
+    );
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
   getStatusClass(s: string): string { return ({Pending:'badge-pending',Confirmed:'badge-confirmed',Completed:'badge-completed',Cancelled:'badge-cancelled'} as Record<string,string>)[s] ?? 'badge-pending'; }
   getPayClass(s: string): string    { return ({Completed:'badge-confirmed',Failed:'badge-cancelled',Pending:'badge-pending',Refunded:'badge-refunded'} as Record<string,string>)[s] ?? 'badge-pending'; }
   cancelClass(s: string): string    { return ({Pending:'cs-pending',Approved:'cs-approved',Rejected:'cs-rejected'} as Record<string,string>)[s] ?? 'cs-pending'; }
-  brStatusClass(s: string): string  { return ({Pending:'badge-pending',Confirmed:'badge-confirmed',Completed:'badge-completed',Cancelled:'badge-cancelled'} as Record<string,string>)[s] ?? 'badge-pending'; }
   stars(n: number): boolean[]       { return [1,2,3,4,5].map(s => s <= n); }
+  actionClass(action: string): string {
+    const a = action.toLowerCase();
+    if (a.includes('created') || a.includes('requested')) return 'action-create';
+    if (a.includes('updated') || a.includes('confirmed') || a.includes('completed')) return 'action-update';
+    if (a.includes('deleted') || a.includes('deactivated') || a.includes('cancelled')) return 'action-delete';
+    return 'action-default';
+  }
 }

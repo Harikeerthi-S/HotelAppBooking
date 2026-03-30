@@ -124,19 +124,30 @@ namespace HotelBookingApp.Controllers
 
         // ── FILTER PAGED ───────────────────────
         [HttpPost("filter/paged")]
-        public async Task<IActionResult> FilterPaged(
-            [FromBody] AuditLogFilterDto filter,
-            [FromQuery] PagedRequestDto request)
+        public async Task<IActionResult> FilterPaged([FromBody] AuditLogFilterPagedDto dto)
         {
             try
             {
+                var request = new PagedRequestDto
+                {
+                    PageNumber = Math.Max(1, dto.PageNumber),
+                    PageSize   = Math.Clamp(dto.PageSize, 1, 500)
+                };
+                var filter = new AuditLogFilterDto
+                {
+                    UserId     = dto.UserId,
+                    Action     = string.IsNullOrWhiteSpace(dto.Action)     ? null : dto.Action,
+                    EntityName = string.IsNullOrWhiteSpace(dto.EntityName) ? null : dto.EntityName,
+                    EntityId   = dto.EntityId,
+                    FromDate   = dto.FromDate,
+                    ToDate     = dto.ToDate
+                };
                 var result = await _auditService.FilterPagedAsync(filter, request);
                 return Ok(result);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error filtering audit logs (paged)");
-
                 return StatusCode(500, new ErrorResponseDto
                 {
                     StatusCode = 500,

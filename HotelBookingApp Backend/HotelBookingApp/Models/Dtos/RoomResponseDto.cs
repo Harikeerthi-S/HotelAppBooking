@@ -7,13 +7,7 @@ namespace HotelBookingApp.Models.Dtos
         public int RoomNumber { get; set; }
         public string RoomType { get; set; } = string.Empty;
         public decimal PricePerNight { get; set; }
-
         public int Capacity { get; set; }
-
-        // ? INVENTORY
-        public int TotalRooms { get; set; }
-        public int AvailableRooms { get; set; }
-
         public string? ImageUrl { get; set; }
         public bool IsAvailable { get; set; }
     }

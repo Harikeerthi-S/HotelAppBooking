@@ -13,12 +13,13 @@ describe('DashboardAdmin', () => {
   let httpMock: HttpTestingController;
 
   function flushAll(): void {
-    httpMock.expectOne(r => r.url.includes('hotel/paged') && r.body?.pageSize === 100).flush({ data: [], totalRecords: 0, totalPages: 0, pageNumber: 1, pageSize: 100 });
-    httpMock.expectOne(r => r.url.includes('/room') && !r.url.includes('filter')).flush([]);
+    httpMock.expectOne(r => r.url.includes('hotel/paged') && r.body?.pageSize === 10).flush({ data: [], totalRecords: 0, totalPages: 0, pageNumber: 1, pageSize: 10 });
+    httpMock.expectOne(r => r.url.includes('/room') && r.url.includes('paged')).flush({ data: [], totalRecords: 0, totalPages: 0, pageNumber: 1, pageSize: 10 });
+    httpMock.expectOne(r => r.url.includes('auditlog/all/paged')).flush({ data: [], totalRecords: 0, totalPages: 0, pageNumber: 1, pageSize: 10 });
     httpMock.expectOne(r => r.url.includes('users/GetAllUsers')).flush([]);
     httpMock.expectOne(r => r.url.includes('amenities')).flush([]);
     httpMock.expectOne(r => r.url.includes('payment') && r.method === 'GET').flush([]);
-    httpMock.expectOne(r => r.url.includes('hotel/paged') && r.body?.pageSize === 1).flush({ data: [], totalRecords: 0, totalPages: 0, pageNumber: 1, pageSize: 1 });
+    httpMock.expectOne(r => r.url.includes('hotel/paged') && r.body?.pageSize === 1000).flush({ data: [], totalRecords: 0, totalPages: 0, pageNumber: 1, pageSize: 1000 });
   }
 
   beforeEach(async () => {

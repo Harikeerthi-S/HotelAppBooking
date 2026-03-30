@@ -8,19 +8,31 @@ namespace HotelBookingApp.Services
 {
     public class RoomService : IRoomService
     {
-        private readonly IRepository<int, Room> _roomRepo;
-        private readonly IRepository<int, Hotel> _hotelRepo;
-        private readonly ILogger<RoomService> _logger;
+        private readonly IRepository<int, Room>    _roomRepo;
+        private readonly IRepository<int, Hotel>   _hotelRepo;
+        private readonly IRepository<int, Booking> _bookingRepo;
+        private readonly IAuditLogService          _audit;
+        private readonly ILogger<RoomService>      _logger;
 
         public RoomService(
-            IRepository<int, Room> roomRepo,
-            IRepository<int, Hotel> hotelRepo,
-            ILogger<RoomService> logger)
+            IRepository<int, Room>    roomRepo,
+            IRepository<int, Hotel>   hotelRepo,
+            IRepository<int, Booking> bookingRepo,
+            IAuditLogService          audit,
+            ILogger<RoomService>      logger)
         {
-            _roomRepo = roomRepo;
-            _hotelRepo = hotelRepo;
-            _logger = logger;
+            _roomRepo    = roomRepo;
+            _hotelRepo   = hotelRepo;
+            _bookingRepo = bookingRepo;
+            _audit       = audit;
+            _logger      = logger;
         }
+
+        private void Log(string action, int? entityId, string? changes = null)
+            => _ = _audit.CreateAsync(new CreateAuditLogDto
+            {
+                Action = action, EntityName = "Room", EntityId = entityId, Changes = changes
+            });
 
         // ── CREATE ─────────────────────────────
         public async Task<RoomResponseDto> CreateAsync(CreateRoomDto dto)
@@ -32,25 +44,22 @@ namespace HotelBookingApp.Services
             var exists = await _roomRepo.ExistsAsync(
                 r => r.HotelId == dto.HotelId && r.RoomNumber == dto.RoomNumber
             );
-
             if (exists)
                 throw new AlreadyExistsException($"Room #{dto.RoomNumber} already exists.");
 
             var room = new Room
             {
-                HotelId = dto.HotelId,
-                RoomNumber = dto.RoomNumber,
-                RoomType = dto.RoomType.Trim(),
+                HotelId       = dto.HotelId,
+                RoomNumber    = dto.RoomNumber,
+                RoomType      = dto.RoomType.Trim(),
                 PricePerNight = dto.PricePerNight,
-                Capacity = dto.Capacity,
-                ImageUrl = dto.ImageUrl?.Trim(),
-
-                TotalRooms = dto.TotalRooms,
-                AvailableRooms = dto.TotalRooms,
-                IsAvailable = dto.TotalRooms > 0
+                Capacity      = dto.Capacity,
+                ImageUrl      = dto.ImageUrl?.Trim(),
+                IsAvailable   = true
             };
 
             var created = await _roomRepo.AddAsync(room);
+            Log("RoomCreated", created.RoomId, $"Hotel:{dto.HotelId} #{dto.RoomNumber} {dto.RoomType} ₹{dto.PricePerNight}");
             return MapToDto(created);
         }
 
@@ -59,7 +68,6 @@ namespace HotelBookingApp.Services
         {
             var room = await _roomRepo.GetByIdAsync(roomId)
                 ?? throw new NotFoundException("Room", roomId);
-
             return MapToDto(room);
         }
 
@@ -68,15 +76,14 @@ namespace HotelBookingApp.Services
             PagedRequestDto request, int? hotelId = null)
         {
             request.PageNumber = Math.Max(1, request.PageNumber);
-            request.PageSize = Math.Clamp(request.PageSize, 1, 100);
+            request.PageSize   = Math.Clamp(request.PageSize, 1, 10);
 
             var rooms = hotelId.HasValue
                 ? await _roomRepo.FindAllAsync(r => r.HotelId == hotelId.Value)
                 : await _roomRepo.GetAllAsync();
 
             var ordered = rooms.OrderBy(r => r.RoomNumber);
-
-            var total = ordered.Count();
+            var total   = ordered.Count();
 
             var data = ordered
                 .Skip((request.PageNumber - 1) * request.PageSize)
@@ -86,10 +93,11 @@ namespace HotelBookingApp.Services
 
             return new PagedResponseDto<RoomResponseDto>
             {
-                Data = data,
-                PageNumber = request.PageNumber,
-                PageSize = request.PageSize,
-                TotalRecords = total
+                Data         = data,
+                PageNumber   = request.PageNumber,
+                PageSize     = request.PageSize,
+                TotalRecords = total,
+                TotalPages   = (int)Math.Ceiling((double)total / request.PageSize)
             };
         }
 
@@ -104,28 +112,18 @@ namespace HotelBookingApp.Services
                      r.HotelId == dto.HotelId &&
                      r.RoomNumber == dto.RoomNumber
             );
-
             if (duplicate)
                 throw new AlreadyExistsException($"Room #{dto.RoomNumber} already exists.");
 
-            room.HotelId = dto.HotelId;
-            room.RoomNumber = dto.RoomNumber;
-            room.RoomType = dto.RoomType.Trim();
+            room.HotelId       = dto.HotelId;
+            room.RoomNumber    = dto.RoomNumber;
+            room.RoomType      = dto.RoomType.Trim();
             room.PricePerNight = dto.PricePerNight;
-            room.Capacity = dto.Capacity;
-            room.ImageUrl = dto.ImageUrl?.Trim();
-
-            // Inventory logic
-            var booked = room.TotalRooms - room.AvailableRooms;
-
-            if (dto.TotalRooms < booked)
-                throw new BadRequestException("Cannot reduce below booked rooms.");
-
-            room.TotalRooms = dto.TotalRooms;
-            room.AvailableRooms = dto.TotalRooms - booked;
-            room.IsAvailable = room.AvailableRooms > 0;
+            room.Capacity      = dto.Capacity;
+            room.ImageUrl      = dto.ImageUrl?.Trim();
 
             var updated = await _roomRepo.UpdateAsync(roomId, room);
+            Log("RoomUpdated", roomId, $"#{dto.RoomNumber} {dto.RoomType} ₹{dto.PricePerNight}");
             return updated is null ? null : MapToDto(updated);
         }
 
@@ -140,7 +138,7 @@ namespace HotelBookingApp.Services
 
             room.IsAvailable = false;
             await _roomRepo.UpdateAsync(roomId, room);
-
+            Log("RoomDeactivated", roomId);
             return true;
         }
 
@@ -148,18 +146,37 @@ namespace HotelBookingApp.Services
         public async Task<IEnumerable<RoomResponseDto>> FilterAsync(RoomFilterDto filter)
         {
             var rooms = await _roomRepo.GetAllAsync();
-
             return ApplyFilter(rooms.AsQueryable(), filter)
                 .OrderBy(r => r.RoomNumber)
                 .Select(MapToDto)
                 .ToList();
         }
 
+        // ── DATE-RANGE AVAILABILITY ────────────
+        public async Task<bool> IsAvailableForDatesAsync(int roomId, DateTime checkIn, DateTime checkOut)
+        {
+            var room = await _roomRepo.GetByIdAsync(roomId)
+                ?? throw new NotFoundException("Room", roomId);
+
+            // Admin-deactivated rooms are never available
+            if (!room.IsAvailable) return false;
+
+            // Check for any active booking that overlaps the requested dates
+            var overlapping = await _bookingRepo.FindAllAsync(
+                b => b.RoomId  == roomId &&
+                     (b.Status == "Pending" || b.Status == "Confirmed") &&
+                     checkIn  < b.CheckOut &&
+                     checkOut > b.CheckIn
+            );
+
+            return !overlapping.Any();
+        }
+
         // ── PRIVATE ────────────────────────────
         private static IQueryable<Room> ApplyFilter(IQueryable<Room> query, RoomFilterDto filter)
         {
             if (filter.OnlyAvailable)
-                query = query.Where(r => r.AvailableRooms > 0);
+                query = query.Where(r => r.IsAvailable);
 
             if (filter.HotelId.HasValue)
                 query = query.Where(r => r.HotelId == filter.HotelId.Value);
@@ -184,16 +201,14 @@ namespace HotelBookingApp.Services
 
         private static RoomResponseDto MapToDto(Room r) => new()
         {
-            RoomId = r.RoomId,
-            HotelId = r.HotelId,
-            RoomNumber = r.RoomNumber,
-            RoomType = r.RoomType,
+            RoomId        = r.RoomId,
+            HotelId       = r.HotelId,
+            RoomNumber    = r.RoomNumber,
+            RoomType      = r.RoomType,
             PricePerNight = r.PricePerNight,
-            Capacity = r.Capacity,
-            ImageUrl = r.ImageUrl,
-            IsAvailable = r.IsAvailable,
-            TotalRooms = r.TotalRooms,
-            AvailableRooms = r.AvailableRooms
+            Capacity      = r.Capacity,
+            ImageUrl      = r.ImageUrl,
+            IsAvailable   = r.IsAvailable
         };
     }
 }

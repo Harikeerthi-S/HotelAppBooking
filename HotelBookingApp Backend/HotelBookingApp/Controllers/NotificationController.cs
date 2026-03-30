@@ -25,6 +25,95 @@ namespace HotelBookingApp.Controllers
         }
 
         // ----------------------------------
+        // ✅ GET ALL (Admin)
+        // ----------------------------------
+        [HttpGet("all")]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> GetAll()
+        {
+            try
+            {
+                var list = await _notificationService.GetAllAsync();
+                return Ok(list);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching all notifications");
+                return StatusCode(500, new ErrorResponseDto { StatusCode = 500, Message = "Error retrieving notifications.", Timestamp = DateTime.UtcNow });
+            }
+        }
+
+        // ----------------------------------
+        // ✅ GET BY USER (Admin)
+        // ----------------------------------
+        [HttpGet("user/{userId:int}")]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> GetByUser(int userId)
+        {
+            try
+            {
+                var list = await _notificationService.GetByUserAsync(userId);
+                return Ok(list);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching notifications for user {UserId}", userId);
+                return StatusCode(500, new ErrorResponseDto { StatusCode = 500, Message = "Error retrieving notifications.", Timestamp = DateTime.UtcNow });
+            }
+        }
+
+        /// <summary>All notifications (paged). Admin only.</summary>
+        [HttpPost("paged")]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> GetPaged([FromBody] PagedRequestDto request)
+        {
+            try
+            {
+                var result = await _notificationService.GetPagedAsync(request);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching paged notifications");
+                return StatusCode(500, new ErrorResponseDto { StatusCode = 500, Message = "Error retrieving notifications.", Timestamp = DateTime.UtcNow });
+            }
+        }
+
+        /// <summary>Notifications for a user (paged). Admin only.</summary>
+        [HttpPost("user/{userId:int}/paged")]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> GetPagedByUser(int userId, [FromBody] PagedRequestDto request)
+        {
+            try
+            {
+                var result = await _notificationService.GetPagedByUserAsync(userId, request);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching paged notifications for user {UserId}", userId);
+                return StatusCode(500, new ErrorResponseDto { StatusCode = 500, Message = "Error retrieving notifications.", Timestamp = DateTime.UtcNow });
+            }
+        }
+
+        /// <summary>Unread count (all users). Admin.</summary>
+        [HttpGet("all/unread-count")]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> GetUnreadCountAll()
+        {
+            try
+            {
+                var n = await _notificationService.GetUnreadCountAllAsync();
+                return Ok(new { count = n });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error counting unread notifications");
+                return StatusCode(500, new ErrorResponseDto { StatusCode = 500, Message = "Error retrieving count.", Timestamp = DateTime.UtcNow });
+            }
+        }
+
+        // ----------------------------------
         // ✅ CREATE (Admin)
         // ----------------------------------
         [HttpPost]
@@ -118,6 +207,77 @@ namespace HotelBookingApp.Controllers
                 {
                     StatusCode = 500,
                     Message = "An error occurred while retrieving notifications.",
+                    Timestamp = DateTime.UtcNow
+                });
+            }
+        }
+
+        /// <summary>Current user notifications (paged).</summary>
+        [HttpPost("my/paged")]
+        [Authorize(Roles = "user")]
+        public async Task<IActionResult> GetMyPaged([FromBody] PagedRequestDto request)
+        {
+            try
+            {
+                var userIdClaim =
+                    User.FindFirst("id")?.Value ??
+                    User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (!int.TryParse(userIdClaim, out var userId))
+                {
+                    return Unauthorized(new ErrorResponseDto
+                    {
+                        StatusCode = 401,
+                        Message = "Invalid token — user ID missing.",
+                        Timestamp = DateTime.UtcNow
+                    });
+                }
+
+                var result = await _notificationService.GetPagedByUserAsync(userId, request);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching paged notifications for current user");
+                return StatusCode(500, new ErrorResponseDto
+                {
+                    StatusCode = 500,
+                    Message = "An error occurred while retrieving notifications.",
+                    Timestamp = DateTime.UtcNow
+                });
+            }
+        }
+
+        [HttpGet("my/unread-count")]
+        [Authorize(Roles = "user")]
+        public async Task<IActionResult> GetMyUnreadCount()
+        {
+            try
+            {
+                var userIdClaim =
+                    User.FindFirst("id")?.Value ??
+                    User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                if (!int.TryParse(userIdClaim, out var userId))
+                {
+                    return Unauthorized(new ErrorResponseDto
+                    {
+                        StatusCode = 401,
+                        Message = "Invalid token — user ID missing.",
+                        Timestamp = DateTime.UtcNow
+                    });
+                }
+
+                var n = await _notificationService.GetUnreadCountForUserAsync(userId);
+                return Ok(new { count = n });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error counting unread notifications for current user");
+                return StatusCode(500, new ErrorResponseDto
+                {
+                    StatusCode = 500,
+                    Message = "An error occurred while retrieving count.",
                     Timestamp = DateTime.UtcNow
                 });
             }

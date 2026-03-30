@@ -50,3 +50,19 @@
 .fw-600 { font-weight:600; }
 .empty-state { text-align:center; padding:40px 20px; color:#6c757d; }
 .empty-icon  { font-size:3rem; display:block; margin-bottom:10px; opacity:.35; }
+
+/* ── Audit log action badges ── */
+.action-badge    { display:inline-block; padding:2px 9px; border-radius:50px; font-size:.7rem; font-weight:700; }
+.action-create   { background:#e8f5e9; color:#2e7d32; }
+.action-update   { background:#e3f2fd; color:#0277bd; }
+.action-delete   { background:#fce4ec; color:#c62828; }
+.action-auth     { background:#fff8e1; color:#f57f17; }
+.action-default  { background:#f3e5f5; color:#6a1b9a; }
+
+/* ── Dash Pager ── */
+.dash-pager { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:16px; flex-wrap:wrap; }
+.dash-pager__btn { width:36px; height:36px; border-radius:50%; border:1.5px solid #dee2e6; background:#fff; color:#555; font-size:.9rem; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; transition:all .18s; padding:0; }
+.dash-pager__btn:hover:not(:disabled) { border-color:#e84393; color:#e84393; transform:translateY(-1px); }
+.dash-pager__btn:disabled { opacity:.35; cursor:not-allowed; }
+.dash-pager__current { min-width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#e84393,#c2185b); color:#fff; font-size:.85rem; font-weight:700; display:inline-flex; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(232,67,147,.4); }
+.dash-pager__meta { min-width:52px; height:36px; padding:0 12px; border-radius:50px; background:linear-gradient(135deg,#e84393,#c2185b); color:#fff; font-size:.82rem; font-weight:700; display:inline-flex; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(232,67,147,.4); }

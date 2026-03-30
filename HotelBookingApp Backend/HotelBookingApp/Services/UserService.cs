@@ -71,6 +71,31 @@ namespace HotelBookingApp.Services
             return users.Select(MapToUserResponse).ToList();
         }
 
+        // ── GET PAGED ─────────────────────────────────────────────────────
+        public async Task<PagedResponseDto<UserResponseDto>> GetPagedAsync(PagedRequestDto request)
+        {
+            request.PageNumber = Math.Max(1, request.PageNumber);
+            request.PageSize   = Math.Clamp(request.PageSize, 1, 10);
+
+            var all     = await _userRepo.GetAllAsync();
+            var ordered = all.OrderBy(u => u.UserId).ToList();
+            var total   = ordered.Count;
+            var data    = ordered
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .Select(MapToUserResponse)
+                .ToList();
+
+            return new PagedResponseDto<UserResponseDto>
+            {
+                Data         = data,
+                PageNumber   = request.PageNumber,
+                PageSize     = request.PageSize,
+                TotalRecords = total,
+                TotalPages   = (int)Math.Ceiling((double)total / request.PageSize)
+            };
+        }
+
         // ── DELETE ────────────────────────────────────────────────────────
         public async Task<bool> DeleteAsync(int userId)
         {

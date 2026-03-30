@@ -44,7 +44,8 @@ export class Register {
     const model    = new RegisterModel();
     model.userName = this.userName!.value!;
     model.email    = this.email!.value!;
-    model.phone    = this.registerForm.get('phone')!.value ?? '';
+    const phone = this.registerForm.get('phone')!.value?.trim();
+    model.phone = phone || undefined;   // send undefined (omitted) if empty
     model.password = this.password!.value!;
     model.role     = 'user';   // always register as user
 

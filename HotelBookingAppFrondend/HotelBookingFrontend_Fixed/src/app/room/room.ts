@@ -4,13 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { APIService } from '../services/api.service';
 import { TokenService } from '../services/token.service';
 import { ToastrService } from 'ngx-toastr';
-import { RoomModel } from '../models/room.model';
+import { RoomModel, CreateRoomModel } from '../models/room.model';
 import { HotelModel } from '../models/hotel.model';
+import { ImgUrlPipe } from '../shared/image.pipe';
 
 @Component({
   selector: 'app-room',
   standalone: true,
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule,ImgUrlPipe],
   templateUrl: './room.html',
   styleUrl: './room.css'
 })
@@ -60,14 +61,13 @@ export class Room implements OnInit {
     });
   }
 
-  /* GET /api/room                  — all rooms
-     GET /api/room?hotelId={id}     — rooms for a specific hotel */
+  /* POST /api/room/all/paged?hotelId={id} — rooms with optional hotel filter */
   loadRooms(): void {
     this.loading.set(true);
     const hotelId = this.filterHotelId() || undefined;
-    this.apiService.apiGetRooms(hotelId).subscribe({
-      next: list => { this.rooms.set(list); this.loading.set(false); },
-      error: ()   => this.loading.set(false)
+    this.apiService.apiGetRoomsPaged({ pageNumber: 1, pageSize: 100 }, hotelId).subscribe({
+      next: res => { this.rooms.set(res.data ?? []); this.loading.set(false); },
+      error: ()  => this.loading.set(false)
     });
   }
 
@@ -86,13 +86,13 @@ export class Room implements OnInit {
 
     this.saving.set(true);
 
-    const payload: Partial<RoomModel> = {
+    const payload: CreateRoomModel = {
       hotelId:       +f.hotelId,
       roomNumber:    +f.roomNumber,
       roomType:      f.roomType,
       pricePerNight: +f.pricePerNight,
       capacity:      +f.capacity,
-      imageUrl:      f.imageUrl || undefined   // room image field — NOT imagePath
+      imageUrl:      f.imageUrl || undefined
     };
 
     const obs = this.editRoomId()

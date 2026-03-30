@@ -1,10 +1,13 @@
+
 @if (loading()) {
   <div class="spinner-wrap" style="min-height:60vh"><div class="spinner-ring"></div></div>
 } @else if (hotel()) {
 
   <!-- HERO IMAGE -->
   <div class="hotel-hero position-relative">
-    <img [src]="getImage()" [alt]="hotel()!.hotelName" class="hotel-hero-img w-100">
+    @if (hotel()!.imagePath) {
+      <img [src]="hotel()!.imagePath" [alt]="hotel()!.hotelName" class="hotel-hero-img w-100">
+    }
     <div class="hotel-hero-overlay"></div>
     <a routerLink="/hotels" class="btn btn-light btn-sm position-absolute top-0 start-0 m-3 rounded-pill">
       <i class="bi bi-arrow-left me-1"></i>Back
@@ -74,6 +77,28 @@
           </div>
         </div>
 
+        <!-- AMENITIES -->
+        @if (hotelAmenities().length > 0) {
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+              <h5 class="fw-700 mb-3"><i class="bi bi-stars me-2 text-warning"></i>Hotel Amenities</h5>
+              <div class="row g-3">
+                @for (a of hotelAmenities(); track a.hotelAmenityId) {
+                  <div class="col-6 col-sm-4 col-md-3">
+                    <div class="amenity-detail-tile text-center p-3 rounded-3">
+                      <div class="fs-2 mb-1">{{ a.amenityIcon || '✨' }}</div>
+                      <div class="fw-600 small">{{ a.amenityName }}</div>
+                      @if (a.amenityDescription) {
+                        <div class="text-muted" style="font-size:.7rem">{{ a.amenityDescription }}</div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
         <!-- ROOMS -->
         <div class="card border-0 shadow-sm mb-4">
           <div class="card-body p-4">
@@ -85,13 +110,13 @@
                 @for (room of rooms(); track room.roomId) {
                   <div class="room-card d-flex justify-content-between align-items-center"
                        [class.selected]="selectedRoom()?.roomId === room.roomId"
+                       [class.room-unavailable]="!room.isAvailable"
                        (click)="selectRoom(room)">
                     <div class="d-flex align-items-center gap-3">
                       @if (room.imageUrl) {
-                        <img [src]="room.imageUrl" [alt]="room.roomType"
-                             class="rounded-3 object-fit-cover"
-                             style="width:72px;height:60px;object-fit:cover;"
-                             onerror="this.style.display='none'">
+                        <img [src]="room.imageUrl | imgUrl : room.roomId" [alt]="room.roomType"
+                             class="rounded-3"
+                             style="width:72px;height:60px;object-fit:cover;">
                       } @else {
                         <span class="fs-3">{{ getRoomIcon(room.roomType) }}</span>
                       }
@@ -101,11 +126,15 @@
                           Room #{{ room.roomNumber }} &nbsp;·&nbsp;
                           <i class="bi bi-people me-1"></i>{{ room.capacity }} guests
                         </div>
-                        <span class="badge rounded-pill small mt-1 px-2"
-                              [class.bg-success]="room.isAvailable"
-                              [class.bg-danger]="!room.isAvailable">
-                          {{ room.isAvailable ? '✓ Available' : '✗ Unavailable' }}
-                        </span>
+                        @if (!room.isAvailable) {
+                          <span class="badge bg-danger rounded-pill small mt-1 px-2">
+                            <i class="bi bi-x-circle me-1"></i>Fully Booked
+                          </span>
+                        } @else {
+                          <span class="badge bg-success rounded-pill small mt-1 px-2">
+                            <i class="bi bi-check-circle me-1"></i>Available
+                          </span>
+                        }
                       </div>
                     </div>
                     <div class="text-end">
@@ -114,9 +143,12 @@
                       <button class="btn btn-sm mt-2 rounded-pill px-3"
                               [class.btn-primary-custom]="selectedRoom()?.roomId !== room.roomId"
                               [class.btn-success]="selectedRoom()?.roomId === room.roomId"
+                              [class.btn-secondary]="!room.isAvailable"
                               [disabled]="!room.isAvailable"
-                              (click)="selectRoom(room)">
-                        {{ selectedRoom()?.roomId === room.roomId ? '✓ Selected' : 'Select' }}
+                              (click)="selectRoom(room); $event.stopPropagation()">
+                        @if (!room.isAvailable) { Fully Booked }
+                        @else if (selectedRoom()?.roomId === room.roomId) { ✓ Selected }
+                        @else { Select }
                       </button>
                     </div>
                   </div>
@@ -130,7 +162,6 @@
         <div class="card border-0 shadow-sm">
           <div class="card-body p-4">
             <h5 class="fw-700 mb-3">Guest Reviews ({{ reviews().length }})</h5>
-
             @if (reviews().length === 0) {
               <p class="text-muted small">No reviews yet. Be the first to review!</p>
             } @else {
@@ -156,38 +187,7 @@
                 }
               </div>
             }
-
             @if (isLoggedIn() && getUserRole() === 'user') {
-              <div class="border-top pt-3">
-                <h6 class="fw-600 mb-3">Write a Review</h6>
-                <div class="mb-3">
-                  <label class="form-label">Rating</label>
-                  <select class="form-select form-select-sm"
-                          [value]="reviewRating()"
-                          (change)="reviewRating.set(+$any($event.target).value)">
-                    <option value="0">Select rating…</option>
-                    <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
-                    <option value="4">⭐⭐⭐⭐ Very Good</option>
-                    <option value="3">⭐⭐⭐ Good</option>
-                    <option value="2">⭐⭐ Fair</option>
-                    <option value="1">⭐ Poor</option>
-                  </select>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Comment</label>
-                  <textarea class="form-control form-control-sm" rows="3"
-                            [value]="reviewComment()"
-                            (input)="reviewComment.set($any($event.target).value)"
-                            placeholder="Share your experience…"></textarea>
-                </div>
-                <button class="btn btn-sm btn-primary-custom rounded-pill px-4"
-                        [disabled]="reviewLoading()" (click)="submitReview()">
-                  @if (reviewLoading()) {
-                    <span class="spinner-border spinner-border-sm me-1"></span>
-                  }
-                  Submit Review
-                </button>
-              </div>
             }
           </div>
         </div>
@@ -209,28 +209,47 @@
                   ₹{{ selectedRoom()!.pricePerNight.toLocaleString('en-IN') }}
                   <span class="per-night">/night</span>
                 </div>
+                <div class="mt-2">
+                  @if (!selectedRoom()!.isAvailable) {
+                    <span class="badge bg-danger rounded-pill"><i class="bi bi-x-circle me-1"></i>Room Deactivated</span>
+                  } @else if (dateChecking()) {
+                    <span class="badge bg-secondary rounded-pill"><span class="spinner-border spinner-border-sm me-1"></span>Checking…</span>
+                  } @else if (dateAvailability() === true) {
+                    <span class="badge bg-success rounded-pill"><i class="bi bi-check-circle me-1"></i>Available for selected dates</span>
+                  } @else if (dateAvailability() === false) {
+                    <span class="badge bg-danger rounded-pill"><i class="bi bi-x-circle me-1"></i>Already booked for these dates</span>
+                  } @else {
+                    <span class="badge bg-secondary rounded-pill"><i class="bi bi-calendar me-1"></i>Select dates to check</span>
+                  }
+                </div>
               </div>
             }
 
             <div class="mb-3">
               <label class="form-label">Check-in Date</label>
               <input class="form-control form-control-sm" type="date"
-                     [value]="checkIn()" (input)="checkIn.set($any($event.target).value)"
+                     [value]="checkIn()"
+                     (input)="checkIn.set($any($event.target).value); checkDateAvailability()"
                      [min]="today">
             </div>
             <div class="mb-3">
               <label class="form-label">Check-out Date</label>
               <input class="form-control form-control-sm" type="date"
-                     [value]="checkOut()" (input)="checkOut.set($any($event.target).value)"
+                     [value]="checkOut()"
+                     (input)="checkOut.set($any($event.target).value); checkDateAvailability()"
                      [min]="checkIn() || today">
             </div>
             <div class="mb-3">
               <label class="form-label">Number of Rooms</label>
               <select class="form-select form-select-sm"
                       [value]="numRooms()"
+                      [disabled]="!selectedRoom() || !selectedRoom()!.isAvailable"
                       (change)="numRooms.set(+$any($event.target).value)">
-                @for (n of [1,2,3,4,5]; track n) {
+                @for (n of sidebarRoomOptions(); track n) {
                   <option [value]="n">{{ n }} Room{{ n > 1 ? 's' : '' }}</option>
+                }
+                @if (!selectedRoom() || !selectedRoom()!.isAvailable) {
+                  <option value="0" disabled>No rooms available</option>
                 }
               </select>
             </div>
@@ -250,11 +269,23 @@
             }
 
             <button class="btn btn-primary-custom w-100 py-2 rounded-pill fw-600"
-                    [disabled]="!selectedRoom() || !checkIn() || !checkOut()"
+                    [disabled]="!canBook() || dateChecking()"
                     (click)="proceedToBook()">
-              <i class="bi bi-calendar-check me-2"></i>
-              {{ isLoggedIn() ? 'Book Now' : 'Login to Book' }}
+              @if (dateChecking()) {
+                <span class="spinner-border spinner-border-sm me-2"></span>Checking availability…
+              } @else if (dateAvailability() === false) {
+                <i class="bi bi-x-circle me-2"></i>Dates Not Available
+              } @else {
+                <i class="bi bi-calendar-check me-2"></i>
+                {{ isLoggedIn() ? 'Book Now' : 'Login to Book' }}
+              }
             </button>
+
+            @if (dateAvailability() === false) {
+              <div class="alert alert-warning rounded-3 mt-2 small p-2 text-center">
+                This room is booked for the selected dates. Try different dates.
+              </div>
+            }
 
             <div class="mt-3 pt-3 border-top">
               <div class="d-flex align-items-center gap-2 small text-muted mb-1">

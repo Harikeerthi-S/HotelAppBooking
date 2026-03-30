@@ -1,18 +1,23 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { CanActivateFn, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { TokenService } from '../services/token.service';
 import { ToastrService } from 'ngx-toastr';
 
-export const authGuard: CanActivateFn = () => {
-  const ts = inject(TokenService), r = inject(Router), t = inject(ToastrService);
-  if (ts.isLoggedIn()) return true;
-  t.warning('Please login to access this page.', 'Login Required');
-  r.navigateByUrl('/login'); return false;
+const redirectToLogin = (r: Router, t: ToastrService, state: RouterStateSnapshot, msg = 'Please login to access this page.') => {
+  t.warning(msg, 'Login Required');
+  r.navigate(['/login'], { queryParams: { returnUrl: state.url } });
+  return false;
 };
 
-export const userGuard: CanActivateFn = () => {
+export const authGuard: CanActivateFn = (_route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
   const ts = inject(TokenService), r = inject(Router), t = inject(ToastrService);
-  if (!ts.isLoggedIn()) { t.warning('Please login.', 'Login Required'); r.navigateByUrl('/login'); return false; }
+  if (ts.isLoggedIn()) return true;
+  return redirectToLogin(r, t, state);
+};
+
+export const userGuard: CanActivateFn = (_route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+  const ts = inject(TokenService), r = inject(Router), t = inject(ToastrService);
+  if (!ts.isLoggedIn()) return redirectToLogin(r, t, state, 'Please login.');
   const role = ts.getRoleFromToken();
   if (role === 'user') return true;
   t.error('This area is for registered guests only.', 'Access Denied');
@@ -31,9 +36,9 @@ export const guestGuard: CanActivateFn = () => {
   return false;
 };
 
-export const adminGuard: CanActivateFn = () => {
+export const adminGuard: CanActivateFn = (_route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
   const ts = inject(TokenService), r = inject(Router), t = inject(ToastrService);
-  if (!ts.isLoggedIn()) { t.warning('Please login.', 'Login Required'); r.navigateByUrl('/login'); return false; }
+  if (!ts.isLoggedIn()) return redirectToLogin(r, t, state, 'Please login.');
   const role = ts.getRoleFromToken();
   if (role === 'admin') return true;
   t.error('Admin access required.', 'Access Denied');
@@ -42,9 +47,9 @@ export const adminGuard: CanActivateFn = () => {
   return false;
 };
 
-export const managerGuard: CanActivateFn = () => {
+export const managerGuard: CanActivateFn = (_route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
   const ts = inject(TokenService), r = inject(Router), t = inject(ToastrService);
-  if (!ts.isLoggedIn()) { t.warning('Please login.', 'Login Required'); r.navigateByUrl('/login'); return false; }
+  if (!ts.isLoggedIn()) return redirectToLogin(r, t, state, 'Please login.');
   const role = ts.getRoleFromToken();
   if (role === 'hotelmanager') return true;
   t.error('Hotel Manager access required.', 'Access Denied');
@@ -53,9 +58,9 @@ export const managerGuard: CanActivateFn = () => {
   return false;
 };
 
-export const roomGuard: CanActivateFn = () => {
+export const roomGuard: CanActivateFn = (_route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
   const ts = inject(TokenService), r = inject(Router), t = inject(ToastrService);
-  if (!ts.isLoggedIn()) { t.warning('Please login.', 'Login Required'); r.navigateByUrl('/login'); return false; }
+  if (!ts.isLoggedIn()) return redirectToLogin(r, t, state, 'Please login.');
   const role = ts.getRoleFromToken();
   if (role === 'admin' || role === 'hotelmanager') return true;
   t.error('Admin or Hotel Manager access required.', 'Access Denied');

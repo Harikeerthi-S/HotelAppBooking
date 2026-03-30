@@ -35,8 +35,8 @@ namespace HotelBookingApp.Migrations
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Icon")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -164,6 +164,46 @@ namespace HotelBookingApp.Migrations
                     b.HasIndex("BookingId");
 
                     b.ToTable("Cancellations");
+                });
+
+            modelBuilder.Entity("HotelBookingApp.Models.ChatMessage", b =>
+                {
+                    b.Property<int>("ChatMessageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ChatMessageId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Intent")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Sender")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("SessionId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ChatMessageId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ChatMessages");
                 });
 
             modelBuilder.Entity("HotelBookingApp.Models.Hotel", b =>
@@ -339,9 +379,6 @@ namespace HotelBookingApp.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RoomId"));
 
-                    b.Property<int>("AvailableRooms")
-                        .HasColumnType("int");
-
                     b.Property<int>("Capacity")
                         .HasColumnType("int");
 
@@ -368,9 +405,6 @@ namespace HotelBookingApp.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("TotalRooms")
-                        .HasColumnType("int");
 
                     b.HasKey("RoomId");
 
@@ -417,6 +451,40 @@ namespace HotelBookingApp.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("HotelBookingApp.Models.UserAmenityPreference", b =>
+                {
+                    b.Property<int>("PreferenceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PreferenceId"));
+
+                    b.Property<int>("AmenityId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Pending");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PreferenceId");
+
+                    b.HasIndex("AmenityId");
+
+                    b.HasIndex("UserId", "AmenityId")
+                        .IsUnique();
+
+                    b.ToTable("UserAmenityPreferences");
                 });
 
             modelBuilder.Entity("HotelBookingApp.Models.Wishlist", b =>
@@ -493,6 +561,16 @@ namespace HotelBookingApp.Migrations
                     b.Navigation("Booking");
                 });
 
+            modelBuilder.Entity("HotelBookingApp.Models.ChatMessage", b =>
+                {
+                    b.HasOne("HotelBookingApp.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("HotelBookingApp.Models.HotelAmenity", b =>
                 {
                     b.HasOne("HotelBookingApp.Models.Amenity", "Amenity")
@@ -562,6 +640,25 @@ namespace HotelBookingApp.Migrations
                         .IsRequired();
 
                     b.Navigation("Hotel");
+                });
+
+            modelBuilder.Entity("HotelBookingApp.Models.UserAmenityPreference", b =>
+                {
+                    b.HasOne("HotelBookingApp.Models.Amenity", "Amenity")
+                        .WithMany()
+                        .HasForeignKey("AmenityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HotelBookingApp.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Amenity");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("HotelBookingApp.Models.Wishlist", b =>

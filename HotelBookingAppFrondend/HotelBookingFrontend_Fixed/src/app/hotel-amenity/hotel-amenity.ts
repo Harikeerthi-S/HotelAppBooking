@@ -1,4 +1,4 @@
-import { Component, inject, signal, input, output, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { APIService } from '../services/api.service';
@@ -6,6 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import { HotelModel } from '../models/hotel.model';
 import { AmenityModel } from '../models/amenity.model';
 import { HotelAmenityModel, CreateHotelAmenityModel } from '../models/hotel-amenity.model';
+import { UserAmenityPreferenceModel } from '../models/user-amenity-preference.model';
 
 @Component({
   selector: 'app-hotel-amenity',
@@ -24,14 +25,23 @@ export class HotelAmenity implements OnInit {
   saving         = signal(false);
 
   // Form state
-  selectedHotelId  = signal(0);
+  selectedHotelId   = signal(0);
   selectedAmenityId = signal(0);
 
   // Enriched view: join hotel and amenity names
   enrichedList = signal<{ ha: HotelAmenityModel; hotelName: string; amenityName: string }[]>([]);
 
+  // User preferences (requested by users)
+  userPreferences    = signal<UserAmenityPreferenceModel[]>([]);
+  prefLoading        = signal(false);
+  activeView         = signal<'assignments' | 'preferences'>('assignments');
+
+  // Grouped preferences: amenityName → list of users who want it
+  groupedPreferences = signal<{ amenityId: number; amenityName: string; icon: string; users: UserAmenityPreferenceModel[] }[]>([]);
+
   ngOnInit(): void {
     this.loadAll();
+    this.loadUserPreferences();
   }
 
   loadAll(): void {
@@ -133,5 +143,75 @@ export class HotelAmenity implements OnInit {
 
   getHotelAmenities(hotelId: number): HotelAmenityModel[] {
     return this.hotelAmenities().filter(ha => ha.hotelId === hotelId);
+  }
+
+  // ── User Preferences ──────────────────────────────────────────────────────
+  loadUserPreferences(): void {
+    this.prefLoading.set(true);
+    this.apiService.apiGetAllAmenityPreferences().subscribe({
+      next: prefs => {
+        this.userPreferences.set(prefs ?? []);
+        this.buildGroupedPreferences(prefs ?? []);
+        this.prefLoading.set(false);
+      },
+      error: () => this.prefLoading.set(false)
+    });
+  }
+
+  buildGroupedPreferences(prefs: UserAmenityPreferenceModel[]): void {
+    const map = new Map<number, UserAmenityPreferenceModel[]>();
+    prefs.forEach(p => {
+      if (!map.has(p.amenityId)) map.set(p.amenityId, []);
+      map.get(p.amenityId)!.push(p);
+    });
+    const grouped = Array.from(map.entries()).map(([amenityId, users]) => ({
+      amenityId,
+      amenityName: users[0].amenityName,
+      icon: users[0].amenityIcon ?? '✨',
+      users
+    })).sort((a, b) => b.users.length - a.users.length); // most requested first
+    this.groupedPreferences.set(grouped);
+  }
+
+  // Assign amenity to a hotel directly from the preferences panel
+  assignFromPreference(amenityId: number): void {
+    this.selectedAmenityId.set(amenityId);
+    this.activeView.set('assignments');
+    this.toastr.info('Amenity pre-selected. Choose a hotel and click Assign.');
+  }
+
+  totalPreferenceRequests(): number {
+    return this.userPreferences().length;
+  }
+
+  uniqueUsersCount(): number {
+    return new Set(this.userPreferences().map(p => p.userId)).size;
+  }
+
+  userPrefStatusClass(s: string | undefined): string {
+    const x = (s || 'Pending').toLowerCase();
+    if (x === 'approved') return 'bg-success';
+    if (x === 'rejected') return 'bg-danger';
+    return 'bg-warning text-dark';
+  }
+
+  approveUserPref(p: UserAmenityPreferenceModel): void {
+    this.apiService.apiApproveAmenityPreference(p.preferenceId).subscribe({
+      next: updated => {
+        this.userPreferences.update(arr => arr.map(x => x.preferenceId === p.preferenceId ? { ...x, ...updated } : x));
+        this.buildGroupedPreferences(this.userPreferences());
+        this.toastr.success(`Approved: ${p.userName} → ${p.amenityName}`);
+      }
+    });
+  }
+
+  rejectUserPref(p: UserAmenityPreferenceModel): void {
+    this.apiService.apiRejectAmenityPreference(p.preferenceId).subscribe({
+      next: updated => {
+        this.userPreferences.update(arr => arr.map(x => x.preferenceId === p.preferenceId ? { ...x, ...updated } : x));
+        this.buildGroupedPreferences(this.userPreferences());
+        this.toastr.success(`Rejected: ${p.userName} → ${p.amenityName}`);
+      }
+    });
   }
 }

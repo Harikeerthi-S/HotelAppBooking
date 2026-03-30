@@ -24,5 +24,8 @@ namespace HotelBookingApp.Interfaces.IServices
 
         // ── FILTER (NON-PAGED) ─────────────────
         Task<IEnumerable<RoomResponseDto>> FilterAsync(RoomFilterDto filter);
+
+        // ── DATE-RANGE AVAILABILITY ────────────
+        Task<bool> IsAvailableForDatesAsync(int roomId, DateTime checkIn, DateTime checkOut);
     }
 }

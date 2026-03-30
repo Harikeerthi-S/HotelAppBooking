@@ -1,22 +1,25 @@
-import { Component, inject, signal, OnDestroy } from '@angular/core';
+import { Component, inject, signal, computed, OnDestroy, OnInit } from '@angular/core';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { CommonModule } from '@angular/common';
+import { Subscription, interval, of } from 'rxjs';
+import { switchMap, catchError } from 'rxjs/operators';
 import { APIService } from '../services/api.service';
 import { TokenService } from '../services/token.service';
 import { ToastrService } from 'ngx-toastr';
 import { HotelModel } from '../models/hotel.model';
 import { RoomModel } from '../models/room.model';
 import { ReviewModel } from '../models/review.model';
+import { HotelAmenityModel } from '../models/hotel-amenity.model';
 import { $userStatus, UserState } from '../dynamicCommunication/userObservable';
-
+import { ImgUrlPipe } from '../shared/image.pipe';
 @Component({
   selector: 'app-hotel-detail',
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, CommonModule, ImgUrlPipe],
   templateUrl: './hotel-detail.html',
   styleUrl: './hotel-detail.css'
 })
-export class HotelDetail implements OnDestroy {
+export class HotelDetail implements OnInit, OnDestroy {
   private apiService   = inject(APIService);
   private tokenService = inject(TokenService);
   private toastr       = inject(ToastrService);
@@ -26,6 +29,7 @@ export class HotelDetail implements OnDestroy {
   hotel        = signal<HotelModel | null>(null);
   rooms        = signal<RoomModel[]>([]);
   reviews      = signal<ReviewModel[]>([]);
+  hotelAmenities = signal<HotelAmenityModel[]>([]);
   selectedRoom = signal<RoomModel | null>(null);
   loading      = signal(true);
   wishlisted   = signal(false);
@@ -35,9 +39,24 @@ export class HotelDetail implements OnDestroy {
   numRooms   = signal(1);
   today      = new Date().toISOString().split('T')[0];
 
+  // Date-range availability for the selected room
+  dateAvailability = signal<boolean | null>(null); // null = not checked yet
+  dateChecking     = signal(false);
+
   reviewRating  = signal(0);
   reviewComment = signal('');
   reviewLoading = signal(false);
+
+  // Sidebar options — only 1 room per booking
+  sidebarRoomOptions = computed(() => [1]);
+
+  // Can proceed to book: room selected, dates set, not admin-deactivated, dates available
+  canBook = computed(() => {
+    const r = this.selectedRoom();
+    if (!r || !r.isAvailable) return false;
+    if (!this.checkIn() || !this.checkOut()) return false;
+    return this.dateAvailability() === true;
+  });
 
   isLoggedIn  = () => this.tokenService.isLoggedIn();
   getUserRole = () => this.tokenService.getRoleFromToken() ?? '';
@@ -45,6 +64,7 @@ export class HotelDetail implements OnDestroy {
   // FIX: read userId from Observable (localStorage) — not sessionStorage
   private currentUser = signal<UserState>({ userId: 0, userName: '', email: '', role: '' });
   private sub: Subscription;
+  private pollSub: Subscription | null = null;
 
   get nights(): number {
     if (!this.checkIn() || !this.checkOut()) return 0;
@@ -63,7 +83,37 @@ export class HotelDetail implements OnDestroy {
     this.loadHotel(id);
   }
 
-  ngOnDestroy(): void { this.sub.unsubscribe(); }
+  ngOnInit(): void {
+    // Poll date-range availability every 20s for the selected room + current dates
+    this.pollSub = interval(20000).pipe(
+      switchMap(() => {
+        const room = this.selectedRoom();
+        const ci   = this.checkIn();
+        const co   = this.checkOut();
+        if (!room || !ci || !co) return of(null);
+        return this.apiService.apiCheckRoomAvailability(room.roomId, ci, co).pipe(
+          catchError(() => of(null))
+        );
+      })
+    ).subscribe({
+      next: res => {
+        if (res === null) return;
+        this.dateAvailability.set(res.isAvailable);
+        if (!res.isAvailable && this.selectedRoom()) {
+          this.toastr.warning(
+            'The selected room is no longer available for your chosen dates.',
+            'Dates Taken'
+          );
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.sub.unsubscribe();
+    this.pollSub?.unsubscribe();
+  }
 
   loadHotel(id: number): void {
     this.apiService.apiGetHotelById(id).subscribe({
@@ -73,20 +123,28 @@ export class HotelDetail implements OnDestroy {
         this.loadRooms(id);
         this.loadReviews(id);
         this.checkWishlist(id);
+        this.loadHotelAmenities(id);
       },
       error: () => this.loading.set(false)
     });
   }
 
   loadRooms(hotelId: number): void {
-    this.apiService.apiGetRooms(hotelId).subscribe({
-      next: r => this.rooms.set(r),
+    this.apiService.apiGetRoomsPaged({ pageNumber: 1, pageSize: 100 }, hotelId).subscribe({
+      next: r => this.rooms.set(r.data ?? []),
       error: () => {}
     });
   }
 
+  loadHotelAmenities(hotelId: number): void {
+    this.apiService.apiGetHotelAmenitiesByHotel(hotelId).subscribe({
+      next: a => this.hotelAmenities.set(a ?? []),
+      error: () => this.hotelAmenities.set([]) // 404 = no amenities assigned yet
+    });
+  }
+
   loadReviews(hotelId: number): void {
-    this.apiService.apiGetReviewsPaged(hotelId, { pageNumber: 1, pageSize: 20 }).subscribe({
+    this.apiService.apiGetReviewsPaged({ hotelId }, { pageNumber: 1, pageSize: 20 }).subscribe({
       next: r => this.reviews.set(r.data),
       error: () => {}
     });
@@ -106,12 +164,28 @@ export class HotelDetail implements OnDestroy {
   selectRoom(room: RoomModel): void {
     if (!room.isAvailable) return;
     this.selectedRoom.set(room);
+    this.dateAvailability.set(null);
+    this.checkDateAvailability();
+  }
+
+  checkDateAvailability(): void {
+    const room = this.selectedRoom();
+    const ci   = this.checkIn();
+    const co   = this.checkOut();
+    if (!room || !ci || !co) { this.dateAvailability.set(null); return; }
+    this.dateChecking.set(true);
+    this.apiService.apiCheckRoomAvailability(room.roomId, ci, co).subscribe({
+      next: res => { this.dateAvailability.set(res.isAvailable); this.dateChecking.set(false); },
+      error: ()  => { this.dateAvailability.set(null);           this.dateChecking.set(false); }
+    });
   }
 
   toggleWishlist(): void {
     if (!this.tokenService.isLoggedIn()) {
       this.toastr.warning('Please login to save hotels.');
-      this.router.navigateByUrl('/login');
+      const hotelDetailUrl = this.router.url;
+      sessionStorage.setItem('hb_returnUrl', hotelDetailUrl);
+      this.router.navigate(['/login'], { queryParams: { returnUrl: hotelDetailUrl } });
       return;
     }
     // FIX: use currentUser signal (localStorage)
@@ -138,11 +212,17 @@ export class HotelDetail implements OnDestroy {
   }
 
   proceedToBook(): void {
-    if (!this.tokenService.isLoggedIn()) { this.router.navigateByUrl('/login'); return; }
-    if (!this.selectedRoom())            { this.toastr.warning('Please select a room.'); return; }
-    if (!this.checkIn() || !this.checkOut()) {
-      this.toastr.warning('Please select check-in and check-out dates.'); return;
+    if (!this.canBook()) { this.toastr.warning('Please select a room and available dates.'); return; }
+
+    if (!this.tokenService.isLoggedIn()) {
+      this.toastr.warning('Please login to book a room.', 'Login Required');
+      // After login, return to this hotel detail page so user can complete booking
+      const hotelDetailUrl = this.router.url; // e.g. /hotels/1
+      sessionStorage.setItem('hb_returnUrl', hotelDetailUrl);
+      this.router.navigate(['/login'], { queryParams: { returnUrl: hotelDetailUrl } });
+      return;
     }
+
     this.router.navigate(
       ['/booking', this.hotel()!.hotelId, this.selectedRoom()!.roomId],
       { queryParams: { checkIn: this.checkIn(), checkOut: this.checkOut(), rooms: this.numRooms() } }
@@ -164,7 +244,7 @@ export class HotelDetail implements OnDestroy {
     const userId = this.currentUser().userId;
     if (!userId || userId < 1) {
       this.toastr.error('Session expired. Please login again.');
-      this.router.navigateByUrl('/login');
+      this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
       return;
     }
 
@@ -198,12 +278,6 @@ export class HotelDetail implements OnDestroy {
     });
   }
 
-  getImage(): string {
-    const imgs = ['photo-1566073771259-6a8506099945','photo-1551882547-ff40c63fe5fa','photo-1571896349842-33c89424de2d'];
-    const h = this.hotel();
-    if (h?.imagePath?.startsWith('http')) return h.imagePath;
-    return `https://images.unsplash.com/${imgs[(h?.hotelId ?? 0) % 3]}?w=1200&h=380&fit=crop`;
-  }
 
   getStars(n: number): number[] { return Array.from({ length: Math.round(n) }, (_, i) => i); }
 

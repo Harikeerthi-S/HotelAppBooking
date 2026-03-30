@@ -3,6 +3,7 @@ using HotelBookingApp.Interfaces.IServices;
 using HotelBookingApp.Models.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace HotelBookingApp.Controllers
 {
@@ -94,6 +95,57 @@ namespace HotelBookingApp.Controllers
             {
                 _logger.LogError(ex, "Error fetching payments");
 
+                return StatusCode(500, new ErrorResponseDto
+                {
+                    StatusCode = 500,
+                    Message = "Error retrieving payments",
+                    Timestamp = DateTime.UtcNow
+                });
+            }
+        }
+
+        /// <summary>All payments (paged). Admin and HotelManager.</summary>
+        [HttpPost("paged")]
+        [Authorize(Roles = "admin,hotelmanager")]
+        public async Task<IActionResult> GetPaged([FromBody] PagedRequestDto request)
+        {
+            try
+            {
+                var result = await _paymentService.GetPagedAsync(request);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching paged payments");
+                return StatusCode(500, new ErrorResponseDto
+                {
+                    StatusCode = 500,
+                    Message = "Error retrieving payments",
+                    Timestamp = DateTime.UtcNow
+                });
+            }
+        }
+
+        /// <summary>Payments for a user (via their bookings). Admin, HotelManager, or the same user.</summary>
+        [HttpPost("user/{userId:int}/paged")]
+        [Authorize(Roles = "admin,hotelmanager,user")]
+        public async Task<IActionResult> GetPagedByUser(int userId, [FromBody] PagedRequestDto request)
+        {
+            try
+            {
+                if (User.IsInRole("user"))
+                {
+                    var claim = User.FindFirst("id")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    if (!int.TryParse(claim, out var uid) || uid != userId)
+                        return Forbid();
+                }
+
+                var result = await _paymentService.GetPagedByUserAsync(userId, request);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching paged payments for user {UserId}", userId);
                 return StatusCode(500, new ErrorResponseDto
                 {
                     StatusCode = 500,

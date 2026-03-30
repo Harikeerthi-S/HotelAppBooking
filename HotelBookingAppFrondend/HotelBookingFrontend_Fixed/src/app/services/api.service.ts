@@ -1,24 +1,44 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { LoginModel } from '../models/login.model';
 import { RegisterModel } from '../models/register.model';
 import { UserModel } from '../models/user.model';
 import { HotelModel } from '../models/hotel.model';
-import { RoomModel } from '../models/room.model';
+import { RoomModel, CreateRoomModel } from '../models/room.model';
 import { BookingModel, CreateBookingModel } from '../models/booking.model';
 import { PaymentModel } from '../models/payment.model';
+import { ChatRequestModel, ChatResponseModel, ChatHistoryModel } from '../models/chat.model';
+import { UserAmenityPreferenceModel } from '../models/user-amenity-preference.model';
 import { CancellationModel } from '../models/cancellation.model';
 import { ReviewModel } from '../models/review.model';
 import { AmenityModel } from '../models/amenity.model';
 import { WishlistModel } from '../models/wishlist.model';
 import { NotificationModel } from '../models/notification.model';
 import { PagedRequest, PagedResponse } from '../models/paged.model';
-import { HotelFilter, RoomFilter } from '../models/filter.model';
+import { HotelFilter, RoomFilter, ReviewFilter, AuditLogFilter } from '../models/filter.model';
 import { HotelAmenityModel, CreateHotelAmenityModel } from '../models/hotel-amenity.model';
-import { BookingRoomModel, CreateBookingRoomModel } from '../models/booking-room.model';
+import { AuditLogModel, CreateAuditLogModel } from '../models/audit-log.model';
 
 const API = environment.apiUrl;
+
+function normalizeUserAmenityPreference(raw: unknown): UserAmenityPreferenceModel {
+  const r = raw as Record<string, unknown>;
+  if (!r || typeof r !== 'object') {
+    return Object.assign(new UserAmenityPreferenceModel(), { status: 'Pending' });
+  }
+  const m = new UserAmenityPreferenceModel();
+  m.preferenceId = Number(r['preferenceId'] ?? r['PreferenceId'] ?? 0);
+  m.userId = Number(r['userId'] ?? r['UserId'] ?? 0);
+  m.userName = String(r['userName'] ?? r['UserName'] ?? '');
+  m.amenityId = Number(r['amenityId'] ?? r['AmenityId'] ?? 0);
+  m.amenityName = String(r['amenityName'] ?? r['AmenityName'] ?? '');
+  m.amenityIcon = (r['amenityIcon'] ?? r['AmenityIcon']) as string | undefined;
+  m.createdAt = String(r['createdAt'] ?? r['CreatedAt'] ?? '');
+  m.status = String(r['status'] ?? r['Status'] ?? 'Pending');
+  return m;
+}
 
 @Injectable({ providedIn: 'root' })
 export class APIService {
@@ -41,6 +61,9 @@ export class APIService {
   }
   apiDeleteUser(userId: number) {
     return this.http.delete(`${API}/users/${userId}`);
+  }
+  apiGetUsersPaged(req: PagedRequest) {
+    return this.http.post<PagedResponse<UserModel>>(`${API}/users/paged`, req);
   }
 
   /* ── Hotels ── */
@@ -70,26 +93,25 @@ export class APIService {
   }
 
   /* ── Rooms ── */
-  apiGetRooms(hotelId?: number) {
+  apiGetRoomsPaged(req: PagedRequest, hotelId?: number) {
     const params = hotelId ? new HttpParams().set('hotelId', hotelId) : undefined;
-    return this.http.get<RoomModel[]>(`${API}/room`, { params });
+    return this.http.post<PagedResponse<RoomModel>>(`${API}/room/all/paged`, req, { params });
   }
   apiGetRoomById(roomId: number) {
     return this.http.get<RoomModel>(`${API}/room/${roomId}`);
   }
+  apiCheckRoomAvailability(roomId: number, checkIn: string, checkOut: string) {
+    return this.http.get<{ roomId: number; checkIn: string; checkOut: string; isAvailable: boolean }>(
+      `${API}/room/${roomId}/availability`, { params: { checkIn, checkOut } }
+    );
+  }
   apiFilterRooms(filter: RoomFilter) {
     return this.http.post<RoomModel[]>(`${API}/room/filter`, filter);
   }
-  apiFilterRoomsPaged(filter: RoomFilter, req: PagedRequest) {
-    const params = new HttpParams()
-      .set('pageNumber', req.pageNumber)
-      .set('pageSize', req.pageSize);
-    return this.http.post<PagedResponse<RoomModel>>(`${API}/room/filter/paged`, filter, { params });
-  }
-  apiCreateRoom(model: Partial<RoomModel>) {
+  apiCreateRoom(model: CreateRoomModel) {
     return this.http.post<RoomModel>(`${API}/room`, model);
   }
-  apiUpdateRoom(roomId: number, model: Partial<RoomModel>) {
+  apiUpdateRoom(roomId: number, model: CreateRoomModel) {
     return this.http.put<RoomModel>(`${API}/room/${roomId}`, model);
   }
   apiDeleteRoom(roomId: number) {
@@ -103,25 +125,26 @@ export class APIService {
   apiGetBookingById(bookingId: number) {
     return this.http.get<BookingModel>(`${API}/booking/${bookingId}`);
   }
-  /** GET all bookings paged — Admin only. Uses new POST /api/booking/all/paged */
   apiGetAllBookingsPaged(req: PagedRequest) {
-  return this.http.post<any>(`${API}/booking/all/paged`, req);
+    return this.http.post<PagedResponse<BookingModel>>(`${API}/booking/all/paged`, req);
   }
-
   apiGetBookingsByUser(userId: number, req: PagedRequest) {
     return this.http.post<PagedResponse<BookingModel>>(`${API}/booking/user/${userId}/paged`, req);
   }
   apiGetBookingsByHotel(hotelId: number, req: PagedRequest) {
     return this.http.post<PagedResponse<BookingModel>>(`${API}/booking/hotel/${hotelId}/paged`, req);
   }
+  apiGetPendingBookingsByHotel(hotelId: number) {
+    return this.http.get<BookingModel[]>(`${API}/booking/hotel/${hotelId}/pending`);
+  }
   apiConfirmBooking(bookingId: number) {
     return this.http.put<BookingModel>(`${API}/booking/${bookingId}/confirm`, {});
   }
-  apiCancelBooking(bookingId: number) {
-    return this.http.put(`${API}/booking/${bookingId}/cancel`, {});
-  }
   apiCompleteBooking(bookingId: number) {
     return this.http.put<BookingModel>(`${API}/booking/${bookingId}/complete`, {});
+  }
+  apiCancelBooking(bookingId: number) {
+    return this.http.put(`${API}/booking/${bookingId}/cancel`, {});
   }
 
   /* ── Payments ── */
@@ -134,15 +157,17 @@ export class APIService {
   apiGetPaymentById(paymentId: number) {
     return this.http.get<PaymentModel>(`${API}/payment/${paymentId}`);
   }
-  /** GET payment by booking ID — uses new GET /api/payment/booking/{bookingId} */
   apiGetPaymentByBookingId(bookingId: number) {
     return this.http.get<PaymentModel>(`${API}/payment/booking/${bookingId}`);
+  }
+  apiUpdatePaymentStatus(paymentId: number, status: string) {
+    return this.http.put<PaymentModel>(`${API}/payment/${paymentId}/status`, null, { params: { status } });
   }
   apiGetPaymentsPaged(req: PagedRequest) {
     return this.http.post<PagedResponse<PaymentModel>>(`${API}/payment/paged`, req);
   }
-  apiUpdatePaymentStatus(paymentId: number, status: string) {
-    return this.http.put<PaymentModel>(`${API}/payment/${paymentId}/status`, null, { params: { status } });
+  apiGetPaymentsByUserPaged(userId: number, req: PagedRequest) {
+    return this.http.post<PagedResponse<PaymentModel>>(`${API}/payment/user/${userId}/paged`, req);
   }
 
   /* ── Cancellations ── */
@@ -152,12 +177,11 @@ export class APIService {
   apiGetCancellationById(cancellationId: number) {
     return this.http.get<CancellationModel>(`${API}/cancellation/${cancellationId}`);
   }
-  apiGetCancellationsByUser(userId: number, req: PagedRequest) {
-    return this.http.post<PagedResponse<CancellationModel>>(`${API}/cancellation/user/${userId}/paged`, req);
-  }
-  /** GET all cancellations paged — Admin/Manager only. Uses new POST /api/cancellation/paged */
   apiGetAllCancellationsPaged(req: PagedRequest) {
     return this.http.post<PagedResponse<CancellationModel>>(`${API}/cancellation/paged`, req);
+  }
+  apiGetCancellationsByUser(userId: number, req: PagedRequest) {
+    return this.http.post<PagedResponse<CancellationModel>>(`${API}/cancellation/user/${userId}/paged`, req);
   }
   apiUpdateCancellationStatus(cancellationId: number, status: string, refundAmount: number = 0) {
     const params = new HttpParams().set('status', status).set('refundAmount', refundAmount);
@@ -168,15 +192,14 @@ export class APIService {
   apiCreateReview(hotelId: number, userId: number, rating: number, comment: string) {
     return this.http.post<ReviewModel>(`${API}/review`, { hotelId, userId, rating, comment });
   }
-  apiGetReviewsPaged(hotelId: number, req: PagedRequest) {
+  apiGetReviewById(reviewId: number) {
+    return this.http.get<ReviewModel>(`${API}/review/${reviewId}`);
+  }
+  apiGetReviewsPaged(filter: ReviewFilter, req: PagedRequest) {
     const params = new HttpParams()
       .set('pageNumber', req.pageNumber)
       .set('pageSize', req.pageSize);
-    return this.http.post<PagedResponse<ReviewModel>>(`${API}/review/paged`, { hotelId }, { params });
-  }
-  /** GET all reviews paged (no hotel filter) — Admin/Manager only. Uses new POST /api/review/all/paged */
-  apiGetAllReviewsPaged(req: PagedRequest) {
-    return this.http.post<PagedResponse<ReviewModel>>(`${API}/review/paged`, req);
+    return this.http.post<PagedResponse<ReviewModel>>(`${API}/review/paged`, filter, { params });
   }
   apiDeleteReview(reviewId: number) {
     return this.http.delete(`${API}/review/${reviewId}`);
@@ -186,11 +209,14 @@ export class APIService {
   apiGetAmenities() {
     return this.http.get<AmenityModel[]>(`${API}/amenities`);
   }
+  apiGetAmenityById(amenityId: number) {
+    return this.http.get<AmenityModel>(`${API}/amenities/${amenityId}`);
+  }
   apiCreateAmenity(name: string, description: string, icon: string) {
     return this.http.post<AmenityModel>(`${API}/amenities`, { name, description, icon });
   }
   apiUpdateAmenity(id: number, name: string, description: string, icon: string) {
-    return this.http.put(`${API}/amenities/${id}`, { name, description, icon });
+    return this.http.put<AmenityModel>(`${API}/amenities/${id}`, { name, description, icon });
   }
   apiDeleteAmenity(id: number) {
     return this.http.delete(`${API}/amenities/${id}`);
@@ -211,8 +237,20 @@ export class APIService {
   }
 
   /* ── Notifications ── */
+  apiCreateNotification(userId: number, message: string) {
+    return this.http.post<NotificationModel>(`${API}/notification`, { userId, message });
+  }
+  apiGetAllNotifications() {
+    return this.http.get<NotificationModel[]>(`${API}/notification/all`);
+  }
+  apiGetNotificationsByUser(userId: number) {
+    return this.http.get<NotificationModel[]>(`${API}/notification/user/${userId}`);
+  }
   apiGetMyNotifications() {
     return this.http.get<NotificationModel[]>(`${API}/notification/my`);
+  }
+  apiGetNotificationById(notificationId: number) {
+    return this.http.get<NotificationModel>(`${API}/notification/${notificationId}`);
   }
   apiMarkNotificationRead(id: number) {
     return this.http.put(`${API}/notification/${id}/read`, {});
@@ -220,10 +258,28 @@ export class APIService {
   apiDeleteNotification(id: number) {
     return this.http.delete(`${API}/notification/${id}`);
   }
+  apiGetNotificationsPaged(req: PagedRequest) {
+    return this.http.post<PagedResponse<NotificationModel>>(`${API}/notification/paged`, req);
+  }
+  apiGetNotificationsByUserPaged(userId: number, req: PagedRequest) {
+    return this.http.post<PagedResponse<NotificationModel>>(`${API}/notification/user/${userId}/paged`, req);
+  }
+  apiGetMyNotificationsPaged(req: PagedRequest) {
+    return this.http.post<PagedResponse<NotificationModel>>(`${API}/notification/my/paged`, req);
+  }
+  apiGetMyUnreadNotificationCount() {
+    return this.http.get<{ count: number }>(`${API}/notification/my/unread-count`);
+  }
+  apiGetAllUnreadNotificationCount() {
+    return this.http.get<{ count: number }>(`${API}/notification/all/unread-count`);
+  }
 
   /* ── HotelAmenity ── */
   apiGetAllHotelAmenities() {
     return this.http.get<HotelAmenityModel[]>(`${API}/hotelamenity`);
+  }
+  apiGetHotelAmenitiesByHotel(hotelId: number) {
+    return this.http.get<HotelAmenityModel[]>(`${API}/hotel/${hotelId}/amenities`);
   }
   apiGetHotelAmenityById(id: number) {
     return this.http.get<HotelAmenityModel>(`${API}/hotelamenity/${id}`);
@@ -235,20 +291,79 @@ export class APIService {
     return this.http.delete(`${API}/hotelamenity/${id}`);
   }
 
-  /* ── BookingRoom ── */
-  apiCreateBookingRoom(model: CreateBookingRoomModel) {
-    return this.http.post<BookingRoomModel>(`${API}/bookingroom`, model);
+  /* ── AuditLog (Admin only) ── */
+  apiCreateAuditLog(model: CreateAuditLogModel) {
+    return this.http.post<AuditLogModel>(`${API}/auditlog`, model);
   }
-  apiGetBookingRoomById(bookingRoomId: number) {
-    return this.http.get<BookingRoomModel>(`${API}/bookingroom/${bookingRoomId}`);
+  apiGetAuditLogById(auditLogId: number) {
+    return this.http.get<AuditLogModel>(`${API}/auditlog/${auditLogId}`);
   }
-  apiGetBookingRoomsByBookingId(bookingId: number) {
-    return this.http.get<BookingRoomModel[]>(`${API}/bookingroom/booking/${bookingId}`);
+  apiGetAllAuditLogsPaged(req: PagedRequest) {
+    return this.http.post<PagedResponse<AuditLogModel>>(`${API}/auditlog/all/paged`, req);
   }
-  apiUpdateBookingRoom(bookingRoomId: number, model: CreateBookingRoomModel) {
-    return this.http.put<BookingRoomModel>(`${API}/bookingroom/${bookingRoomId}`, model);
+  apiFilterAuditLogs(filter: AuditLogFilter) {
+    const clean: Record<string, unknown> = {};
+    Object.entries(filter).forEach(([k, v]) => {
+      if (v !== '' && v !== null && v !== undefined) clean[k] = v;
+    });
+    return this.http.post<AuditLogModel[]>(`${API}/auditlog/filter`, clean);
   }
-  apiDeleteBookingRoom(bookingRoomId: number) {
-    return this.http.delete(`${API}/bookingroom/${bookingRoomId}`);
+  apiFilterAuditLogsPaged(filter: AuditLogFilter | Record<string, unknown>, req: PagedRequest) {
+    // If filter already contains pageNumber/pageSize (from admin dashboard), use as-is
+    // Otherwise merge with req
+    const hasPage = 'pageNumber' in filter;
+    const body = hasPage ? filter : { ...filter, pageNumber: req.pageNumber, pageSize: req.pageSize };
+    return this.http.post<PagedResponse<AuditLogModel>>(`${API}/auditlog/filter/paged`, body);
+  }
+  apiGetAuditLogsByEntity(entityName: string, entityId: number) {
+    return this.http.get<AuditLogModel[]>(`${API}/auditlog/entity`, { params: { entityName, entityId } });
+  }
+  apiGetAuditLogsByUser(userId: number) {
+    return this.http.get<AuditLogModel[]>(`${API}/auditlog/user/${userId}`);
+  }
+  apiDeleteAuditLog(auditLogId: number) {
+    return this.http.delete(`${API}/auditlog/${auditLogId}`);
+  }
+
+  /* ── Chat / AI Support ── */
+  apiChatMessage(model: ChatRequestModel) {
+    return this.http.post<ChatResponseModel>(`${API}/chat/message`, model);
+  }
+  apiGetChatHistory(sessionId: string) {
+    return this.http.get<ChatHistoryModel[]>(`${API}/chat/history/${sessionId}`);
+  }
+
+  /* ── User Amenity Preferences ── */
+  apiAddAmenityPreference(userId: number, amenityId: number) {
+    return this.http
+      .post<unknown>(`${API}/user-amenity-preference`, { userId, amenityId })
+      .pipe(map(normalizeUserAmenityPreference));
+  }
+  apiGetMyAmenityPreferences(userId: number) {
+    return this.http
+      .get<unknown[]>(`${API}/user-amenity-preference/user/${userId}`)
+      .pipe(map(arr => (arr ?? []).map(normalizeUserAmenityPreference)));
+  }
+  apiGetAllAmenityPreferences() {
+    return this.http
+      .get<unknown[]>(`${API}/user-amenity-preference/all`)
+      .pipe(map(arr => (arr ?? []).map(normalizeUserAmenityPreference)));
+  }
+  /** POST empty JSON — matches ASP.NET Core [HttpPost("…/approve")] */
+  apiApproveAmenityPreference(preferenceId: number) {
+    return this.http
+      .post<unknown>(`${API}/user-amenity-preference/${preferenceId}/approve`, {})
+      .pipe(map(normalizeUserAmenityPreference));
+  }
+  apiRejectAmenityPreference(preferenceId: number) {
+    return this.http
+      .post<unknown>(`${API}/user-amenity-preference/${preferenceId}/reject`, {})
+      .pipe(map(normalizeUserAmenityPreference));
+  }
+  apiRemoveAmenityPreference(preferenceId: number) {
+    return this.http.delete(`${API}/user-amenity-preference/${preferenceId}`);
+  }
+  apiRemoveAmenityPreferenceByUserAmenity(userId: number, amenityId: number) {
+    return this.http.delete(`${API}/user-amenity-preference/user/${userId}/amenity/${amenityId}`);
   }
 }

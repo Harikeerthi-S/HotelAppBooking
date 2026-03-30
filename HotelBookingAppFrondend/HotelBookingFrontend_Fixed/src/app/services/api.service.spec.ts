@@ -360,6 +360,13 @@ describe('APIService', () => {
     req.flush([]);
   });
 
+  it('apiGetHotelAmenitiesByHotel should GET /hotel/:id/amenities', () => {
+    service.apiGetHotelAmenitiesByHotel(2).subscribe();
+    const req = httpMock.expectOne(`${API}/hotel/2/amenities`);
+    expect(req.request.method).toBe('GET');
+    req.flush([]);
+  });
+
   it('apiGetHotelAmenityById should GET /hotelamenity/:id', () => {
     service.apiGetHotelAmenityById(1).subscribe();
     const req = httpMock.expectOne(`${API}/hotelamenity/1`);
@@ -384,45 +391,4 @@ describe('APIService', () => {
     req.flush({});
   });
 
-  // ── BookingRoom ───────────────────────────────────────────────────────
-  it('apiCreateBookingRoom should POST to /bookingroom', () => {
-    const model = { bookingId: 10, roomId: 1, pricePerNight: 2000, numberOfRooms: 2 };
-    service.apiCreateBookingRoom(model as any).subscribe();
-    const req = httpMock.expectOne(`${API}/bookingroom`);
-    expect(req.request.method).toBe('POST');
-    expect(req.request.body.bookingId).toBe(10);
-    expect(req.request.body.roomId).toBe(1);
-    expect(req.request.body.numberOfRooms).toBe(2);
-    req.flush({ bookingRoomId: 1, bookingId: 10, roomId: 1, pricePerNight: 2000, numberOfRooms: 2 });
-  });
-
-  it('apiGetBookingRoomById should GET /bookingroom/:id', () => {
-    service.apiGetBookingRoomById(7).subscribe();
-    const req = httpMock.expectOne(`${API}/bookingroom/7`);
-    expect(req.request.method).toBe('GET');
-    req.flush({ bookingRoomId: 7 });
-  });
-
-  it('apiGetBookingRoomsByBookingId should GET /bookingroom/booking/:bookingId', () => {
-    service.apiGetBookingRoomsByBookingId(10).subscribe();
-    const req = httpMock.expectOne(`${API}/bookingroom/booking/10`);
-    expect(req.request.method).toBe('GET');
-    req.flush([]);
-  });
-
-  it('apiUpdateBookingRoom should PUT to /bookingroom/:id', () => {
-    const model = { bookingId: 10, roomId: 2, pricePerNight: 3000, numberOfRooms: 1 };
-    service.apiUpdateBookingRoom(7, model as any).subscribe();
-    const req = httpMock.expectOne(`${API}/bookingroom/7`);
-    expect(req.request.method).toBe('PUT');
-    expect(req.request.body.pricePerNight).toBe(3000);
-    req.flush({ bookingRoomId: 7, ...model });
-  });
-
-  it('apiDeleteBookingRoom should DELETE /bookingroom/:id', () => {
-    service.apiDeleteBookingRoom(7).subscribe();
-    const req = httpMock.expectOne(`${API}/bookingroom/7`);
-    expect(req.request.method).toBe('DELETE');
-    req.flush({});
-  });
 });

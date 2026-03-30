@@ -1,4 +1,4 @@
-﻿using HotelBookingApp.Models.Dtos;
+using HotelBookingApp.Models.Dtos;
 
 namespace HotelBookingApp.Interfaces.IServices
 {
@@ -7,6 +7,7 @@ namespace HotelBookingApp.Interfaces.IServices
         Task<RegisterResponseDto> RegisterAsync(RegisterRequestDto request);
         Task<UserResponseDto> GetByIdAsync(int userId);
         Task<IEnumerable<UserResponseDto>> GetAllAsync();
+        Task<PagedResponseDto<UserResponseDto>> GetPagedAsync(PagedRequestDto request);
         Task<bool> DeleteAsync(int userId);
     }
 }

@@ -22,11 +22,6 @@ namespace HotelBookingApp.Models.Dtos
         [Range(1, 50)]
         public int Capacity { get; set; }
 
-        // ? INVENTORY
-        [Required]
-        [Range(1, 1000)]
-        public int TotalRooms { get; set; }
-
         [MaxLength(255)]
         public string? ImageUrl { get; set; }
     }

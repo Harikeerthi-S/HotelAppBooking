@@ -12,12 +12,17 @@ namespace HotelBookingApp.Controllers
     public class HotelController : ControllerBase
     {
         private readonly IHotelService           _hotelService;
+        private readonly IHotelAmenityService    _hotelAmenityService;
         private readonly ILogger<HotelController> _logger;
 
-        public HotelController(IHotelService hotelService, ILogger<HotelController> logger)
+        public HotelController(
+            IHotelService hotelService,
+            IHotelAmenityService hotelAmenityService,
+            ILogger<HotelController> logger)
         {
-            _hotelService = hotelService;
-            _logger       = logger;
+            _hotelService        = hotelService;
+            _hotelAmenityService = hotelAmenityService;
+            _logger              = logger;
         }
 
         /// <summary>Create a new hotel. Admin only.</summary>
@@ -138,6 +143,23 @@ namespace HotelBookingApp.Controllers
             {
                 _logger.LogError(ex, "Error searching hotels");
                 return StatusCode(500, new ErrorResponseDto { StatusCode = 500, Message = "An error occurred while searching hotels.", Timestamp = DateTime.UtcNow });
+            }
+        }
+
+        /// <summary>Get amenities assigned to a hotel. Anonymous access.</summary>
+        [HttpGet("{hotelId:int}/amenities")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAmenities(int hotelId)
+        {
+            try
+            {
+                var list = await _hotelAmenityService.GetByHotelAsync(hotelId);
+                return Ok(list);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching amenities for hotel {HotelId}", hotelId);
+                return StatusCode(500, new ErrorResponseDto { StatusCode = 500, Message = "Error retrieving hotel amenities.", Timestamp = DateTime.UtcNow });
             }
         }
 

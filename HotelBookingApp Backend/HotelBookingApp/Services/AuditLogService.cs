@@ -9,30 +9,20 @@ namespace HotelBookingApp.Services
     public class AuditLogService : IAuditLogService
     {
         private readonly IRepository<int, AuditLog> _auditRepo;
-        private readonly IRepository<int, User> _userRepo;
         private readonly ILogger<AuditLogService> _logger;
 
         public AuditLogService(
             IRepository<int, AuditLog> auditRepo,
-            IRepository<int, User> userRepo,
             ILogger<AuditLogService> logger)
         {
             _auditRepo = auditRepo;
-            _userRepo = userRepo;
-            _logger = logger;
+            _logger    = logger;
         }
 
         // ── CREATE ─────────────────────────────
         public async Task<AuditLogResponseDto> CreateAsync(CreateAuditLogDto dto)
         {
             _logger.LogInformation("Creating audit log: {Action}", dto.Action);
-
-            if (dto.UserId.HasValue)
-            {
-                var user = await _userRepo.GetByIdAsync(dto.UserId.Value);
-                if (user is null)
-                    throw new NotFoundException("User", dto.UserId.Value);
-            }
 
             var log = new AuditLog
             {
@@ -52,43 +42,36 @@ namespace HotelBookingApp.Services
         // ── GET BY ID ──────────────────────────
         public async Task<AuditLogResponseDto?> GetByIdAsync(int auditLogId)
         {
-            var log = await _auditRepo.GetByIdAsync(auditLogId)
+            var logs = await _auditRepo.GetAllIncludingAsync(a => a.User!);
+            var log  = logs.FirstOrDefault(a => a.AuditLogId == auditLogId)
                 ?? throw new NotFoundException("AuditLog", auditLogId);
-
-            string? userName = null;
-
-            if (log.UserId.HasValue)
-            {
-                var user = await _userRepo.GetByIdAsync(log.UserId.Value);
-                userName = user?.UserName;
-            }
-
-            return MapToDto(log, userName);
+            return MapToDto(log, log.User?.UserName);
         }
 
         // ── GET ALL (PAGED) ────────────────────
         public async Task<PagedResponseDto<AuditLogResponseDto>> GetAllAsync(PagedRequestDto request)
         {
             request.PageNumber = Math.Max(1, request.PageNumber);
-            request.PageSize = Math.Clamp(request.PageSize, 1, 100);
+            request.PageSize   = Math.Clamp(request.PageSize, 1, 10);
 
-            var all = await _auditRepo.GetAllAsync();
-            var ordered = all.OrderByDescending(a => a.CreatedAt);
-
-            var total = ordered.Count();
+            // Eager-load User in one query — no N+1
+            var all     = await _auditRepo.GetAllIncludingAsync(a => a.User!);
+            var ordered = all.OrderByDescending(a => a.CreatedAt).ToList();
+            var total   = ordered.Count;
 
             var data = ordered
                 .Skip((request.PageNumber - 1) * request.PageSize)
                 .Take(request.PageSize)
-                .Select(a => MapToDto(a, null))
+                .Select(a => MapToDto(a, a.User?.UserName))
                 .ToList();
 
             return new PagedResponseDto<AuditLogResponseDto>
             {
-                Data = data,
-                PageNumber = request.PageNumber,
-                PageSize = request.PageSize,
-                TotalRecords = total
+                Data         = data,
+                PageNumber   = request.PageNumber,
+                PageSize     = request.PageSize,
+                TotalRecords = total,
+                TotalPages   = (int)Math.Ceiling((double)total / request.PageSize)
             };
         }
 
@@ -111,27 +94,29 @@ namespace HotelBookingApp.Services
             PagedRequestDto request)
         {
             request.PageNumber = Math.Max(1, request.PageNumber);
-            request.PageSize = Math.Clamp(request.PageSize, 1, 100);
+            request.PageSize   = Math.Clamp(request.PageSize, 1, 500);
 
-            var logs = await _auditRepo.GetAllAsync();
+            // Eager-load User in one query
+            var all   = await _auditRepo.GetAllIncludingAsync(a => a.User!);
+            var query = ApplyFilter(all.AsQueryable(), filter)
+                .OrderByDescending(a => a.CreatedAt)
+                .ToList();
 
-            var query = ApplyFilter(logs.AsQueryable(), filter)
-                .OrderByDescending(a => a.CreatedAt);
-
-            var total = query.Count();
+            var total = query.Count;
 
             var data = query
                 .Skip((request.PageNumber - 1) * request.PageSize)
                 .Take(request.PageSize)
-                .Select(a => MapToDto(a, null))
+                .Select(a => MapToDto(a, a.User?.UserName))
                 .ToList();
 
             return new PagedResponseDto<AuditLogResponseDto>
             {
-                Data = data,
-                PageNumber = request.PageNumber,
-                PageSize = request.PageSize,
-                TotalRecords = total
+                Data         = data,
+                PageNumber   = request.PageNumber,
+                PageSize     = request.PageSize,
+                TotalRecords = total,
+                TotalPages   = (int)Math.Ceiling((double)total / request.PageSize)
             };
         }
 
@@ -191,10 +176,10 @@ namespace HotelBookingApp.Services
                 query = query.Where(a => a.EntityId == filter.EntityId.Value);
 
             if (filter.FromDate.HasValue)
-                query = query.Where(a => a.CreatedAt >= filter.FromDate.Value);
+                query = query.Where(a => a.CreatedAt >= filter.FromDate.Value.Date);
 
             if (filter.ToDate.HasValue)
-                query = query.Where(a => a.CreatedAt <= filter.ToDate.Value);
+                query = query.Where(a => a.CreatedAt < filter.ToDate.Value.Date.AddDays(1));
 
             return query;
         }

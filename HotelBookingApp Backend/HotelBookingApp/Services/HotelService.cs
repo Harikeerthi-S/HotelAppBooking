@@ -10,15 +10,24 @@ namespace HotelBookingApp.Services
     public class HotelService : IHotelService
     {
         private readonly IRepository<int, Hotel> _hotelRepo;
+        private readonly IAuditLogService        _audit;
         private readonly ILogger<HotelService>   _logger;
 
         public HotelService(
             IRepository<int, Hotel> hotelRepo,
+            IAuditLogService        audit,
             ILogger<HotelService>   logger)
         {
             _hotelRepo = hotelRepo ?? throw new ArgumentNullException(nameof(hotelRepo));
+            _audit     = audit;
             _logger    = logger    ?? throw new ArgumentNullException(nameof(logger));
         }
+
+        private void Log(string action, int? entityId, string? changes = null)
+            => _ = _audit.CreateAsync(new CreateAuditLogDto
+            {
+                Action = action, EntityName = "Hotel", EntityId = entityId, Changes = changes
+            });
 
         // ── CREATE ────────────────────────────────────────────────────────
         public async Task<HotelResponseDto> CreateAsync(CreateHotelDto dto)
@@ -48,6 +57,7 @@ namespace HotelBookingApp.Services
 
             var created = await _hotelRepo.AddAsync(hotel);
             _logger.LogInformation("Hotel created: {HotelId}", created.HotelId);
+            Log("HotelCreated", created.HotelId, $"Name:{created.HotelName} Location:{created.Location}");
             return MapToDto(created);
         }
 
@@ -64,7 +74,7 @@ namespace HotelBookingApp.Services
         public async Task<PagedResponseDto<HotelResponseDto>> GetPagedAsync(PagedRequestDto request)
         {
             request.PageNumber = Math.Max(1, request.PageNumber);
-            request.PageSize   = Math.Clamp(request.PageSize, 1, 100);
+            request.PageSize   = Math.Clamp(request.PageSize, 1, 10);
 
             var all     = await _hotelRepo.FindAllAsync(h => h.IsActive);
             var total   = all.Count();
@@ -80,7 +90,8 @@ namespace HotelBookingApp.Services
                 Data         = data,
                 PageNumber   = request.PageNumber,
                 PageSize     = request.PageSize,
-                TotalRecords = total
+                TotalRecords = total,
+                TotalPages   = (int)Math.Ceiling((double)total / request.PageSize)
             };
         }
 
@@ -90,7 +101,7 @@ namespace HotelBookingApp.Services
             PagedRequestDto request)
         {
             request.PageNumber = Math.Max(1, request.PageNumber);
-            request.PageSize   = Math.Clamp(request.PageSize, 1, 100);
+            request.PageSize   = Math.Clamp(request.PageSize, 1, 10);
 
             var all = await _hotelRepo.GetAllAsync();
             var query = all.Where(h => h.IsActive).AsQueryable();
@@ -117,7 +128,8 @@ namespace HotelBookingApp.Services
                 Data         = data,
                 PageNumber   = request.PageNumber,
                 PageSize     = request.PageSize,
-                TotalRecords = total
+                TotalRecords = total,
+                TotalPages   = (int)Math.Ceiling((double)total / request.PageSize)
             };
         }
 
@@ -151,6 +163,7 @@ namespace HotelBookingApp.Services
             hotel.ImagePath     = dto.ImagePath?.Trim();
 
             var updated = await _hotelRepo.UpdateAsync(hotelId, hotel);
+            Log("HotelUpdated", hotelId, $"Name:{hotel.HotelName}");
             return updated is null ? null : MapToDto(updated);
         }
 
@@ -165,6 +178,7 @@ namespace HotelBookingApp.Services
 
             hotel.IsActive = false;
             await _hotelRepo.UpdateAsync(hotelId, hotel);
+            Log("HotelDeactivated", hotelId);
             return true;
         }
 

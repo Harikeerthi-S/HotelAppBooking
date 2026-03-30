@@ -35,15 +35,20 @@ namespace HotelBookingApp.Models
 
         // Navigation
         [ForeignKey(nameof(UserId))]
+        [System.Text.Json.Serialization.JsonIgnore]
         public User? User { get; set; }
 
         [ForeignKey(nameof(HotelId))]
+        [System.Text.Json.Serialization.JsonIgnore]
         public Hotel? Hotel { get; set; }
 
         [ForeignKey(nameof(RoomId))]
+        [System.Text.Json.Serialization.JsonIgnore]
         public Room? Room { get; set; }
 
+        [System.Text.Json.Serialization.JsonIgnore]
         public ICollection<Payment>? Payments { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
         public ICollection<Cancellation>? Cancellations { get; set; }
 
         public int CompareTo(Booking? other) => other != null ? BookingId.CompareTo(other.BookingId) : 1;

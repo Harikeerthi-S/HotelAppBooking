@@ -10,8 +10,9 @@ namespace HotelBookingApp.Services
     public class CancellationService : ICancellationService
     {
         private readonly IRepository<int, Cancellation> _cancellationRepo;
-        private readonly IRepository<int, Booking> _bookingRepo;
-        private readonly ILogger<CancellationService> _logger;
+        private readonly IRepository<int, Booking>      _bookingRepo;
+        private readonly IAuditLogService               _audit;
+        private readonly ILogger<CancellationService>   _logger;
 
         private readonly RefundCalculatorDelegate _refundCalculator =
             AppDelegateFactory.StandardRefundPolicy;
@@ -21,13 +22,22 @@ namespace HotelBookingApp.Services
 
         public CancellationService(
             IRepository<int, Cancellation> cancellationRepo,
-            IRepository<int, Booking> bookingRepo,
-            ILogger<CancellationService> logger)
+            IRepository<int, Booking>      bookingRepo,
+            IAuditLogService               audit,
+            ILogger<CancellationService>   logger)
         {
             _cancellationRepo = cancellationRepo;
-            _bookingRepo = bookingRepo;
-            _logger = logger;
+            _bookingRepo      = bookingRepo;
+            _audit            = audit;
+            _logger           = logger;
         }
+
+        private void Log(string action, int? entityId, int? userId = null, string? changes = null)
+            => _ = _audit.CreateAsync(new CreateAuditLogDto
+            {
+                UserId = userId, Action = action, EntityName = "Cancellation",
+                EntityId = entityId, Changes = changes
+            });
 
         // ── CREATE ─────────────────────────────
         public async Task<CancellationResponseDto> CreateAsync(CreateCancellationDto dto)
@@ -51,10 +61,10 @@ namespace HotelBookingApp.Services
             };
 
             await _cancellationRepo.AddAsync(cancellation);
-
             booking.Status = "Cancelled";
             await _bookingRepo.UpdateAsync(booking.BookingId, booking);
-
+            Log("CancellationRequested", cancellation.CancellationId, booking.UserId,
+                $"Booking:{dto.BookingId} Refund:₹{refundAmount}");
             return MapToDto(cancellation);
         }
 
@@ -71,7 +81,7 @@ namespace HotelBookingApp.Services
         public async Task<PagedResponseDto<CancellationResponseDto>> GetAllAsync(PagedRequestDto request)
         {
             request.PageNumber = Math.Max(1, request.PageNumber);
-            request.PageSize = Math.Clamp(request.PageSize, 1, 100);
+            request.PageSize = Math.Clamp(request.PageSize, 1, 10);
 
             var all = await _cancellationRepo.GetAllAsync();
 
@@ -92,7 +102,8 @@ namespace HotelBookingApp.Services
                 Data = paged,
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize,
-                TotalRecords = total
+                TotalRecords = total,
+                TotalPages   = (int)Math.Ceiling((double)total / request.PageSize)
             };
         }
 
@@ -124,7 +135,8 @@ namespace HotelBookingApp.Services
                 Data = data,
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize,
-                TotalRecords = total
+                TotalRecords = total,
+                TotalPages   = (int)Math.Ceiling((double)total / request.PageSize)
             };
         }
 
@@ -143,6 +155,7 @@ namespace HotelBookingApp.Services
                 cancellation.RefundAmount = refundAmount;
 
             await _cancellationRepo.UpdateAsync(cancellationId, cancellation);
+            Log("CancellationStatusUpdated", cancellationId, null, $"Status→{status} Refund:₹{cancellation.RefundAmount}");
 
             if (status == "Refunded")
             {

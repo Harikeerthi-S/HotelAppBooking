@@ -12,19 +12,29 @@ namespace HotelBookingApp.Services
         private readonly IRepository<int, Review> _reviewRepo;
         private readonly IRepository<int, Hotel>  _hotelRepo;
         private readonly IRepository<int, User>   _userRepo;
+        private readonly IAuditLogService         _audit;
         private readonly ILogger<ReviewService>   _logger;
 
         public ReviewService(
             IRepository<int, Review> reviewRepo,
             IRepository<int, Hotel>  hotelRepo,
             IRepository<int, User>   userRepo,
+            IAuditLogService         audit,
             ILogger<ReviewService>   logger)
         {
             _reviewRepo = reviewRepo;
             _hotelRepo  = hotelRepo;
             _userRepo   = userRepo;
+            _audit      = audit;
             _logger     = logger;
         }
+
+        private void Log(string action, int? entityId, int? userId = null, string? changes = null)
+            => _ = _audit.CreateAsync(new CreateAuditLogDto
+            {
+                UserId = userId, Action = action, EntityName = "Review",
+                EntityId = entityId, Changes = changes
+            });
 
         // ── CREATE ────────────────────────────────────────────────────────
         public async Task<ReviewResponseDto> CreateAsync(CreateReviewDto dto)
@@ -59,6 +69,8 @@ namespace HotelBookingApp.Services
 
             var created = await _reviewRepo.AddAsync(review);
             _logger.LogInformation("Review created: {ReviewId}", created.ReviewId);
+            Log("ReviewCreated", created.ReviewId, dto.UserId,
+                $"Hotel:{dto.HotelId} Rating:{dto.Rating}/5");
             return MapToDto(created);
         }
 
@@ -75,7 +87,7 @@ namespace HotelBookingApp.Services
             ReviewFilterDto filter, PagedRequestDto request)
         {
             request.PageNumber = Math.Max(1, request.PageNumber);
-            request.PageSize   = Math.Clamp(request.PageSize, 1, 100);
+            request.PageSize   = Math.Clamp(request.PageSize, 1, 10);
 
             var all   = await _reviewRepo.GetAllAsync();
             var query = all.AsQueryable();
@@ -100,7 +112,8 @@ namespace HotelBookingApp.Services
                 Data         = data,
                 PageNumber   = request.PageNumber,
                 PageSize     = request.PageSize,
-                TotalRecords = total
+                TotalRecords = total,
+                TotalPages   = (int)Math.Ceiling((double)total / request.PageSize)
             };
         }
 
@@ -110,6 +123,7 @@ namespace HotelBookingApp.Services
             _logger.LogInformation("Deleting review {ReviewId}", reviewId);
             var deleted = await _reviewRepo.DeleteAsync(reviewId);
             if (deleted is null) throw new NotFoundException("Review", reviewId);
+            Log("ReviewDeleted", reviewId);
             return true;
         }
 

@@ -96,6 +96,23 @@ namespace HotelBookingApp.Controllers
             }
         }
 
+        /// <summary>Get users (paged). Admin and HotelManager.</summary>
+        [HttpPost("paged")]
+        [Authorize(Roles = "admin,hotelmanager")]
+        public async Task<IActionResult> GetPaged([FromBody] PagedRequestDto request)
+        {
+            try
+            {
+                var result = await _userService.GetPagedAsync(request);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching paged users");
+                return StatusCode(500, new ErrorResponseDto { StatusCode = 500, Message = "An error occurred while retrieving users.", Timestamp = DateTime.UtcNow });
+            }
+        }
+
         /// <summary>Delete a user. Admin only.</summary>
         [HttpDelete("{userId:int}")]
         [Authorize(Roles = "admin,hotelmanager")]

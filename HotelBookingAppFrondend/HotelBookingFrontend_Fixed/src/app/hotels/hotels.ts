@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnDestroy } from '@angular/core';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { CommonModule, SlicePipe } from '@angular/common';
 import { Subscription } from 'rxjs';
 
 import { APIService } from '../services/api.service';
@@ -9,13 +10,15 @@ import { ToastrService } from 'ngx-toastr';
 
 import { HotelModel } from '../models/hotel.model';
 import { AmenityModel } from '../models/amenity.model';
+import { HotelAmenityModel } from '../models/hotel-amenity.model';
 import { PagedResponse } from '../models/paged.model';
 import { HotelFilter } from '../models/filter.model';
 import { $userStatus, UserState } from '../dynamicCommunication/userObservable';
+import { resolveHotelImage } from '../shared/image.pipe';
 
 @Component({
   selector: 'app-hotels',
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, CommonModule, SlicePipe],
   templateUrl: './hotels.html',
   styleUrl: './hotels.css'
 })
@@ -28,14 +31,14 @@ export class Hotels implements OnDestroy {
 
   hotels      = signal<HotelModel[]>([]);
   amenities   = signal<AmenityModel[]>([]);
+  // Map of hotelId → assigned amenities
+  hotelAmenityMap = signal<Record<number, HotelAmenityModel[]>>({});
   paged       = signal<PagedResponse<HotelModel> | null>(null);
   loading     = signal(false);
 
   // ✅ Wishlist (User only)
   wishlistIds = signal<Set<number>>(new Set());
 
-  page     = signal(1);
-  pageSize = 9;
   sortBy   = signal('rating');
 
   filter     = signal<HotelFilter>({});
@@ -43,6 +46,38 @@ export class Hotels implements OnDestroy {
   fMinRating = signal('');
   fMinPrice  = signal('');
   fMaxPrice  = signal('');
+  fAmenity   = signal('');
+
+  readonly cityOptions = [
+    'Mumbai', 'Delhi', 'Goa', 'Bangalore', 'Jaipur',
+    'Chennai', 'Hyderabad', 'Kolkata', 'Pune', 'Ahmedabad'
+  ];
+
+  readonly priceRanges = [
+    { label: 'Under ₹1,000',       min: '',     max: '1000'  },
+    { label: '₹1,000 – ₹3,000',   min: '1000', max: '3000'  },
+    { label: '₹3,000 – ₹6,000',   min: '3000', max: '6000'  },
+    { label: '₹6,000 – ₹10,000',  min: '6000', max: '10000' },
+    { label: 'Above ₹10,000',      min: '10000',max: ''      },
+  ];
+
+  selectedPriceRange = signal('');
+
+  onPriceRangeChange(val: string): void {
+    this.selectedPriceRange.set(val);
+    if (!val) { this.fMinPrice.set(''); this.fMaxPrice.set(''); return; }
+    const found = this.priceRanges.find(r => `${r.min}-${r.max}` === val);
+    if (found) { this.fMinPrice.set(found.min); this.fMaxPrice.set(found.max); }
+  }
+
+  readonly amenityChips = [
+    { icon: '🏊', label: 'Pool' },
+    { icon: '💆', label: 'Spa' },
+    { icon: '🐾', label: 'Pet-friendly' },
+    { icon: '🏋️', label: 'Gym' },
+    { icon: '📶', label: 'Free Wi-Fi' },
+    { icon: '🍳', label: 'Breakfast' },
+  ];
 
   // ✅ User State
   private currentUser = signal<UserState>({
@@ -69,6 +104,7 @@ export class Hotels implements OnDestroy {
     // ✅ QUERY PARAMS (FROM HOME SEARCH)
     this.route.queryParams.subscribe(p => {
       if (p['location']) this.fLocation.set(p['location']);
+      if (p['amenity'])  this.fAmenity.set(p['amenity']);
       this.loadHotels();
     });
 
@@ -86,14 +122,10 @@ export class Hotels implements OnDestroy {
   // =====================
   // LOAD HOTELS
   // =====================
-  loadHotels(p = 1): void {
+  loadHotels(): void {
     this.loading.set(true);
-    this.page.set(p);
 
-    const req = {
-      pageNumber: p,
-      pageSize: this.pageSize
-    };
+    const req = { pageNumber: 1, pageSize: 10000 };
 
     const f: HotelFilter = {
       location:  this.fLocation()  || undefined,
@@ -114,6 +146,13 @@ export class Hotels implements OnDestroy {
         const sorted = this.sortHotels([...res.data]);
         this.hotels.set(sorted);
         this.loading.set(false);
+        // Load amenities for each hotel
+        sorted.forEach(h => {
+          this.apiService.apiGetHotelAmenitiesByHotel(h.hotelId).subscribe({
+            next: a => this.hotelAmenityMap.update(m => ({ ...m, [h.hotelId]: a ?? [] })),
+            error: () => {}
+          });
+        });
       },
       error: () => {
         this.loading.set(false);
@@ -123,7 +162,7 @@ export class Hotels implements OnDestroy {
   }
 
   applyFilter(): void {
-    this.loadHotels(1);
+    this.loadHotels();
   }
 
   clearFilter(): void {
@@ -131,7 +170,9 @@ export class Hotels implements OnDestroy {
     this.fMinRating.set('');
     this.fMinPrice.set('');
     this.fMaxPrice.set('');
-    this.loadHotels(1);
+    this.fAmenity.set('');
+    this.selectedPriceRange.set('');
+    this.loadHotels();
   }
 
   onSortChange(): void {
@@ -144,9 +185,12 @@ export class Hotels implements OnDestroy {
       : list.sort((a, b) => a.hotelName.localeCompare(b.hotelName));
   }
 
-  getPages(): number[] {
-    const total = this.paged()?.totalPages ?? 0;
-    return Array.from({ length: total }, (_, i) => i + 1);
+  getHotelAmenities(hotelId: number) {
+    return this.hotelAmenityMap()[hotelId] ?? [];
+  }
+
+  getImage(hotel: HotelModel): string {
+    return resolveHotelImage(hotel.imagePath, hotel.hotelId);
   }
 
   // =====================
@@ -213,20 +257,5 @@ export class Hotels implements OnDestroy {
         error: () => this.toastr.error('Error saving to wishlist.')
       });
     }
-  }
-
-  // =====================
-  // IMAGE
-  // =====================
-  getImage(hotel: HotelModel): string {
-    const imgs = [
-      'photo-1566073771259-6a8506099945',
-      'photo-1551882547-ff40c63fe5fa',
-      'photo-1571896349842-33c89424de2d'
-    ];
-
-    if (hotel.imagePath?.startsWith('http')) return hotel.imagePath;
-
-    return `https://images.unsplash.com/${imgs[hotel.hotelId % 3]}?w=400&h=200&fit=crop`;
   }
 }

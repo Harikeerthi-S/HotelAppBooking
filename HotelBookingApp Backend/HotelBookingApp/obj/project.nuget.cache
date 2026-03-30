@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "fdrzJocxXu0=",
+  "dgSpecHash": "Lo7ni24/wsE=",
   "success": true,
-  "projectFilePath": "C:\\hotel\\HotelBookingApp\\HotelBookingApp Backend\\HotelBookingApp\\HotelBookingApp.csproj",
+  "projectFilePath": "C:\\hotel\\hotelbooking\\HotelBookingApp Backend\\HotelBookingApp\\HotelBookingApp.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Harikeerthi.S\\.nuget\\packages\\azure.core\\1.47.1\\azure.core.1.47.1.nupkg.sha512",
     "C:\\Users\\Harikeerthi.S\\.nuget\\packages\\azure.identity\\1.14.2\\azure.identity.1.14.2.nupkg.sha512",

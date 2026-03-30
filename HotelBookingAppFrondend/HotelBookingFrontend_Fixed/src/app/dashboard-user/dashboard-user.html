@@ -43,26 +43,24 @@
     </div>
   </div>
 
-  <!-- QUICK LINKS -->
-  <div class="card border-0 shadow-sm mb-4">
-    <div class="card-body p-3 d-flex gap-2 flex-wrap">
-      <a routerLink="/hotels"        class="btn btn-sm btn-primary-custom rounded-pill"><i class="bi bi-search me-1"></i>Hotels</a>
-      <a routerLink="/wishlist"      class="btn btn-sm btn-outline-secondary rounded-pill"><i class="bi bi-heart me-1"></i>Wishlist</a>
-      <a routerLink="/cancellations" class="btn btn-sm btn-outline-secondary rounded-pill"><i class="bi bi-x-circle me-1"></i>Cancellations</a>
-      <a routerLink="/amenities"     class="btn btn-sm btn-outline-secondary rounded-pill"><i class="bi bi-stars me-1"></i>Amenities</a>
-      <a routerLink="/profile"       class="btn btn-sm btn-outline-secondary rounded-pill"><i class="bi bi-person me-1"></i>Profile</a>
-    </div>
-  </div>
+  <!-- SINGLE NAVIGATION ROW -->
+  <div class="d-flex gap-2 mb-4 flex-wrap align-items-center">
+    <!-- External links -->
+    <a routerLink="/hotels"   class="btn btn-sm btn-outline-secondary rounded-pill"><i class="bi bi-search me-1"></i>Hotels</a>
+    <a routerLink="/wishlist" class="btn btn-sm btn-outline-secondary rounded-pill"><i class="bi bi-heart me-1"></i>Wishlist</a>
+    <a routerLink="/profile"  class="btn btn-sm btn-outline-secondary rounded-pill"><i class="bi bi-person me-1"></i>Profile</a>
 
-  <!-- TAB NAVIGATION -->
-  <div class="d-flex gap-2 mb-4 flex-wrap">
+    <span class="text-muted" style="font-size:.8rem">|</span>
+
+    <!-- Dashboard tabs -->
     @for (t of [
-      {key:'bookings',      label:'Bookings',      icon:'bi-calendar-check',   badge: totalBookings()},
-      {key:'payments',      label:'Payments',      icon:'bi-credit-card',      badge: 0},
-      {key:'cancellations', label:'Cancellations', icon:'bi-x-circle',         badge: 0},
-      {key:'notifications', label:'Notifications', icon:'bi-bell',             badge: unreadCount()},
-      {key:'reviews',       label:'My Reviews',    icon:'bi-star',             badge: 0},
-      {key:'amenities',     label:'Amenities',     icon:'bi-stars',            badge: 0}
+      {key:'bookings',      label:'Bookings',      icon:'bi-calendar-check', badge: totalBookings()},
+      {key:'payments',      label:'Payments',      icon:'bi-credit-card',    badge: 0},
+      {key:'cancellations', label:'Cancellations', icon:'bi-x-circle',       badge: 0},
+      {key:'notifications', label:'Notifications', icon:'bi-bell',           badge: unreadCount()},
+      {key:'reviews',       label:'My Reviews',    icon:'bi-star',           badge: 0},
+      {key:'amenities',     label:'Amenities',     icon:'bi-stars',          badge: 0},
+      {key:'support',       label:'Support',       icon:'bi-chat-dots',      badge: 0}
     ]; track t.key) {
       <button class="btn btn-sm rounded-pill tab-btn"
               [class.active]="activeTab() === t.key"
@@ -79,9 +77,14 @@
   @if (activeTab() === 'bookings') {
     <div class="card border-0 shadow-sm">
       <div class="card-body p-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="fw-700 mb-0">My Bookings</h5>
-          <button class="btn btn-sm btn-outline-secondary rounded-pill" (click)="loadBookings(1)">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <div>
+            <h5 class="fw-700 mb-0">My Bookings</h5>
+            @if (bookings().length > 0) {
+              <p class="text-muted small mb-0">{{ bookings().length }} booking(s)</p>
+            }
+          </div>
+          <button class="btn btn-sm btn-outline-secondary rounded-pill" type="button" (click)="loadBookings(bookingPage())" title="Refresh">
             <i class="bi bi-arrow-clockwise"></i>
           </button>
         </div>
@@ -105,6 +108,16 @@
                       <i class="bi bi-calendar me-1"></i>{{ b.checkIn | date:'mediumDate' }} → {{ b.checkOut | date:'mediumDate' }}
                     </div>
                     <div class="text-muted small">Booking #{{ b.bookingId }} · {{ b.numberOfRooms }} room(s)</div>
+                    <!-- Room availability chip (date-range based) -->
+                    @if (roomDateMap()[b.bookingId] === false) {
+                      <div class="mt-1">
+                        <span class="room-avail-chip chip-none"><i class="bi bi-x-circle-fill me-1"></i>Dates now taken by another user</span>
+                      </div>
+                    } @else if (roomDateMap()[b.bookingId] === true && (b.status === 'Pending' || b.status === 'Confirmed')) {
+                      <div class="mt-1">
+                        <span class="room-avail-chip chip-ok"><i class="bi bi-check-circle-fill me-1"></i>Your dates are still available</span>
+                      </div>
+                    }
                   </div>
                   <div class="text-end">
                     <span class="status-badge" [ngClass]="statusClass(b.status)">{{ b.status }}</span>
@@ -113,6 +126,8 @@
                 </div>
                 <div class="d-flex gap-2 flex-wrap">
                   @if (b.status === 'Pending') {
+                    <!-- Always show Pay Now — user holds a valid reservation.
+                         Backend will reject if truly unavailable. -->
                     <a [routerLink]="['/payment', b.bookingId]" class="btn btn-sm btn-success rounded-pill">
                       <i class="bi bi-credit-card me-1"></i>Pay Now
                     </a>
@@ -123,30 +138,26 @@
                       <i class="bi bi-x-circle me-1"></i>Request Cancellation
                     </button>
                   }
-                  <a [routerLink]="['/booking-room', b.bookingId]" class="btn btn-sm btn-outline-secondary rounded-pill">
-                    <i class="bi bi-door-open me-1"></i>Rooms
-                  </a>
-                  <a [routerLink]="['/hotels', b.hotelId]" class="btn btn-sm btn-outline-secondary rounded-pill">
-                    <i class="bi bi-building me-1"></i>Hotel
-                  </a>
+                  @if (b.status === 'Completed') {
+                    <a routerLink="/reviews" class="btn btn-sm btn-outline-primary rounded-pill">
+                      <i class="bi bi-star me-1"></i>Write Review
+                    </a>
+                  }
                 </div>
               </div>
             }
           </div>
 
-          <!-- Pagination -->
-          <div class="d-flex justify-content-center gap-2 mt-3">
-            <button class="btn btn-sm btn-outline-secondary rounded-pill"
-                    [disabled]="bookingPage() <= 1" (click)="loadBookings(bookingPage() - 1)">
+          <nav class="dash-pager" aria-label="Bookings pagination">
+            <button type="button" class="dash-pager__btn" [disabled]="bookingPage() <= 1" (click)="loadBookings(bookingPage() - 1)" title="Previous page">
               <i class="bi bi-chevron-left"></i>
             </button>
-            <span class="btn btn-sm btn-primary-custom rounded-pill px-3">{{ bookingPage() }}</span>
-            <button class="btn btn-sm btn-outline-secondary rounded-pill"
-                    [disabled]="bookingPage() >= (pagedBookings()?.totalPages ?? 1)"
-                    (click)="loadBookings(bookingPage() + 1)">
+            <span class="dash-pager__current">{{ bookingPage() }}</span>
+            <button type="button" class="dash-pager__btn" [disabled]="bookingPage() >= (pagedBookings()?.totalPages ?? 1)" (click)="loadBookings(bookingPage() + 1)" title="Next page">
               <i class="bi bi-chevron-right"></i>
             </button>
-          </div>
+            <span class="dash-pager__meta">{{ bookingPage() }} / {{ pagedBookings()?.totalPages ?? 1 }}</span>
+          </nav>
         }
       </div>
     </div>
@@ -156,7 +167,14 @@
   @if (activeTab() === 'payments') {
     <div class="card border-0 shadow-sm">
       <div class="card-body p-4">
-        <h5 class="fw-700 mb-3"><i class="bi bi-credit-card me-2 text-primary"></i>My Payments</h5>
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+          <div>
+            <h5 class="fw-700 mb-0"><i class="bi bi-credit-card me-2 text-primary"></i>My Payments</h5>
+            @if (payments().length > 0) {
+              <p class="text-muted small mb-0">{{ payments().length }} record(s)</p>
+            }
+          </div>
+        </div>
         @if (payLoading()) {
           <div class="spinner-wrap"><div class="spinner-ring"></div></div>
         } @else if (payments().length === 0) {
@@ -172,7 +190,7 @@
                 <tr><th>Payment ID</th><th>Booking</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr>
               </thead>
               <tbody>
-                @for (p of payments(); track p.paymentId) {
+                @for (p of pagedPayments(); track p.paymentId) {
                   <tr>
                     <td>#{{ p.paymentId }}</td>
                     <td>#{{ p.bookingId }}</td>
@@ -185,6 +203,16 @@
               </tbody>
             </table>
           </div>
+          <nav class="dash-pager" aria-label="Payments pagination">
+            <button type="button" class="dash-pager__btn" [disabled]="paymentsPage() <= 1" (click)="paymentsPage.set(paymentsPage() - 1)" title="Previous page">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+            <span class="dash-pager__current">{{ paymentsPage() }}</span>
+            <button type="button" class="dash-pager__btn" [disabled]="paymentsPage() >= paymentsTotalPages()" (click)="paymentsPage.set(paymentsPage() + 1)" title="Next page">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+            <span class="dash-pager__meta">{{ paymentsPage() }} / {{ paymentsTotalPages() }}</span>
+          </nav>
         }
       </div>
     </div>
@@ -194,11 +222,13 @@
   @if (activeTab() === 'cancellations') {
     <div class="card border-0 shadow-sm">
       <div class="card-body p-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="fw-700 mb-0"><i class="bi bi-x-circle me-2 text-danger"></i>Cancellations</h5>
-          <button class="btn btn-sm btn-outline-danger rounded-pill" (click)="showCancelForm.set(true)">
-            <i class="bi bi-plus-circle me-1"></i>New Request
-          </button>
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <div>
+            <h5 class="fw-700 mb-0"><i class="bi bi-x-circle me-2 text-danger"></i>Cancellations</h5>
+            @if (cancellations().length > 0) {
+              <p class="text-muted small mb-0">{{ cancellations().length }} record(s)</p>
+            }
+          </div>
         </div>
 
         @if (cancelLoading()) {
@@ -210,7 +240,7 @@
           </div>
         } @else {
           <div class="d-flex flex-column gap-3">
-            @for (c of cancellations(); track c.cancellationId) {
+            @for (c of pagedCancels(); track c.cancellationId) {
               <div class="cancel-card p-3 rounded-3 border">
                 <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
                   <div>
@@ -228,6 +258,16 @@
               </div>
             }
           </div>
+          <nav class="dash-pager" aria-label="Cancellations pagination">
+            <button type="button" class="dash-pager__btn" [disabled]="cancelsPage() <= 1" (click)="cancelsPage.set(cancelsPage() - 1)" title="Previous page">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+            <span class="dash-pager__current">{{ cancelsPage() }}</span>
+            <button type="button" class="dash-pager__btn" [disabled]="cancelsPage() >= cancelsTotalPages()" (click)="cancelsPage.set(cancelsPage() + 1)" title="Next page">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+            <span class="dash-pager__meta">{{ cancelsPage() }} / {{ cancelsTotalPages() }}</span>
+          </nav>
         }
       </div>
     </div>
@@ -237,14 +277,19 @@
   @if (activeTab() === 'notifications') {
     <div class="card border-0 shadow-sm">
       <div class="card-body p-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="fw-700 mb-0">
-            <i class="bi bi-bell me-2 text-primary"></i>Notifications
-            @if (unreadCount() > 0) {
-              <span class="badge bg-danger rounded-pill ms-1">{{ unreadCount() }} unread</span>
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <div>
+            <h5 class="fw-700 mb-0">
+              <i class="bi bi-bell me-2 text-primary"></i>Notifications
+              @if (unreadCount() > 0) {
+                <span class="badge bg-danger rounded-pill ms-1">{{ unreadCount() }} unread</span>
+              }
+            </h5>
+            @if (notifications().length > 0) {
+              <p class="text-muted small mb-0">{{ notifications().length }} notification(s)</p>
             }
-          </h5>
-          <button class="btn btn-sm btn-outline-secondary rounded-pill" (click)="loadNotifications()">
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" (click)="loadNotifications()">
             <i class="bi bi-arrow-clockwise"></i>
           </button>
         </div>
@@ -258,7 +303,7 @@
           </div>
         } @else {
           <div class="d-flex flex-column gap-2">
-            @for (n of notifications(); track n.notificationId) {
+            @for (n of pagedNotifs(); track n.notificationId) {
               <div class="notif-row d-flex align-items-start gap-3 p-3 rounded-3"
                    [class.notif-unread]="!n.isRead">
                 <div class="notif-dot-wrap">
@@ -283,6 +328,16 @@
               </div>
             }
           </div>
+          <nav class="dash-pager" aria-label="Notifications pagination">
+            <button type="button" class="dash-pager__btn" [disabled]="notifsPage() <= 1" (click)="notifsPage.set(notifsPage() - 1)" title="Previous page">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+            <span class="dash-pager__current">{{ notifsPage() }}</span>
+            <button type="button" class="dash-pager__btn" [disabled]="notifsPage() >= notifsTotalPages()" (click)="notifsPage.set(notifsPage() + 1)" title="Next page">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+            <span class="dash-pager__meta">{{ notifsPage() }} / {{ notifsTotalPages() }}</span>
+          </nav>
         }
       </div>
     </div>
@@ -292,8 +347,13 @@
   @if (activeTab() === 'reviews') {
     <div class="card border-0 shadow-sm">
       <div class="card-body p-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="fw-700 mb-0"><i class="bi bi-star me-2 text-warning"></i>My Reviews</h5>
+        <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+          <div>
+            <h5 class="fw-700 mb-0"><i class="bi bi-star me-2 text-warning"></i>My Reviews</h5>
+            @if (reviews().length > 0) {
+              <p class="text-muted small mb-0">{{ reviews().length }} review(s)</p>
+            }
+          </div>
           <a routerLink="/reviews" class="btn btn-sm btn-outline-primary rounded-pill">
             <i class="bi bi-plus me-1"></i>Write Review
           </a>
@@ -309,7 +369,7 @@
           </div>
         } @else {
           <div class="d-flex flex-column gap-3">
-            @for (r of reviews(); track r.reviewId) {
+            @for (r of pagedReviews(); track r.reviewId) {
               <div class="review-item p-3 rounded-3">
                 <div class="d-flex align-items-center gap-2 mb-2">
                   <div class="d-flex gap-1">
@@ -324,6 +384,16 @@
               </div>
             }
           </div>
+          <nav class="dash-pager" aria-label="Reviews pagination">
+            <button type="button" class="dash-pager__btn" [disabled]="reviewsPage() <= 1" (click)="reviewsPage.set(reviewsPage() - 1)" title="Previous page">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+            <span class="dash-pager__current">{{ reviewsPage() }}</span>
+            <button type="button" class="dash-pager__btn" [disabled]="reviewsPage() >= reviewsTotalPages()" (click)="reviewsPage.set(reviewsPage() + 1)" title="Next page">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+            <span class="dash-pager__meta">{{ reviewsPage() }} / {{ reviewsTotalPages() }}</span>
+          </nav>
         }
       </div>
     </div>
@@ -333,24 +403,194 @@
   @if (activeTab() === 'amenities') {
     <div class="card border-0 shadow-sm">
       <div class="card-body p-4">
-        <h5 class="fw-700 mb-3"><i class="bi bi-stars me-2 text-warning"></i>Available Amenities</h5>
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <h5 class="fw-700 mb-0"><i class="bi bi-stars me-2 text-warning"></i>Available Amenities</h5>
+          <div class="d-flex align-items-center gap-2">
+            @if (prefLoading() || prefSaving()) { <span class="spinner-border spinner-border-sm text-primary"></span> }
+            <span class="badge bg-primary rounded-pill">{{ amenities().length }} total</span>
+          </div>
+        </div>
+        <p class="text-muted small mb-3">Request amenities you care about. Each request stays <strong>Pending</strong> until an admin or hotel manager <strong>approves</strong> or rejects it. Approved preferences are tied to your account.</p>
+
+        <!-- Selected count -->
+        @if (myPreferences().length > 0) {
+          <div class="alert alert-info py-2 px-3 rounded-3 mb-3 d-flex align-items-start gap-2" style="font-size:.84rem">
+            <i class="bi bi-info-circle-fill text-primary mt-1"></i>
+            <span>You have <strong>{{ myPreferences().length }}</strong> preference request(s). Check the status badge on each tile (Pending → Approved / Rejected).</span>
+          </div>
+        }
+
+        <!-- Search -->
+        <div class="mb-4">
+          <input class="form-control form-control-sm rounded-pill"
+            placeholder="🔍 Search amenities…"
+            [value]="amenitySearch()"
+            (input)="amenitySearch.set($any($event.target).value); amenitiesPage.set(1)">
+        </div>
+
         @if (amenities().length === 0) {
           <div class="empty-state"><i class="bi bi-stars empty-icon"></i><p>No amenities listed yet.</p></div>
+        } @else if (filteredAmenities().length === 0) {
+          <div class="empty-state"><i class="bi bi-search empty-icon"></i><p>No amenities match "{{ amenitySearch() }}"</p></div>
         } @else {
           <div class="row g-3">
-            @for (a of amenities(); track a.amenityId) {
+            @for (a of pagedAmenities(); track a.amenityId) {
               <div class="col-6 col-sm-4 col-md-3">
-                <div class="amenity-tile text-center p-3 rounded-3">
-                  <div class="fs-3 mb-1">{{ a.icon || '✨' }}</div>
-                  <div class="fw-600 small">{{ a.name }}</div>
-                  @if (a.description) {
-                    <div class="text-muted" style="font-size:.72rem">{{ a.description }}</div>
-                  }
+                <div class="amenity-tile text-center p-3 rounded-3 h-100 d-flex flex-column align-items-center justify-content-between"
+                  [class.amenity-selected]="selectedAmenityIds().has(a.amenityId)"
+                  (click)="togglePreference(a)"
+                  style="cursor:pointer;transition:all .2s">
+                  <div>
+                    <div class="fs-2 mb-2">{{ a.icon || '✨' }}</div>
+                    <div class="fw-600 small mb-1">{{ a.name }}</div>
+                    @if (a.description) {
+                      <div class="text-muted" style="font-size:.7rem">{{ a.description }}</div>
+                    }
+                  </div>
+                  <div class="mt-2 d-flex flex-column align-items-center gap-1">
+                    @if (selectedAmenityIds().has(a.amenityId)) {
+                      <span class="badge bg-primary rounded-pill" style="font-size:.65rem">
+                        <i class="bi bi-send-check me-1"></i>Requested
+                      </span>
+                      <span class="badge rounded-pill" [ngClass]="preferenceStatusClass(preferenceForAmenity(a.amenityId)?.status)" style="font-size:.65rem">
+                        {{ preferenceForAmenity(a.amenityId)?.status || 'Pending' }}
+                      </span>
+                    } @else {
+                      <span class="badge bg-light text-muted border rounded-pill" style="font-size:.7rem">
+                        <i class="bi bi-plus-circle me-1"></i>Select
+                      </span>
+                    }
+                  </div>
                 </div>
               </div>
             }
           </div>
+          <nav class="dash-pager" aria-label="Amenities pagination">
+            <button type="button" class="dash-pager__btn" [disabled]="amenitiesPage() <= 1" (click)="amenitiesPage.set(amenitiesPage() - 1)" title="Previous page">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+            <span class="dash-pager__current">{{ amenitiesPage() }}</span>
+            <button type="button" class="dash-pager__btn" [disabled]="amenitiesPage() >= amenitiesTotalPages()" (click)="amenitiesPage.set(amenitiesPage() + 1)" title="Next page">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+            <span class="dash-pager__meta">{{ amenitiesPage() }} / {{ amenitiesTotalPages() }}</span>
+          </nav>
         }
+      </div>
+    </div>
+  }
+
+  <!-- ══════════════════ SUPPORT TAB ══════════════════ -->
+  @if (activeTab() === 'support') {
+    <div class="row g-4">
+      <!-- Info panel -->
+      <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body p-4">
+            <h5 class="fw-700 mb-3"><i class="bi bi-headset me-2 text-primary"></i>24/7 Support</h5>
+            <p class="text-muted small mb-4">Our AI assistant is available around the clock to help you with any questions.</p>
+            <div class="d-flex flex-column gap-3">
+              <div class="support-topic p-3 rounded-3">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <span class="fs-5">📅</span>
+                  <span class="fw-600 small">Booking Queries</span>
+                </div>
+                <p class="text-muted small mb-0">How to book, modify, check status, and manage reservations.</p>
+              </div>
+              <div class="support-topic p-3 rounded-3">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <span class="fs-5">❌</span>
+                  <span class="fw-600 small">Cancellation Policies</span>
+                </div>
+                <p class="text-muted small mb-0">Refund timelines, cancellation steps, and policy details.</p>
+              </div>
+              <div class="support-topic p-3 rounded-3">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <span class="fs-5">🏨</span>
+                  <span class="fw-600 small">Hotel Details</span>
+                </div>
+                <p class="text-muted small mb-0">Amenities, check-in times, ratings, and hotel information.</p>
+              </div>
+              <div class="support-topic p-3 rounded-3">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <span class="fs-5">💳</span>
+                  <span class="fw-600 small">Payment Help</span>
+                </div>
+                <p class="text-muted small mb-0">Payment methods, failed payments, and billing queries.</p>
+              </div>
+            </div>
+            <div class="mt-4 p-3 rounded-3" style="background:#fce4ec">
+              <div class="small fw-600 text-danger mb-1">Need human support?</div>
+              <div class="small text-muted">Email: <strong>support@stayease.com</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Embedded chat -->
+      <div class="col-lg-8">
+        <div class="card border-0 shadow-sm" style="height:520px;display:flex;flex-direction:column">
+          <div class="card-header d-flex align-items-center gap-2 py-3" style="background:linear-gradient(135deg,#e84393,#c2185b);border-radius:12px 12px 0 0">
+            <div style="width:36px;height:36px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem">🤖</div>
+            <div>
+              <div class="fw-600 text-white" style="font-size:.9rem">StayEase AI Support</div>
+              <div class="d-flex align-items-center gap-1">
+                <span style="width:8px;height:8px;background:#69f0ae;border-radius:50%;display:inline-block"></span>
+                <span class="text-white" style="font-size:.7rem;opacity:.85">Online 24/7</span>
+              </div>
+            </div>
+            <button class="ms-auto btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:50%;width:30px;height:30px;padding:0" (click)="clearChat()" title="Clear chat">
+              <i class="bi bi-trash3" style="font-size:.8rem"></i>
+            </button>
+          </div>
+
+          <!-- Messages -->
+          <div class="flex-grow-1 overflow-auto p-3" style="background:#f8f9fc" #chatMsgContainer>
+            @for (m of chatMessages(); track $index) {
+              <div class="d-flex mb-3" [class.flex-row-reverse]="m.sender === 'user'">
+                @if (m.sender === 'bot') { <span class="me-2" style="font-size:1.1rem;align-self:flex-end">🤖</span> }
+                <div class="px-3 py-2 rounded-3" style="max-width:78%;font-size:.84rem;line-height:1.5"
+                  [style.background]="m.sender === 'user' ? 'linear-gradient(135deg,#e84393,#c2185b)' : '#fff'"
+                  [style.color]="m.sender === 'user' ? '#fff' : '#333'"
+                  [style.border]="m.sender === 'bot' ? '1px solid #e8e8e8' : 'none'"
+                  [style.border-radius]="m.sender === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px'"
+                  [innerHTML]="formatChatText(m.text)">
+                </div>
+              </div>
+            }
+            @if (chatSending()) {
+              <div class="d-flex mb-3">
+                <span class="me-2" style="font-size:1.1rem;align-self:flex-end">🤖</span>
+                <div class="px-3 py-2 rounded-3" style="background:#fff;border:1px solid #e8e8e8">
+                  <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Quick replies -->
+          @if (!chatSending() && chatSuggestions().length > 0) {
+            <div class="px-3 py-2 d-flex flex-wrap gap-2" style="background:#f8f9fc;border-top:1px solid #f0f0f0">
+              @for (s of chatSuggestions(); track s) {
+                <button class="btn btn-sm rounded-pill" style="background:#fce4ec;color:#c2185b;border:1px solid #f8bbd0;font-size:.75rem;font-weight:600" (click)="sendChat(s)">{{ s }}</button>
+              }
+            </div>
+          }
+
+          <!-- Input -->
+          <div class="d-flex gap-2 p-3" style="background:#fff;border-top:1px solid #eee">
+            <input class="form-control form-control-sm rounded-pill" style="font-size:.84rem"
+              [value]="chatInput()"
+              (input)="chatInput.set($any($event.target).value)"
+              (keydown.enter)="sendChat()"
+              placeholder="Type a message…"
+              [disabled]="chatSending()">
+            <button class="btn btn-sm rounded-pill px-3" style="background:linear-gradient(135deg,#e84393,#c2185b);color:#fff;border:none"
+              (click)="sendChat()" [disabled]="!chatInput().trim() || chatSending()">
+              <i class="bi bi-send-fill"></i>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   }

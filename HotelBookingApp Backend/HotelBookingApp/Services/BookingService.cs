@@ -10,24 +10,37 @@ namespace HotelBookingApp.Services
     public class BookingService : IBookingService
     {
         private readonly IRepository<int, Booking> _bookingRepo;
-        private readonly IRepository<int, Hotel> _hotelRepo;
-        private readonly IRepository<int, Room> _roomRepo;
-        private readonly ILogger<BookingService> _logger;
+        private readonly IRepository<int, Hotel>   _hotelRepo;
+        private readonly IRepository<int, Room>    _roomRepo;
+        private readonly IAuditLogService          _audit;
+        private readonly ILogger<BookingService>   _logger;
 
         private readonly DateRangeValidatorDelegate _dateValidator =
             AppDelegateFactory.StrictDateRangeValidator;
 
         public BookingService(
             IRepository<int, Booking> bookingRepo,
-            IRepository<int, Hotel> hotelRepo,
-            IRepository<int, Room> roomRepo,
-            ILogger<BookingService> logger)
+            IRepository<int, Hotel>   hotelRepo,
+            IRepository<int, Room>    roomRepo,
+            IAuditLogService          audit,
+            ILogger<BookingService>   logger)
         {
             _bookingRepo = bookingRepo;
-            _hotelRepo = hotelRepo;
-            _roomRepo = roomRepo;
-            _logger = logger;
+            _hotelRepo   = hotelRepo;
+            _roomRepo    = roomRepo;
+            _audit       = audit;
+            _logger      = logger;
         }
+
+        private void Log(string action, string entity, int? entityId, int? userId, string? changes = null)
+            => _ = _audit.CreateAsync(new CreateAuditLogDto
+            {
+                UserId     = userId,
+                Action     = action,
+                EntityName = entity,
+                EntityId   = entityId,
+                Changes    = changes
+            });
 
         // ── CREATE ─────────────────────────────
         public async Task<BookingResponseDto> CreateAsync(CreateBookingDto dto)
@@ -49,34 +62,66 @@ namespace HotelBookingApp.Services
             if (room.HotelId != dto.HotelId)
                 throw new BadRequestException("Room does not belong to selected hotel.");
 
-            // ✅ INVENTORY CHECK
-            if (!room.IsAvailable || room.AvailableRooms < dto.NumberOfRooms)
-                throw new BadRequestException("Not enough rooms available.");
+            // ── ADMIN DEACTIVATION CHECK ───────────────────────────────────
+            if (!room.IsAvailable)
+                throw new BadRequestException(
+                    "This room is currently unavailable. Please choose a different room.");
+
+            // ── SAME-USER DATE-OVERLAP CHECK ───────────────────────────────
+            // Block if this user already has a Pending/Confirmed booking for this
+            // room whose dates overlap the requested period.
+            // Non-overlapping dates on the same room are allowed.
+            var existingUserBookings = await _bookingRepo.FindAllAsync(
+                b => b.UserId == dto.UserId &&
+                     b.RoomId == dto.RoomId &&
+                     (b.Status == "Pending" || b.Status == "Confirmed") &&
+                     dto.CheckIn  < b.CheckOut &&   // new check-in is before existing check-out
+                     dto.CheckOut > b.CheckIn        // new check-out is after existing check-in
+            );
+            if (existingUserBookings.Any())
+            {
+                var existing = existingUserBookings.First();
+                throw new AlreadyExistsException(
+                    $"You already have an active booking (#{existing.BookingId}) for this room " +
+                    $"from {existing.CheckIn:dd MMM yyyy} to {existing.CheckOut:dd MMM yyyy}. " +
+                    "Please choose non-overlapping dates or cancel the existing booking.");
+            }
+
+            // ── OTHER-USER DATE-OVERLAP CHECK ──────────────────────────────
+            // Block if any other user has a Pending/Confirmed booking for this
+            // room whose dates overlap the requested period.
+            var otherOverlap = await _bookingRepo.FindAllAsync(
+                b => b.RoomId != 0 &&               // always true — keeps EF happy
+                     b.RoomId == dto.RoomId &&
+                     b.UserId != dto.UserId &&
+                     (b.Status == "Pending" || b.Status == "Confirmed") &&
+                     dto.CheckIn  < b.CheckOut &&
+                     dto.CheckOut > b.CheckIn
+            );
+            if (otherOverlap.Any())
+                throw new BadRequestException(
+                    "This room is already booked for the selected dates by another guest. " +
+                    "Please choose different dates or a different room.");
 
             var nights = (decimal)(dto.CheckOut - dto.CheckIn).TotalDays;
             var totalAmount = Math.Round(nights * room.PricePerNight * dto.NumberOfRooms, 2);
 
-            // ✅ REDUCE INVENTORY
-            room.AvailableRooms -= dto.NumberOfRooms;
-            room.IsAvailable = room.AvailableRooms > 0;
-            await _roomRepo.UpdateAsync(room.RoomId, room);
-
             var booking = new Booking
             {
-                UserId = dto.UserId,
-                HotelId = dto.HotelId,
-                RoomId = dto.RoomId,
+                UserId        = dto.UserId,
+                HotelId       = dto.HotelId,
+                RoomId        = dto.RoomId,
                 NumberOfRooms = dto.NumberOfRooms,
-                CheckIn = dto.CheckIn,
-                CheckOut = dto.CheckOut,
-                TotalAmount = totalAmount,
-                Status = "Pending"
+                CheckIn       = dto.CheckIn,
+                CheckOut      = dto.CheckOut,
+                TotalAmount   = totalAmount,
+                Status        = "Pending"
             };
 
             var created = await _bookingRepo.AddAsync(booking);
-
             _logger.LogInformation("Booking created: {BookingId}", created.BookingId);
-
+            Log("BookingCreated", "Booking", created.BookingId, dto.UserId,
+                $"Hotel:{dto.HotelId} Room:{dto.RoomId} {dto.CheckIn:dd-MMM-yyyy}→{dto.CheckOut:dd-MMM-yyyy} ₹{totalAmount}");
             return MapToDto(created, hotel.HotelName);
         }
 
@@ -95,7 +140,7 @@ namespace HotelBookingApp.Services
         public async Task<PagedResponseDto<BookingResponseDto>> GetAllAsync(PagedRequestDto request)
         {
             request.PageNumber = Math.Max(1, request.PageNumber);
-            request.PageSize = Math.Clamp(request.PageSize, 1, 100);
+            request.PageSize = Math.Clamp(request.PageSize, 1, 10);
 
             var all = await _bookingRepo.GetAllAsync();
             var ordered = all.OrderByDescending(b => b.CheckIn).ToList();
@@ -119,7 +164,8 @@ namespace HotelBookingApp.Services
                 Data = data,
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize,
-                TotalRecords = total
+                TotalRecords = total,
+                TotalPages   = (int)Math.Ceiling((double)total / request.PageSize)
             };
         }
 
@@ -151,7 +197,8 @@ namespace HotelBookingApp.Services
                 Data = data,
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize,
-                TotalRecords = total
+                TotalRecords = total,
+                TotalPages   = (int)Math.Ceiling((double)total / request.PageSize)
             };
         }
 
@@ -179,7 +226,8 @@ namespace HotelBookingApp.Services
                 Data = data,
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize,
-                TotalRecords = total
+                TotalRecords = total,
+                TotalPages   = (int)Math.Ceiling((double)total / request.PageSize)
             };
         }
 
@@ -222,19 +270,9 @@ namespace HotelBookingApp.Services
             if (booking.Status == "Cancelled")
                 throw new BadRequestException("Already cancelled.");
 
-            // ✅ RESTORE INVENTORY
-            var room = await _roomRepo.GetByIdAsync(booking.RoomId);
-            if (room != null)
-            {
-                room.AvailableRooms += booking.NumberOfRooms;
-                room.IsAvailable = true;
-
-                await _roomRepo.UpdateAsync(room.RoomId, room);
-            }
-
             booking.Status = "Cancelled";
             await _bookingRepo.UpdateAsync(bookingId, booking);
-
+            Log("BookingCancelled", "Booking", bookingId, booking.UserId, $"Status→Cancelled");
             return true;
         }
 
@@ -248,9 +286,8 @@ namespace HotelBookingApp.Services
                 throw new BadRequestException($"Invalid status change {booking.Status} → {newStatus}");
 
             booking.Status = newStatus;
-
             await _bookingRepo.UpdateAsync(bookingId, booking);
-
+            Log($"Booking{newStatus}", "Booking", bookingId, booking.UserId, $"Status→{newStatus}");
             var hotel = await _hotelRepo.GetByIdAsync(booking.HotelId);
 
             return MapToDto(booking, hotel?.HotelName ?? string.Empty);

@@ -45,6 +45,8 @@ export class Review implements OnDestroy {
 
   // ── User ──────────────────────────────────────────────────────────────────
   private currentUser = signal<UserState>({ userId: 0, userName: '', email: '', role: '' });
+  get currentUserId(): number { return this.currentUser().userId; }
+  get currentUserName(): string { return this.currentUser().userName; }
   private sub: Subscription;
 
   get isUser()    { return this.currentUser().role === 'user'; }
@@ -90,7 +92,7 @@ export class Review implements OnDestroy {
   loadAll(): void {
     this.loading.set(true);
     // Load hotel list first (for name lookup + write-review dropdown)
-    this.api.apiGetHotelsPaged({ pageNumber: 1, pageSize: 200 }).subscribe({
+    this.api.apiGetHotelsPaged({ pageNumber: 1, pageSize: 100 }).subscribe({
       next: res => {
         this.hotels.set(res.data || []);
         this.loadReviews();
@@ -192,8 +194,8 @@ export class Review implements OnDestroy {
   }
 
   getInitials(r: ReviewItem): string {
-    if (r.userId === this.currentUser().userId) {
-      return this.currentUser().userName?.charAt(0).toUpperCase() || 'U';
+    if (r.userId === this.currentUserId) {
+      return this.currentUserName?.charAt(0).toUpperCase() || 'U';
     }
     return 'G';
   }

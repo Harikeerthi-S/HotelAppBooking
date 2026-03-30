@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace HotelBookingApp.Models
 {
@@ -26,6 +27,7 @@ namespace HotelBookingApp.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [ForeignKey(nameof(BookingId))]
+        [JsonIgnore]
         public Booking? Booking { get; set; }
 
         public int  CompareTo(Payment? other) => other != null ? PaymentId.CompareTo(other.PaymentId) : 1;

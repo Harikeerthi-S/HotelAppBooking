@@ -68,8 +68,15 @@ namespace HotelBookingApp.Services
         // ── GET ALL ───────────────────────────────────────────────────────
         public async Task<IEnumerable<HotelAmenityResponseDto>> GetAllAsync()
         {
-            var list = await _hotelAmenityRepo.GetAllAsync();
-            return list.Select(MapToDto).ToList();
+            var all = await _hotelAmenityRepo.GetAllIncludingAsync(ha => ha.Amenity!);
+            return all.Select(MapToDto).ToList();
+        }
+
+        // ── GET BY HOTEL ──────────────────────────────────────────────────
+        public async Task<IEnumerable<HotelAmenityResponseDto>> GetByHotelAsync(int hotelId)
+        {
+            var all  = await _hotelAmenityRepo.GetAllIncludingAsync(ha => ha.Amenity!);
+            return all.Where(ha => ha.HotelId == hotelId).Select(MapToDto).ToList();
         }
 
         // ── DELETE ────────────────────────────────────────────────────────
@@ -84,9 +91,12 @@ namespace HotelBookingApp.Services
         // ── MAPPER ────────────────────────────────────────────────────────
         private static HotelAmenityResponseDto MapToDto(HotelAmenity ha) => new()
         {
-            HotelAmenityId = ha.HotelAmenityId,
-            HotelId        = ha.HotelId,
-            AmenityId      = ha.AmenityId
+            HotelAmenityId       = ha.HotelAmenityId,
+            HotelId              = ha.HotelId,
+            AmenityId            = ha.AmenityId,
+            AmenityName          = ha.Amenity?.Name        ?? string.Empty,
+            AmenityIcon          = ha.Amenity?.Icon,
+            AmenityDescription   = ha.Amenity?.Description
         };
     }
 }

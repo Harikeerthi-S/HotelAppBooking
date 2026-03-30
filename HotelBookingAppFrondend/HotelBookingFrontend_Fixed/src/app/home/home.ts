@@ -1,110 +1,130 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { APIService } from '../services/api.service';
-
+import { TokenService } from '../services/token.service';
+import { $userStatus } from '../dynamicCommunication/userObservable';
 import { HotelModel } from '../models/hotel.model';
 import { AmenityModel } from '../models/amenity.model';
+import { BookingModel } from '../models/booking.model';
+import { HotelAmenityModel } from '../models/hotel-amenity.model';
+
 
 @Component({
   selector: 'app-home',
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, CommonModule],
   templateUrl: './home.html',
   styleUrl: './home.css'
 })
 export class Home {
   private apiService = inject(APIService);
-  private router     = inject(Router);
+  private tokenService = inject(TokenService);
+  private router = inject(Router);
 
-  hotels  = signal<HotelModel[]>([]);
-  loading = signal(false);
-
-  // 🔍 SEARCH
-  selectedCity    = signal('');
-  selectedAmenity = signal<number | null>(null);
-
-  // 🎛️ AMENITIES
+  hotels   = signal<HotelModel[]>([]);
+  loading  = signal(false);
   amenities = signal<AmenityModel[]>([]);
+  upcomingBookings = signal<BookingModel[]>([]);
+  hotelAmenityMap = signal<Record<number, HotelAmenityModel[]>>({});
+  isLoggedIn = () => this.tokenService.isLoggedIn();
 
-  // 🌆 POPULAR CITIES
+  // ── Search ────────────────────────────────────────────────────────────────
+  selectedCity    = signal('');
+  selectedAmenity = signal('');  // amenity label e.g. "Pool"
+  checkIn         = signal('');
+  checkOut        = signal('');
+  guests          = signal(1);
+  today           = new Date().toISOString().split('T')[0];
+
+  // ── Top amenity quick filters ─────────────────────────────────────────────
+  readonly topAmenities = [
+    { icon: '🏊', label: 'Pool' },
+    { icon: '💆', label: 'Spa' },
+    { icon: '🐾', label: 'Pet-friendly' },
+    { icon: '🏋️', label: 'Gym' },
+    { icon: '📶', label: 'Free Wi-Fi' },
+    { icon: '🍳', label: 'Breakfast' },
+    { icon: '🅿️', label: 'Parking' },
+    { icon: '🌊', label: 'Beach Access' },
+  ];
+  activeAmenityFilter = signal('');
+
   cities = [
-    { name: 'Mumbai', emoji: '🌆', count: 1240 },
-    { name: 'Delhi', emoji: '🏛️', count: 980 },
-    { name: 'Goa', emoji: '🏖️', count: 650 },
-    { name: 'Bangalore', emoji: '🌿', count: 870 },
-    { name: 'Jaipur', emoji: '🏰', count: 430 },
-    { name: 'Chennai', emoji: '🌊', count: 560 }
+    { name: 'Mumbai', emoji: '🌆', count: 10 },
+    { name: 'Delhi', emoji: '🏛️', count: 10 },
+    { name: 'Goa', emoji: '🏖️', count: 10 },
+    { name: 'Bangalore', emoji: '🌿', count: 10 },
+    { name: 'Jaipur', emoji: '🏰', count: 10 },
+    { name: 'Chennai', emoji: '🌊', count: 10 }
   ];
 
   constructor() {
     this.getFeaturedHotels();
+    this.apiService.apiGetAmenities().subscribe({ next: res => this.amenities.set(res), error: () => {} });
+    $userStatus.subscribe(u => {
+      if (u.userId > 0 && u.role === 'user') this.loadUpcomingBookings(u.userId);
+    });
+  }
 
-    // ✅ Load amenities
-    this.apiService.apiGetAmenities().subscribe({
-      next: res => this.amenities.set(res),
+  loadUpcomingBookings(userId: number): void {
+    this.apiService.apiGetBookingsByUser(userId, { pageNumber: 1, pageSize: 3 }).subscribe({
+      next: res => this.upcomingBookings.set(
+        (res.data ?? []).filter(b => b.status === 'Pending' || b.status === 'Confirmed').slice(0, 3)
+      ),
       error: () => {}
     });
   }
 
-  // =====================
-  // HOTELS
-  // =====================
-  getFeaturedHotels() {
+  getFeaturedHotels(): void {
     this.loading.set(true);
-
     this.apiService.apiGetHotelsPaged({ pageNumber: 1, pageSize: 6 }).subscribe({
       next: res => {
         this.hotels.set(res.data || []);
         this.loading.set(false);
+        // Load assigned amenities for each featured hotel
+        (res.data || []).forEach(h => {
+          this.apiService.apiGetHotelAmenitiesByHotel(h.hotelId).subscribe({
+            next: a => this.hotelAmenityMap.update(m => ({ ...m, [h.hotelId]: a ?? [] })),
+            error: () => {}
+          });
+        });
       },
       error: () => this.loading.set(false)
     });
   }
 
-  // =====================
-  // SEARCH
-  // =====================
-  onCityChange(city: string) {
-    this.selectedCity.set(city);
-  }
+  onCityChange(city: string)    { this.selectedCity.set(city); }
+  onAmenityChange(label: string) { this.selectedAmenity.set(label); }
 
-  onAmenityChange(id: string) {
-    this.selectedAmenity.set(id ? +id : null);
-  }
-
-  search() {
+  search(): void {
     const query: any = {};
-
-    if (this.selectedCity()) {
-      query.location = this.selectedCity();
-    }
-
-    if (this.selectedAmenity()) {
-      query.amenityId = this.selectedAmenity();
-    }
-
+    if (this.selectedCity())    query.location = this.selectedCity();
+    if (this.selectedAmenity()) query.amenity  = this.selectedAmenity();
+    if (this.checkIn())         query.checkIn   = this.checkIn();
+    if (this.checkOut())        query.checkOut  = this.checkOut();
+    if (this.guests() > 1)      query.guests    = this.guests();
     this.router.navigate(['/hotels'], { queryParams: query });
   }
 
-  // 🔥 CLICK CITY
-  searchByCity(city: string) {
-    this.router.navigate(['/hotels'], {
-      queryParams: { location: city }
-    });
+  searchByCity(city: string): void {
+    this.router.navigate(['/hotels'], { queryParams: { location: city } });
   }
 
-  // =====================
-  // IMAGE
-  // =====================
-  getHotelImage(hotel: HotelModel): string {
-    const imgs = [
-      'photo-1566073771259-6a8506099945',
-      'photo-1551882547-ff40c63fe5fa',
-      'photo-1571896349842-33c89424de2d'
-    ];
+  searchByAmenity(label: string): void {
+    this.activeAmenityFilter.set(this.activeAmenityFilter() === label ? '' : label);
+    this.router.navigate(['/hotels'], { queryParams: { amenity: label } });
+  }
 
-    if (hotel.imagePath?.startsWith('http')) return hotel.imagePath;
+  openChat(): void { window.dispatchEvent(new CustomEvent('stayease:openchat')); }
 
-    return `https://images.unsplash.com/${imgs[hotel.hotelId % 3]}?w=400&h=200&fit=crop`;
+
+  bookingStatusClass(s: string): string {
+    return ({ Pending: 'badge-pending', Confirmed: 'badge-confirmed' } as Record<string,string>)[s] ?? 'badge-pending';
+  }
+
+  /** Always returns an array so templates avoid TS2532 on optional map entries. */
+  getHotelAmenities(hotelId: number): HotelAmenityModel[] {
+    return this.hotelAmenityMap()[hotelId] ?? [];
   }
 }

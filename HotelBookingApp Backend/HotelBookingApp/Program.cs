@@ -24,6 +24,14 @@ builder.Logging.AddDebug();
 
 // ── Controllers ───────────────────────────────────────────────────────────
 builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Prevent circular reference serialization errors
+        options.JsonSerializerOptions.ReferenceHandler =
+            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition =
+            System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    })
     .ConfigureApiBehaviorOptions(options =>
     {
         options.InvalidModelStateResponseFactory = context =>
@@ -84,12 +92,16 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // ── Database — SQL Server (Entity Framework Core) ─────────────────────────
+var connectionString = builder.Configuration.GetConnectionString("HotelBookingDb")
+    ?? throw new InvalidOperationException(
+        "Connection string 'HotelBookingDb' not found in appsettings.json.");
+
 builder.Services.AddDbContext<HotelBookingContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("HotelBookingDb"),
+        connectionString,
         sqlOptions => sqlOptions.EnableRetryOnFailure(
-            maxRetryCount: 3,
-            maxRetryDelay: TimeSpan.FromSeconds(5),
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
             errorNumbersToAdd: null
         )
     )
@@ -163,20 +175,22 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
 
 // ── Application Services ──────────────────────────────────────────────────
-builder.Services.AddScoped<IPasswordService,     PasswordHelper>();
-builder.Services.AddScoped<IAuthService,         AuthService>();
-builder.Services.AddScoped<IUserService,         UserService>();
-builder.Services.AddScoped<IHotelService,        HotelService>();
-builder.Services.AddScoped<IRoomService,         RoomService>();
-builder.Services.AddScoped<IBookingService,      BookingService>();
-builder.Services.AddScoped<IPaymentService,      PaymentService>();
-builder.Services.AddScoped<ICancellationService, CancellationService>();
-builder.Services.AddScoped<IReviewService,       ReviewService>();
-builder.Services.AddScoped<IAmenityService,      AmenityService>();
-builder.Services.AddScoped<IHotelAmenityService, HotelAmenityService>();
-builder.Services.AddScoped<IWishlistService,     WishlistService>();
-builder.Services.AddScoped<INotificationService, NotificationService>();
-builder.Services.AddScoped<IAuditLogService, AuditLogService>();
+builder.Services.AddScoped<IPasswordService,              PasswordHelper>();
+builder.Services.AddScoped<IAuthService,                  AuthService>();
+builder.Services.AddScoped<IUserService,                  UserService>();
+builder.Services.AddScoped<IHotelService,                 HotelService>();
+builder.Services.AddScoped<IRoomService,                  RoomService>();
+builder.Services.AddScoped<IBookingService,               BookingService>();
+builder.Services.AddScoped<IPaymentService,               PaymentService>();
+builder.Services.AddScoped<ICancellationService,          CancellationService>();
+builder.Services.AddScoped<IReviewService,                ReviewService>();
+builder.Services.AddScoped<IAmenityService,               AmenityService>();
+builder.Services.AddScoped<IHotelAmenityService,          HotelAmenityService>();
+builder.Services.AddScoped<IWishlistService,              WishlistService>();
+builder.Services.AddScoped<INotificationService,          NotificationService>();
+builder.Services.AddScoped<IAuditLogService,              AuditLogService>();
+builder.Services.AddScoped<IChatService,                  ChatService>();
+builder.Services.AddScoped<IUserAmenityPreferenceService, UserAmenityPreferenceService>();
 builder.Services.AddScoped<JwtTokenHelper>();
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -185,27 +199,18 @@ builder.Services.AddScoped<JwtTokenHelper>();
 var app = builder.Build();
 
 // ── Auto-migrate database on startup ──────────────────────────────────────
-using (var scope = app.Services.CreateScope())
-{
-    try
-    {
-        var db = scope.ServiceProvider.GetRequiredService<HotelBookingContext>();
-        db.Database.Migrate();
-        app.Logger.LogInformation("Database migrated successfully.");
-    }
-    catch (Exception ex)
-    {
-        app.Logger.LogError(ex, "Error applying database migration.");
-    }
-}
+await ApplyMigrationsAsync(app);
 
-// ── Global Exception Handler ──────────────────────────────────────────────
+// ── Global Exception Handler (must be first middleware) ───────────────────
 app.UseGlobalExceptionHandler();
 
 // ── Request Logger ────────────────────────────────────────────────────────
 app.UseRequestLogging();
 
-// ── Swagger — always enabled ──────────────────────────────────────────────
+// ── Static Files — serves wwwroot/images/* ────────────────────────────────
+app.UseStaticFiles();
+
+// ── Swagger ───────────────────────────────────────────────────────────────
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
@@ -227,7 +232,43 @@ app.UseAuthorization();
 // ── Controllers ───────────────────────────────────────────────────────────
 app.MapControllers();
 
-// ── Health check ──────────────────────────────────────────────────────────
-
-
 app.Run();
+
+// ════════════════════════════════════════════════════════════════════════════
+//  MIGRATION HELPER
+// ════════════════════════════════════════════════════════════════════════════
+static async Task ApplyMigrationsAsync(WebApplication app)
+{
+    using var scope = app.Services.CreateScope();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<HotelBookingContext>();
+
+        var pending = (await db.Database.GetPendingMigrationsAsync()).ToList();
+        if (pending.Count == 0)
+        {
+            logger.LogInformation("✅ Database is up to date. No pending migrations.");
+            return;
+        }
+
+        logger.LogInformation("⏳ Applying {Count} pending migration(s): {Migrations}",
+            pending.Count, string.Join(", ", pending));
+
+        await db.Database.MigrateAsync();
+
+        logger.LogInformation("✅ Database migrated successfully.");
+    }
+    catch (Microsoft.Data.SqlClient.SqlException ex)
+    {
+        logger.LogError(ex,
+            "❌ SQL Server error during migration. " +
+            "Check connection string and ensure SQL Server is running. Error: {Message}",
+            ex.Message);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "❌ Unexpected error during database migration: {Message}", ex.Message);
+    }
+}

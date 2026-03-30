@@ -79,11 +79,7 @@ export class Wishlist implements OnDestroy {
     )).then(() => { this.items.set([]); this.toastr.success('Wishlist cleared.'); });
   }
 
-  getImage(hotel?: HotelModel): string {
-    const imgs = ['photo-1566073771259-6a8506099945','photo-1551882547-ff40c63fe5fa','photo-1571896349842-33c89424de2d'];
-    if (hotel?.imagePath?.startsWith('http')) return hotel.imagePath;
-    return `https://images.unsplash.com/${imgs[(hotel?.hotelId ?? 0) % 3]}?w=400&h=200&fit=crop`;
-  }
+
 
   getPrice(hotel?: HotelModel): string {
     return (800 + (hotel?.starRating ?? 3) * 500).toLocaleString('en-IN');

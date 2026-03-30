@@ -188,19 +188,9 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "filter",
-        "Type": "HotelBookingApp.Models.Dtos.AuditLogFilterDto",
+        "Name": "dto",
+        "Type": "HotelBookingApp.Models.Dtos.AuditLogFilterPagedDto",
         "IsRequired": true
-      },
-      {
-        "Name": "PageNumber",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
-        "Name": "PageSize",
-        "Type": "System.Int32",
-        "IsRequired": false
       }
     ],
     "ReturnTypes": []
@@ -487,6 +477,70 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "HotelBookingApp.Controllers.ChatController",
+    "Method": "GetHistory",
+    "RelativePath": "api/chat/history/{sessionId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "sessionId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.ChatController",
+    "Method": "SendMessage",
+    "RelativePath": "api/chat/message",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "HotelBookingApp.Models.Dtos.ChatRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.ChatController",
+    "Method": "ClearSession",
+    "RelativePath": "api/chat/session/{sessionId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "sessionId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.ChatController",
+    "Method": "GetByUser",
+    "RelativePath": "api/chat/user/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "HotelBookingApp.Controllers.HotelController",
     "Method": "Create",
     "RelativePath": "api/hotel",
@@ -544,6 +598,22 @@
     "Method": "Deactivate",
     "RelativePath": "api/hotel/{hotelId}",
     "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "hotelId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.HotelController",
+    "Method": "GetAmenities",
+    "RelativePath": "api/hotel/{hotelId}/amenities",
+    "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
@@ -645,7 +715,7 @@
     "RelativePath": "api/hotelamenity/{id}",
     "HttpMethod": "GET",
     "IsController": true,
-    "Order": 0,
+    "Order": 1,
     "Parameters": [
       {
         "Name": "id",
@@ -665,6 +735,22 @@
     "Parameters": [
       {
         "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.HotelAmenityController",
+    "Method": "GetByHotel",
+    "RelativePath": "api/hotelamenity/hotel/{hotelId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "hotelId",
         "Type": "System.Int32",
         "IsRequired": true
       }
@@ -737,12 +823,111 @@
   },
   {
     "ContainingType": "HotelBookingApp.Controllers.NotificationController",
+    "Method": "GetAll",
+    "RelativePath": "api/notification/all",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.NotificationController",
+    "Method": "GetUnreadCountAll",
+    "RelativePath": "api/notification/all/unread-count",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.NotificationController",
     "Method": "GetMy",
     "RelativePath": "api/notification/my",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.NotificationController",
+    "Method": "GetMyPaged",
+    "RelativePath": "api/notification/my/paged",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "HotelBookingApp.Models.Dtos.PagedRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.NotificationController",
+    "Method": "GetMyUnreadCount",
+    "RelativePath": "api/notification/my/unread-count",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.NotificationController",
+    "Method": "GetPaged",
+    "RelativePath": "api/notification/paged",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "HotelBookingApp.Models.Dtos.PagedRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.NotificationController",
+    "Method": "GetByUser",
+    "RelativePath": "api/notification/user/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.NotificationController",
+    "Method": "GetPagedByUser",
+    "RelativePath": "api/notification/user/{userId}/paged",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "HotelBookingApp.Models.Dtos.PagedRequestDto",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": []
   },
   {
@@ -819,6 +1004,43 @@
       {
         "Name": "bookingId",
         "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.PaymentController",
+    "Method": "GetPaged",
+    "RelativePath": "api/payment/paged",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "HotelBookingApp.Models.Dtos.PagedRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.PaymentController",
+    "Method": "GetPagedByUser",
+    "RelativePath": "api/payment/user/{userId}/paged",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "HotelBookingApp.Models.Dtos.PagedRequestDto",
         "IsRequired": true
       }
     ],
@@ -969,6 +1191,32 @@
   },
   {
     "ContainingType": "HotelBookingApp.Controllers.RoomController",
+    "Method": "CheckAvailability",
+    "RelativePath": "api/room/{roomId}/availability",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "roomId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "checkIn",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "checkOut",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.RoomController",
     "Method": "GetAll",
     "RelativePath": "api/room/all/paged",
     "HttpMethod": "POST",
@@ -999,6 +1247,117 @@
       {
         "Name": "filter",
         "Type": "HotelBookingApp.Models.Dtos.RoomFilterDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.UserAmenityPreferenceController",
+    "Method": "Add",
+    "RelativePath": "api/user-amenity-preference",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "HotelBookingApp.Models.Dtos.CreateUserAmenityPreferenceDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.UserAmenityPreferenceController",
+    "Method": "Remove",
+    "RelativePath": "api/user-amenity-preference/{preferenceId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "preferenceId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.UserAmenityPreferenceController",
+    "Method": "Approve",
+    "RelativePath": "api/user-amenity-preference/{preferenceId}/approve",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "preferenceId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.UserAmenityPreferenceController",
+    "Method": "Reject",
+    "RelativePath": "api/user-amenity-preference/{preferenceId}/reject",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "preferenceId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.UserAmenityPreferenceController",
+    "Method": "GetAll",
+    "RelativePath": "api/user-amenity-preference/all",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.UserAmenityPreferenceController",
+    "Method": "GetByUser",
+    "RelativePath": "api/user-amenity-preference/user/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.UserAmenityPreferenceController",
+    "Method": "RemoveByUserAmenity",
+    "RelativePath": "api/user-amenity-preference/user/{userId}/amenity/{amenityId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "amenityId",
+        "Type": "System.Int32",
         "IsRequired": true
       }
     ],
@@ -1044,6 +1403,22 @@
     "IsController": true,
     "Order": 0,
     "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.UsersController",
+    "Method": "GetPaged",
+    "RelativePath": "api/users/paged",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "HotelBookingApp.Models.Dtos.PagedRequestDto",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": []
   },
   {

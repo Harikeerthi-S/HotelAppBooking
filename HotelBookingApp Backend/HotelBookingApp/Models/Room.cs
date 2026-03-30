@@ -23,13 +23,6 @@ namespace HotelBookingApp.Models
         [Required, Range(1, 50)]
         public int Capacity { get; set; }
 
-        // ✅ INVENTORY SYSTEM
-        [Required]
-        public int TotalRooms { get; set; }
-
-        [Required]
-        public int AvailableRooms { get; set; }
-
         [MaxLength(255)]
         public string? ImageUrl { get; set; }
 

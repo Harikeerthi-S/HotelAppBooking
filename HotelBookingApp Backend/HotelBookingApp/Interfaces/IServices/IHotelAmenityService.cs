@@ -7,6 +7,7 @@ namespace HotelBookingApp.Interfaces.IServices
         Task<HotelAmenityResponseDto> CreateAsync(CreateHotelAmenityDto dto);
         Task<HotelAmenityResponseDto?> GetByIdAsync(int id);
         Task<IEnumerable<HotelAmenityResponseDto>> GetAllAsync();
+        Task<IEnumerable<HotelAmenityResponseDto>> GetByHotelAsync(int hotelId);
         Task<bool> DeleteAsync(int id);
     }
 }

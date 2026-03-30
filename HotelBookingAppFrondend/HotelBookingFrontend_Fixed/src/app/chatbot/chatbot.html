@@ -1,0 +1,88 @@
+<!-- Floating toggle button -->
+<button class="chat-fab" (click)="toggle()" [attr.aria-label]="isOpen() ? 'Close chat' : 'Open chat'">
+  @if (isOpen()) {
+    <i class="bi bi-x-lg"></i>
+  } @else {
+    <i class="bi bi-chat-dots-fill"></i>
+    @if (messages().length > 1) {
+      <span class="chat-badge">{{ messages().length - 1 }}</span>
+    }
+  }
+</button>
+
+<!-- Chat window -->
+@if (isOpen()) {
+  <div class="chat-window shadow-lg">
+
+    <!-- Header -->
+    <div class="chat-header d-flex align-items-center justify-content-between px-3 py-2">
+      <div class="d-flex align-items-center gap-2">
+        <div class="bot-avatar"><i class="bi bi-robot"></i></div>
+        <div>
+          <div class="fw-600 small">StayEase Assistant</div>
+          <div class="online-dot-wrap"><span class="online-dot"></span><span style="font-size:.7rem">Online</span></div>
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-sm btn-link text-white p-0" (click)="clearChat()" title="Clear chat">
+          <i class="bi bi-arrow-counterclockwise"></i>
+        </button>
+        <button class="btn btn-sm btn-link text-white p-0" (click)="toggle()" title="Close">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="chat-messages px-3 py-2">
+      @for (msg of messages(); track msg.chatMessageId) {
+        <div class="msg-row" [class.msg-user]="msg.sender === 'user'" [class.msg-bot]="msg.sender === 'bot'">
+          @if (msg.sender === 'bot') {
+            <div class="msg-avatar"><i class="bi bi-robot"></i></div>
+          }
+          <div class="msg-bubble" [innerHTML]="formatMessage(msg.message)"></div>
+          @if (msg.sender === 'user') {
+            <div class="msg-avatar user-avatar"><i class="bi bi-person-fill"></i></div>
+          }
+        </div>
+      }
+
+      @if (sending()) {
+        <div class="msg-row msg-bot">
+          <div class="msg-avatar"><i class="bi bi-robot"></i></div>
+          <div class="msg-bubble typing-bubble">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+        </div>
+      }
+
+      <div #messagesEnd></div>
+    </div>
+
+    <!-- Quick replies -->
+    @if (messages().length <= 2) {
+      <div class="quick-replies px-3 pb-2 d-flex flex-wrap gap-1">
+        @for (q of quickReplies; track q) {
+          <button class="btn btn-sm quick-btn" (click)="sendQuick(q)">{{ q }}</button>
+        }
+      </div>
+    }
+
+    <!-- Input -->
+    <div class="chat-input-wrap d-flex align-items-center gap-2 px-3 py-2">
+      <textarea
+        class="form-control chat-input"
+        rows="1"
+        placeholder="Type a message…"
+        [value]="inputText()"
+        (input)="inputText.set($any($event.target).value)"
+        (keydown)="onKeydown($event)"
+        [disabled]="sending()"
+      ></textarea>
+      <button class="btn send-btn" (click)="send()" [disabled]="!inputText().trim() || sending()">
+        <i class="bi bi-send-fill"></i>
+      </button>
+    </div>
+
+  </div>
+}

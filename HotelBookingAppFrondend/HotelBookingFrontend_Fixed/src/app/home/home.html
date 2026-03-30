@@ -1,119 +1,178 @@
-<!-- HERO -->
+
+<!-- ══ HERO + SEARCH ══ -->
 <section class="hero-section">
   <div class="container py-5 text-center">
+    <h1 class="hero-title">Find Your Perfect <span class="text-warning">Stay</span></h1>
+    <p class="text-white opacity-85 mb-4">Search from thousands of hotels across India</p>
 
-    <h1 class="hero-title">
-      Find Your Perfect <span class="text-warning">Stay</span>
-    </h1>
-
-    <!-- SEARCH -->
     <div class="search-card mt-4">
       <div class="row g-2">
-
-        <!-- CITY -->
-        <div class="col-md-6">
-          <select class="form-select"
-                  (change)="onCityChange($any($event.target).value)">
+        <div class="col-md-3">
+          <label class="form-label small fw-600 text-start d-block text-muted">Destination</label>
+          <select class="form-select" (change)="onCityChange($any($event.target).value)">
             <option value="">Select City</option>
             @for (city of cities; track city.name) {
-              <option [value]="city.name">{{ city.name }}</option>
+              <option [value]="city.name">{{ city.emoji }} {{ city.name }}</option>
             }
           </select>
         </div>
-
-        <!-- AMENITIES -->
-        <div class="col-md-3">
-          <select class="form-select"
-                  (change)="onAmenityChange($any($event.target).value)">
-            <option value="">Amenities</option>
-            @for (a of amenities(); track a.amenityId) {
-              <option [value]="a.amenityId">{{ a.name }}</option>
+        <div class="col-md-2">
+          <label class="form-label small fw-600 text-start d-block text-muted">Check-in</label>
+          <input class="form-control" type="date" [min]="today"
+            [value]="checkIn()" (input)="checkIn.set($any($event.target).value)">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small fw-600 text-start d-block text-muted">Check-out</label>
+          <input class="form-control" type="date" [min]="checkIn() || today"
+            [value]="checkOut()" (input)="checkOut.set($any($event.target).value)">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small fw-600 text-start d-block text-muted">Guests</label>
+          <select class="form-select" [value]="guests()" (change)="guests.set(+$any($event.target).value)">
+            @for (n of [1,2,3,4,5,6]; track n) {
+              <option [value]="n">{{ n }} Guest{{ n > 1 ? 's' : '' }}</option>
             }
           </select>
         </div>
-
-        <!-- SEARCH -->
-        <div class="col-md-3">
-          <button class="btn btn-primary-custom w-100" (click)="search()">
-            Search
+        <div class="col-md-2">
+          <label class="form-label small fw-600 text-start d-block text-muted">Amenity</label>
+          <select class="form-select" (change)="onAmenityChange($any($event.target).value)">
+            <option value="">Any Amenity</option>
+            @for (a of topAmenities; track a.label) {
+              <option [value]="a.label">{{ a.icon }} {{ a.label }}</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-1 d-flex align-items-end">
+          <button class="btn btn-primary-custom w-100 py-2 fw-600" (click)="search()">
+            <i class="bi bi-search"></i>
           </button>
         </div>
-
       </div>
     </div>
 
   </div>
 </section>
 
-<!-- 🔥 POPULAR DESTINATIONS -->
+<!-- ══ POPULAR DESTINATIONS ══ -->
 <section class="py-5 bg-white">
   <div class="container">
     <h2 class="fw-bold mb-3">Popular Destinations</h2>
-
     <div class="row g-4">
       @for (city of cities; track city.name) {
         <div class="col-6 col-md-4 col-lg-2">
-
-          <div class="card text-center p-3 city-card"
-               (click)="searchByCity(city.name)"
-               style="cursor:pointer">
-
+          <div class="card text-center p-3 city-card" (click)="searchByCity(city.name)" style="cursor:pointer">
             <div style="font-size:2rem">{{ city.emoji }}</div>
             <div class="fw-600 mt-2">{{ city.name }}</div>
             <small class="text-muted">{{ city.count }} hotels</small>
-
           </div>
-
         </div>
       }
     </div>
   </div>
 </section>
 
-<!-- FEATURED HOTELS -->
+<!-- ══ TRENDING / FEATURED HOTELS ══ -->
 <section class="py-5">
   <div class="container">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h2 class="fw-bold mb-1">🔥 Trending Hotels</h2>
+        <p class="text-muted small mb-0">Top-rated picks loved by our guests</p>
+      </div>
+      <a routerLink="/hotels" class="btn btn-sm btn-outline-primary rounded-pill">View All</a>
+    </div>
 
     @if (loading()) {
-      <div class="spinner-wrap">
-        <div class="spinner-ring"></div>
-      </div>
+      <div class="spinner-wrap"><div class="spinner-ring"></div></div>
     } @else {
-
       <div class="row g-4">
         @for (hotel of hotels(); track hotel.hotelId) {
-
           <div class="col-md-4">
-            <div class="card h-100">
-
-              <!-- IMAGE -->
+            @let hotelAmenities = getHotelAmenities(hotel.hotelId);
+            <div class="card h-100 hotel-card-home">
               <div class="position-relative">
-                <img [src]="getHotelImage(hotel)" class="w-100">
-
-                <!-- ⭐ RATING -->
-                <span class="badge bg-warning position-absolute bottom-0 start-0 m-2">
-                  ⭐ {{ hotel.starRating }}
+                @if (hotel.imagePath) {
+                  <img [src]="hotel.imagePath" [alt]="hotel.hotelName"
+                       class="w-100" style="height:180px;object-fit:cover">
+                }
+                <span class="badge bg-warning text-dark position-absolute bottom-0 start-0 m-2 fw-600">
+                  <i class="bi bi-star-fill me-1"></i>{{ hotel.starRating }}★
                 </span>
               </div>
-
-              <!-- BODY -->
               <div class="p-3">
-                <h6>{{ hotel.hotelName }}</h6>
-                <p class="text-muted small">{{ hotel.location }}</p>
-
-                <div class="text-end mt-2">
-                  <a [routerLink]="['/hotels', hotel.hotelId]"
-                     class="btn btn-primary-custom btn-sm">
+                <h6 class="fw-700 mb-1">{{ hotel.hotelName }}</h6>
+                <p class="text-muted small mb-2"><i class="bi bi-geo-alt me-1"></i>{{ hotel.location }}</p>
+                @if (hotelAmenities.length > 0) {
+                  <div class="d-flex flex-wrap gap-1 mb-3">
+                    @for (a of hotelAmenities.slice(0,3); track a.hotelAmenityId) {
+                      <span class="badge bg-light text-dark border rounded-pill" style="font-size:.68rem">
+                        {{ a.amenityIcon || '✨' }} {{ a.amenityName }}
+                      </span>
+                    }
+                    @if (hotelAmenities.length > 3) {
+                      <span class="badge bg-light text-muted border rounded-pill" style="font-size:.68rem">
+                        +{{ hotelAmenities.length - 3 }} more
+                      </span>
+                    }
+                  </div>
+                }
+                <div class="text-end">
+                  <a [routerLink]="['/hotels', hotel.hotelId]" class="btn btn-primary-custom btn-sm rounded-pill px-3">
                     Book Now
                   </a>
                 </div>
               </div>
-
             </div>
           </div>
-
         }
       </div>
     }
+  </div>
+</section>
+
+<!-- ══ AI SUPPORT ══ -->
+<section class="py-5" style="background:linear-gradient(135deg,#fce4ec,#f3e5f5)">
+  <div class="container">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-6">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div style="width:56px;height:56px;background:linear-gradient(135deg,#e84393,#c2185b);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;box-shadow:0 6px 20px rgba(232,67,147,.35)">🤖</div>
+          <div>
+            <h4 class="fw-bold mb-0">24/7 AI Support</h4>
+            <p class="text-muted small mb-0">Instant answers, anytime</p>
+          </div>
+        </div>
+        <p class="text-muted mb-4">Our AI assistant helps with booking queries, cancellation policies, hotel details, and payment questions.</p>
+        <div class="d-flex flex-wrap gap-3 mb-4">
+          <div class="d-flex align-items-center gap-2 small"><span class="fs-5">📅</span><span>Booking help</span></div>
+          <div class="d-flex align-items-center gap-2 small"><span class="fs-5">❌</span><span>Cancellation policy</span></div>
+          <div class="d-flex align-items-center gap-2 small"><span class="fs-5">🏨</span><span>Hotel details</span></div>
+          <div class="d-flex align-items-center gap-2 small"><span class="fs-5">💳</span><span>Payment support</span></div>
+        </div>
+        <button class="btn btn-primary-custom rounded-pill px-4 py-2 fw-600" (click)="openChat()">
+          <i class="bi bi-chat-dots-fill me-2"></i>Chat with Support
+        </button>
+      </div>
+      <div class="col-lg-6 d-none d-lg-block text-center">
+        <div style="background:#fff;border-radius:20px;padding:24px;box-shadow:0 8px 32px rgba(0,0,0,.1);max-width:340px;margin:0 auto">
+          <div class="d-flex align-items-center gap-2 mb-3 pb-3" style="border-bottom:1px solid #f0f0f0">
+            <div style="width:36px;height:36px;background:linear-gradient(135deg,#e84393,#c2185b);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem">🤖</div>
+            <div>
+              <div class="fw-600 small">StayEase Support</div>
+              <div class="d-flex align-items-center gap-1">
+                <span style="width:7px;height:7px;background:#69f0ae;border-radius:50%;display:inline-block"></span>
+                <span style="font-size:.7rem;color:#666">Online 24/7</span>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex flex-column gap-2 text-start">
+            <div class="px-3 py-2 rounded-3 small" style="background:#f8f9fc;border:1px solid #eee">👋 Hi! How can I help you today?</div>
+            <div class="px-3 py-2 rounded-3 small ms-auto" style="background:linear-gradient(135deg,#e84393,#c2185b);color:#fff">How do I cancel a booking?</div>
+            <div class="px-3 py-2 rounded-3 small" style="background:#f8f9fc;border:1px solid #eee">❌ <strong>Cancellation Policy:</strong><br>Free cancellation 48h before check-in.</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
