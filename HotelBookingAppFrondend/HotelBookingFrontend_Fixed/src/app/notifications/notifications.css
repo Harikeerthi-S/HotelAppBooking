@@ -1,14 +1,12 @@
-.btn-primary-custom { background: linear-gradient(135deg,#e84393,#c2185b); border:none; color:#fff; box-shadow:0 4px 14px rgba(232,67,147,.3); transition:all .2s; }
+.btn-primary-custom { background:linear-gradient(135deg,#e84393,#c2185b); border:none; color:#fff; box-shadow:0 4px 14px rgba(232,67,147,.3); transition:all .2s; }
 .btn-primary-custom:hover { transform:translateY(-1px); color:#fff; }
 .fw-600 { font-weight:600; }
-.notif-row { transition: background .2s; }
-.notif-row:hover { background: #f8f9fc; }
-.notif-row.unread { background: #fff8fb; border-left: 3px solid #e84393; }
-.notif-icon {
-  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
-  background: #f8f9fc; color: #6c757d;
-  display: flex; align-items: center; justify-content: center;
-}
-.notif-icon.notif-icon-unread { background: #fce4ec; color: #e84393; }
-.unread-dot { width: 8px; height: 8px; border-radius: 50%; background: #e84393; flex-shrink: 0; margin-top: 4px; }
-.min-w-0 { min-width: 0; }
+
+.notif-row { transition:background .2s; }
+.notif-row:hover { background:var(--bg); }
+.notif-row.unread { background:var(--primary-light); border-left:3px solid #e84393; }
+
+.notif-icon { width:38px; height:38px; border-radius:50%; flex-shrink:0; background:var(--bg); color:var(--text-muted); display:flex; align-items:center; justify-content:center; }
+.notif-icon.notif-icon-unread { background:var(--primary-light); color:#e84393; }
+.unread-dot { width:8px; height:8px; border-radius:50%; background:#e84393; flex-shrink:0; margin-top:4px; }
+.min-w-0 { min-width:0; }

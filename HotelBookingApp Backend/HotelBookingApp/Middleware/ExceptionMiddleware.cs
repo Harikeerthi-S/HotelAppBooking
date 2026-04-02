@@ -75,6 +75,17 @@ namespace HotelBookingApp.Middleware
                 AlreadyExistsException e => (HttpStatusCode.Conflict,            e.Message),
                 ValidationException    e => (HttpStatusCode.UnprocessableEntity, e.Message),
 
+                // ── File / IO exceptions ──────────────────────────────────
+                DirectoryNotFoundException =>
+                    (HttpStatusCode.InternalServerError,
+                     "A required server directory is missing. Please contact the administrator."),
+                FileNotFoundException =>
+                    (HttpStatusCode.NotFound,
+                     "A required file was not found on the server."),
+                UnauthorizedAccessException =>
+                    (HttpStatusCode.Forbidden,
+                     "Access to a server resource was denied."),
+
                 // ── EF Core / DB exceptions ───────────────────────────────
                 DbUpdateConcurrencyException =>
                     (HttpStatusCode.Conflict,

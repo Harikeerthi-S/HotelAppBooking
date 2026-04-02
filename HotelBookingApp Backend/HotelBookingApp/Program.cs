@@ -26,7 +26,6 @@ builder.Logging.AddDebug();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        // Prevent circular reference serialization errors
         options.JsonSerializerOptions.ReferenceHandler =
             System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.DefaultIgnoreCondition =
@@ -42,12 +41,11 @@ builder.Services.AddControllers()
                     kvp => kvp.Key,
                     kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                 );
-
             return new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(new
             {
                 statusCode = 400,
                 message    = "Validation failed.",
-                errors     = errors,
+                errors,
                 timestamp  = DateTime.UtcNow
             });
         };
@@ -61,10 +59,9 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title       = "Hotel Booking API",
         Version     = "v1",
-        Description = "Hotel Booking REST API — .NET 10 | EF Core | JWT Auth",
+        Description = "Hotel Booking WEB API — .NET 10 | EF Core | JWT Auth",
         Contact     = new OpenApiContact { Name = "StayEase Dev Team" }
     });
-
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name         = "Authorization",
@@ -74,7 +71,6 @@ builder.Services.AddSwaggerGen(c =>
         In           = ParameterLocation.Header,
         Description  = "Paste your JWT token here. Example: Bearer eyJhbGci..."
     });
-
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -126,7 +122,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.RequireHttpsMetadata = false;
-
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer           = true,
@@ -140,7 +135,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             NameClaimType            = ClaimTypes.Name,
             ClockSkew                = TimeSpan.Zero
         };
-
         options.Events = new JwtBearerEvents
         {
             OnChallenge = async context =>
@@ -199,16 +193,13 @@ builder.Services.AddScoped<JwtTokenHelper>();
 var app = builder.Build();
 
 // ── Auto-migrate database on startup ──────────────────────────────────────
-await ApplyMigrationsAsync(app);
+//await ApplyMigrationsAsync(app);
 
 // ── Global Exception Handler (must be first middleware) ───────────────────
 app.UseGlobalExceptionHandler();
 
 // ── Request Logger ────────────────────────────────────────────────────────
 app.UseRequestLogging();
-
-// ── Static Files — serves wwwroot/images/* ────────────────────────────────
-app.UseStaticFiles();
 
 // ── Swagger ───────────────────────────────────────────────────────────────
 app.UseSwagger();
@@ -237,38 +228,37 @@ app.Run();
 // ════════════════════════════════════════════════════════════════════════════
 //  MIGRATION HELPER
 // ════════════════════════════════════════════════════════════════════════════
-static async Task ApplyMigrationsAsync(WebApplication app)
-{
-    using var scope = app.Services.CreateScope();
-    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+//static async Task ApplyMigrationsAsync(WebApplication app)
+//{
+//    using var scope = app.Services.CreateScope();
+//    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
-    try
-    {
-        var db = scope.ServiceProvider.GetRequiredService<HotelBookingContext>();
+//    try
+//    {
+//        var db = scope.ServiceProvider.GetRequiredService<HotelBookingContext>();
+//        var pending = (await db.Database.GetPendingMigrationsAsync()).ToList();
 
-        var pending = (await db.Database.GetPendingMigrationsAsync()).ToList();
-        if (pending.Count == 0)
-        {
-            logger.LogInformation("✅ Database is up to date. No pending migrations.");
-            return;
-        }
+//        if (pending.Count == 0)
+//        {
+//            logger.LogInformation("✅ Database is up to date. No pending migrations.");
+//            return;
+//        }
 
-        logger.LogInformation("⏳ Applying {Count} pending migration(s): {Migrations}",
-            pending.Count, string.Join(", ", pending));
+//        logger.LogInformation("⏳ Applying {Count} pending migration(s): {Migrations}",
+//            pending.Count, string.Join(", ", pending));
 
-        await db.Database.MigrateAsync();
-
-        logger.LogInformation("✅ Database migrated successfully.");
-    }
-    catch (Microsoft.Data.SqlClient.SqlException ex)
-    {
-        logger.LogError(ex,
-            "❌ SQL Server error during migration. " +
-            "Check connection string and ensure SQL Server is running. Error: {Message}",
-            ex.Message);
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "❌ Unexpected error during database migration: {Message}", ex.Message);
-    }
-}
+//        await db.Database.MigrateAsync();
+//        logger.LogInformation("✅ Database migrated successfully.");
+//    }
+//    catch (Microsoft.Data.SqlClient.SqlException ex)
+//    {
+//        logger.LogError(ex,
+//            "❌ SQL Server error during migration. " +
+//            "Check connection string and ensure SQL Server is running. Error: {Message}",
+//            ex.Message);
+//    }
+//    catch (Exception ex)
+//    {
+//        logger.LogError(ex, "❌ Unexpected error during database migration: {Message}", ex.Message);
+//    }
+//}

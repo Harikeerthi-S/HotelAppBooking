@@ -14,8 +14,7 @@ namespace HotelBookingApp.Services
         private readonly IAuditLogService               _audit;
         private readonly ILogger<CancellationService>   _logger;
 
-        private readonly RefundCalculatorDelegate _refundCalculator =
-            AppDelegateFactory.StandardRefundPolicy;
+        private readonly RefundCalculatorDelegate _refundCalculator = AppDelegateFactory.StandardRefundPolicy;
 
         private static readonly string[] ValidStatuses =
             { "Pending", "Approved", "Rejected", "Refunded" };

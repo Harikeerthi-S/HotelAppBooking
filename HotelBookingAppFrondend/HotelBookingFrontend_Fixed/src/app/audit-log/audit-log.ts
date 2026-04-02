@@ -9,7 +9,6 @@ import { ToastrService } from 'ngx-toastr';
 import { AuditLogModel } from '../models/audit-log.model';
 import { AuditLogFilter } from '../models/filter.model';
 import { PagedResponse } from '../models/paged.model';
-
 const PAGE_SIZE = 10;
 
 @Component({
@@ -64,13 +63,13 @@ export class AuditLog implements OnInit, OnDestroy {
     this.pollSub = interval(30000).pipe(
       switchMap(() => {
         const rawFilter = this.filter();
-        const cleanFilter: AuditLogFilter = {};
-        if (rawFilter.action)     cleanFilter.action     = rawFilter.action;
-        if (rawFilter.entityName) cleanFilter.entityName = rawFilter.entityName;
-        if (rawFilter.userId)     cleanFilter.userId     = rawFilter.userId;
-        if (rawFilter.entityId)   cleanFilter.entityId   = rawFilter.entityId;
-        if (rawFilter.fromDate)   cleanFilter.fromDate   = rawFilter.fromDate;
-        if (rawFilter.toDate)     cleanFilter.toDate     = rawFilter.toDate;
+        const cleanFilter: Record<string, unknown> = {};
+        if (rawFilter.action)     cleanFilter['action']     = rawFilter.action;
+        if (rawFilter.entityName) cleanFilter['entityName'] = rawFilter.entityName;
+        if (rawFilter.userId)     cleanFilter['userId']     = rawFilter.userId;
+        if (rawFilter.entityId)   cleanFilter['entityId']   = rawFilter.entityId;
+        if (rawFilter.fromDate)   cleanFilter['fromDate']   = rawFilter.fromDate + 'T00:00:00';
+        if (rawFilter.toDate)     cleanFilter['toDate']     = rawFilter.toDate   + 'T23:59:59';
         const req = { pageNumber: this.page(), pageSize: PAGE_SIZE };
         const obs = Object.keys(cleanFilter).length > 0
           ? this.api.apiFilterAuditLogsPaged(cleanFilter, req)
@@ -91,24 +90,23 @@ export class AuditLog implements OnInit, OnDestroy {
   ngOnDestroy(): void { this.pollSub?.unsubscribe(); }
 
   load(nextPage?: number): void {
-    if (nextPage !== undefined) {
-      this.page.set(nextPage);
-    }
+    if (nextPage !== undefined) this.page.set(nextPage);
+
     this.loading.set(true);
     const req = { pageNumber: this.page(), pageSize: PAGE_SIZE };
 
-    // Clean filter — strip empty strings/undefined so backend DateTime? parsing doesn't fail
     const rawFilter = this.filter();
-    const cleanFilter: AuditLogFilter = {};
-    if (rawFilter.action)     cleanFilter.action     = rawFilter.action;
-    if (rawFilter.entityName) cleanFilter.entityName = rawFilter.entityName;
-    if (rawFilter.userId)     cleanFilter.userId     = rawFilter.userId;
-    if (rawFilter.entityId)   cleanFilter.entityId   = rawFilter.entityId;
-    if (rawFilter.fromDate)   cleanFilter.fromDate   = rawFilter.fromDate;
-    // Send toDate as end-of-day so the full day is included
-    if (rawFilter.toDate)     cleanFilter.toDate     = rawFilter.toDate + 'T23:59:59';
+    const cleanFilter: Record<string, unknown> = {};
 
-    const obs = Object.keys(cleanFilter).length > 0
+    if (rawFilter.action)     cleanFilter['action']     = rawFilter.action;
+    if (rawFilter.entityName) cleanFilter['entityName'] = rawFilter.entityName;
+    if (rawFilter.userId)     cleanFilter['userId']     = rawFilter.userId;
+    if (rawFilter.entityId)   cleanFilter['entityId']   = rawFilter.entityId;
+    if (rawFilter.fromDate)   cleanFilter['fromDate']   = rawFilter.fromDate + 'T00:00:00';
+    if (rawFilter.toDate)     cleanFilter['toDate']     = rawFilter.toDate   + 'T23:59:59';
+
+    const hasFilter = Object.keys(cleanFilter).length > 0;
+    const obs = hasFilter
       ? this.api.apiFilterAuditLogsPaged(cleanFilter, req)
       : this.api.apiGetAllAuditLogsPaged(req);
 
@@ -118,19 +116,20 @@ export class AuditLog implements OnInit, OnDestroy {
         this.pageMeta.set(r);
         this.loading.set(false);
       },
-      error: () => { this.toast.error('Failed to load audit logs.', 'Error'); this.loading.set(false); }
+      error: (e) => {
+        this.toast.error(e?.error?.message || 'Failed to load audit logs.', 'Error');
+        this.loading.set(false);
+      }
     });
   }
 
   applyFilter(): void {
-    this.page.set(1);
-    this.load();
+    this.load(1);
   }
 
   clearFilter(): void {
     this.filter.set({ userId: undefined, action: '', entityName: '', entityId: undefined, fromDate: '', toDate: '' });
-    this.page.set(1);
-    this.load();
+    this.load(1);
   }
 
   delete(log: AuditLogModel): void {

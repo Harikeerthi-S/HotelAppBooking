@@ -165,7 +165,6 @@ export class DashboardManager {
     this.loadReviews(1);
     this.loadTotalApprovedRefunds();
   }
-
   private refreshHotelsForRoomForm(): void {
     this.api.apiGetHotelsPaged({ pageNumber: 1, pageSize: 1000 }).subscribe({
       next: r => this.hotelsForRoomForm.set(r.data ?? []),

@@ -2,7 +2,7 @@ namespace HotelBookingApp.Delegates
 {
     // ── Validation Delegates ──────────────────────────────────────────────
     /// <summary>Validates any single string value — returns error message or null if valid.</summary>
-    public delegate string? StringValidatorDelegate(string value);
+    //public delegate string? StringValidatorDelegate(string value);
 
     /// <summary>Validates a decimal value — returns error message or null if valid.</summary>
     public delegate string? DecimalValidatorDelegate(decimal value);
@@ -23,10 +23,28 @@ namespace HotelBookingApp.Delegates
     // ── Pre-built delegate factory methods ────────────────────────────────
     public static class AppDelegateFactory
     {
-        /// <summary>Standard refund policy: 80% refund if cancelled 24h+ before check-in, else 0.</summary>
+        /// <summary>
+        /// Standard refund policy:
+        ///   >= 24 hours before check-in → 80% refund
+        ///   <  24 hours before check-in → 0% refund
+        /// </summary>
         public static readonly RefundCalculatorDelegate StandardRefundPolicy =
             (totalAmount, hoursUntilCheckIn) =>
                 hoursUntilCheckIn >= 24 ? Math.Round(totalAmount * 0.8m, 2) : 0m;
+
+        /// <summary>
+        /// Returns a human-readable refund breakdown string for a given amount and hours.
+        /// Used by ChatService to explain refund to users.
+        /// </summary>
+        public static string DescribeRefund(decimal totalAmount, double hoursUntilCheckIn)
+        {
+            if (hoursUntilCheckIn >= 24)
+            {
+                var refund = Math.Round(totalAmount * 0.8m, 2);
+                return $"80% refund = ₹{refund:N2} (cancelled {hoursUntilCheckIn:F0}h before check-in)";
+            }
+            return $"No refund (cancelled less than 24h before check-in)";
+        }
 
         /// <summary>Resolves payment status based on method and amounts.</summary>
         public static readonly PaymentStatusResolverDelegate DefaultPaymentStatusResolver =

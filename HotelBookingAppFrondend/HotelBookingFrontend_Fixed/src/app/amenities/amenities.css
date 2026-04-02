@@ -1,74 +1,42 @@
-/* ── Amenity browse cards ─────────────────────────────────────────────────── */
-.amenity-card {
-  border-radius: 14px !important;
-  transition: box-shadow .2s, transform .2s;
-}
-.amenity-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 28px rgba(232,67,147,.15) !important;
-}
+.amenity-card { border-radius: 14px !important; transition: box-shadow .2s, transform .2s; }
+.amenity-card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(232,67,147,.15) !important; }
 
 .amenity-icon-wrap {
-  font-size: 2.4rem;
-  line-height: 1;
-  background: var(--primary-light, #fce4ec);
-  width: 64px; height: 64px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto;
+  font-size: 2.4rem; line-height: 1;
+  background: var(--primary-light);
+  width: 64px; height: 64px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; margin: 0 auto;
 }
 
-/* ── Amenity tag in assignment list ──────────────────────────────────────── */
 .amenity-tag {
-  background: #f0f4ff;
-  border: 1px solid #c5cae9;
-  padding: 5px 12px;
-  border-radius: 50px;
-  font-size: .85rem;
-  transition: background .15s;
+  background: var(--bg); border: 1px solid var(--border);
+  padding: 5px 12px; border-radius: 50px; font-size: .85rem;
+  color: var(--text); transition: background .15s;
 }
-.amenity-tag:hover { background: #e8eaf6; }
+.amenity-tag:hover { background: var(--input-bg); }
 
-/* ── Form panel ──────────────────────────────────────────────────────────── */
-.form-panel { border-top: 3px solid var(--primary, #e84393) !important; }
+.form-panel { border-top: 3px solid var(--primary) !important; }
+.icon-preview { font-size: 1.1rem; vertical-align: middle; }
 
-/* ── Icon preview in form ────────────────────────────────────────────────── */
-.icon-preview {
-  font-size: 1.1rem;
-  vertical-align: middle;
-}
+.nav-link { color: var(--text-muted); font-weight: 500; transition: all .2s; }
+.nav-link.active { background: linear-gradient(135deg, #e84393, #c2185b) !important; color: #fff !important; }
+.nav-link:hover:not(.active) { background: var(--primary-light); color: var(--primary); }
 
-/* ── Nav pills override ──────────────────────────────────────────────────── */
-.nav-link { color: #444; font-weight: 500; transition: all .2s; }
-.nav-link.active {
-  background: linear-gradient(135deg, #e84393, #c2185b) !important;
-  color: #fff !important;
-}
-.nav-link:hover:not(.active) { background: #fce4ec; color: var(--primary, #e84393); }
+.table th { font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; color: var(--text-muted); }
+.table td { vertical-align: middle; color: var(--text); }
 
-/* ── Table ───────────────────────────────────────────────────────────────── */
-.table th { font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; color: #6c757d; }
-.table td { vertical-align: middle; }
+.search-wrap .form-control:focus { box-shadow: none; border-color: var(--primary); }
 
-/* ── Search wrap ─────────────────────────────────────────────────────────── */
-.search-wrap .form-control:focus { box-shadow: none; border-color: var(--primary, #e84393); }
-
-/* ── Utility ─────────────────────────────────────────────────────────────── */
-.btn-primary-custom {
-  background: linear-gradient(135deg, #e84393, #c2185b);
-  border: none; color: #fff;
-  box-shadow: 0 4px 14px rgba(232,67,147,.3);
-  transition: all .2s;
-}
-.btn-primary-custom:hover   { transform: translateY(-1px); color: #fff; }
+.btn-primary-custom { background: linear-gradient(135deg, #e84393, #c2185b); border: none; color: #fff; box-shadow: 0 4px 14px rgba(232,67,147,.3); transition: all .2s; }
+.btn-primary-custom:hover { transform: translateY(-1px); color: #fff; }
 .btn-primary-custom:disabled { opacity: .65; transform: none; }
 
 .fw-700 { font-weight: 700; }
 .fw-600 { font-weight: 600; }
 
 .spinner-wrap { display: flex; justify-content: center; align-items: center; min-height: 200px; }
-.spinner-ring  { width: 44px; height: 44px; border: 4px solid #fce4ec; border-top-color: #e84393; border-radius: 50%; animation: spin .75s linear infinite; }
+.spinner-ring  { width: 44px; height: 44px; border: 4px solid var(--primary-light); border-top-color: var(--primary); border-radius: 50%; animation: spin .75s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.empty-state { text-align: center; padding: 56px 20px; color: #6c757d; }
+.empty-state { text-align: center; padding: 56px 20px; color: var(--text-muted); }
 .empty-icon  { font-size: 3.5rem; display: block; margin-bottom: 12px; opacity: .35; }

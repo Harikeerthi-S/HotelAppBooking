@@ -1,26 +1,29 @@
-.hotel-hero { height: 380px; overflow: hidden; position: relative; }
-.hotel-hero-img { width: 100%; height: 100%; object-fit: cover; }
-.hotel-hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.72), transparent 50%); }
-.hotel-hero-info { }
-.fw-600 { font-weight: 600; }
-.fw-700 { font-weight: 700; }
-.info-chip { background: #f8f9fc; }
-.room-card { border: 2px solid #dee2e6; border-radius: 10px; padding: 14px; cursor: pointer; transition: all .2s; }
-.room-card:hover { border-color: #e84393; background: #fce4ec; }
-.room-card.selected { border-color: #e84393; background: #fce4ec; }
-.room-card.room-unavailable { opacity: .6; cursor: not-allowed; background: #f8f8f8; }
-.room-card.room-unavailable:hover { border-color: #dee2e6; background: #f8f8f8; }
-.review-item { background: #f8f9fc; }
-.review-avatar { width: 34px; height: 34px; border-radius: 50%; background: #e84393; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .85rem; }
-.selected-room-info { background: #fce4ec; }
-.price-breakdown { background: #f8f9fc; }
-.price-tag { font-size: 1.3rem; font-weight: 700; color: #e84393; }
-.per-night { font-size: .72rem; color: #6c757d; font-weight: 400; }
-.btn-primary-custom { background: linear-gradient(135deg, #e84393, #c2185b); border: none; color: #fff; box-shadow: 0 4px 14px rgba(232,67,147,.3); transition: all .2s; }
-.btn-primary-custom:hover { transform: translateY(-1px); color: #fff; }
-.btn-primary-custom:disabled { opacity: .65; pointer-events: none; }
-.opacity-85 { opacity: .85; }
+.hotel-hero { height:380px; overflow:hidden; position:relative; }
+.hotel-hero-img { width:100%; height:100%; object-fit:cover; }
+.hotel-hero-overlay { position:absolute; inset:0; background:linear-gradient(to top,rgba(0,0,0,.72),transparent 50%); }
+.fw-600 { font-weight:600; }
+.fw-700 { font-weight:700; }
 
-/* ── Hotel amenity tiles ── */
-.amenity-detail-tile { background:#f8f9fc; border:1px solid #eee; transition:all .2s; }
-.amenity-detail-tile:hover { background:#fce4ec; border-color:#e84393; transform:translateY(-2px); }
+.info-chip { background:var(--bg); color:var(--text); }
+
+.room-card { border:2px solid var(--border); border-radius:10px; padding:14px; cursor:pointer; transition:all .2s; background:var(--card-bg); color:var(--text); }
+.room-card:hover { border-color:#e84393; background:var(--primary-light); }
+.room-card.selected { border-color:#e84393; background:var(--primary-light); }
+.room-card.room-unavailable { opacity:.6; cursor:not-allowed; background:var(--bg); }
+.room-card.room-unavailable:hover { border-color:var(--border); background:var(--bg); }
+
+.review-item { background:var(--bg); }
+.review-avatar { width:34px; height:34px; border-radius:50%; background:#e84393; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.85rem; }
+
+.selected-room-info { background:var(--primary-light); }
+.price-breakdown { background:var(--bg); }
+.price-tag { font-size:1.3rem; font-weight:700; color:var(--primary); }
+.per-night { font-size:.72rem; color:var(--text-muted); font-weight:400; }
+
+.btn-primary-custom { background:linear-gradient(135deg,#e84393,#c2185b); border:none; color:#fff; box-shadow:0 4px 14px rgba(232,67,147,.3); transition:all .2s; }
+.btn-primary-custom:hover { transform:translateY(-1px); color:#fff; }
+.btn-primary-custom:disabled { opacity:.65; pointer-events:none; }
+.opacity-85 { opacity:.85; }
+
+.amenity-detail-tile { background:var(--bg); border:1px solid var(--border); transition:all .2s; color:var(--text); }
+.amenity-detail-tile:hover { background:var(--primary-light); border-color:#e84393; transform:translateY(-2px); }

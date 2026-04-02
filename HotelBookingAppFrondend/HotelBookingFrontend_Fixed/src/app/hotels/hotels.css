@@ -1,14 +1,9 @@
-.btn-primary-custom {
-  background: linear-gradient(135deg, #e84393, #c2185b);
-  border: none; color: #fff;
-  box-shadow: 0 4px 14px rgba(232,67,147,.3);
-  transition: all .2s;
-}
-.btn-primary-custom:hover { transform: translateY(-1px); color: #fff; }
-.fw-600 { font-weight: 600; }
-.fw-700 { font-weight: 700; }
-.price-tag { font-size: 1.2rem; font-weight: 700; color: #e84393; }
-.per-night { font-size: .72rem; color: #6c757d; }
-.page-item.active .page-link { background: #e84393; border-color: #e84393; }
-.page-link { color: #e84393; }
-.page-link:hover { background: #fce4ec; }
+.btn-primary-custom { background:linear-gradient(135deg,#e84393,#c2185b); border:none; color:#fff; box-shadow:0 4px 14px rgba(232,67,147,.3); transition:all .2s; }
+.btn-primary-custom:hover { transform:translateY(-1px); color:#fff; }
+.fw-600 { font-weight:600; }
+.fw-700 { font-weight:700; }
+.price-tag { font-size:1.2rem; font-weight:700; color:var(--primary); }
+.per-night { font-size:.72rem; color:var(--text-muted); }
+.page-item.active .page-link { background:var(--primary); border-color:var(--primary); }
+.page-link { color:var(--primary); }
+.page-link:hover { background:var(--primary-light); }

@@ -485,3 +485,4 @@ C:\hotel\hotelbooking\HotelBookingApp Backend\HotelBookingApp\obj\Debug\net10.0\
 C:\hotel\hotelbooking\HotelBookingApp Backend\HotelBookingApp\obj\Debug\net10.0\HotelBookingApp.genruntimeconfig.cache
 C:\hotel\hotelbooking\HotelBookingApp Backend\HotelBookingApp\obj\Debug\net10.0\ref\HotelBookingApp.dll
 C:\hotel\hotelbooking\HotelBookingApp Backend\HotelBookingApp\bin\Debug\net10.0\HotelBookingApp.staticwebassets.runtime.json
+C:\hotel\hotelbooking\HotelBookingApp Backend\HotelBookingApp\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt

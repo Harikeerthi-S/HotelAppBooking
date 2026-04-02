@@ -142,8 +142,8 @@ namespace HotelBookingApp.Services
             if (ContainsAny(lower, "book", "booking", "reserve", "reservation", "check-in", "check in", "check-out", "check out", "how to book", "make a booking"))
                 return await HandleBookingQueryAsync(lower, userId);
 
-            // ── CANCELLATION ──────────────────────────────────────────────
-            if (ContainsAny(lower, "cancel", "cancellation", "refund", "money back", "cancel booking", "cancellation policy"))
+        // ── CANCELLATION ──────────────────────────────────────────────
+            if (ContainsAny(lower, "cancel", "cancellation", "refund", "money back", "cancel booking", "cancellation policy", "calculate refund", "how much refund", "refund amount", "refund calculator"))
                 return (HandleCancellationPolicy(lower), "cancellation");
 
             // ── PAYMENT ───────────────────────────────────────────────────
@@ -233,29 +233,57 @@ namespace HotelBookingApp.Services
 
         private static string HandleCancellationPolicy(string lower)
         {
-            if (ContainsAny(lower, "refund", "money", "get back"))
+            // ── REFUND CALCULATOR ─────────────────────────────────────────
+            // Uses the same logic as AppDelegateFactory.StandardRefundPolicy:
+            //   hoursUntilCheckIn >= 24  →  80% refund
+            //   hoursUntilCheckIn <  24  →  No refund
+            if (ContainsAny(lower, "calculate refund", "how much refund", "refund amount", "refund calculator", "refund if i cancel"))
+                return
+                    "🧮 **Refund Calculator:**\n\n" +
+                    "Your refund is calculated automatically when you request a cancellation:\n\n" +
+                    "| Time Before Check-in | Refund |\n" +
+                    "|---|---|\n" +
+                    "| **24+ hours** | **80% of booking amount** |\n" +
+                    "| **Less than 24 hours** | **No refund (₹0)** |\n\n" +
+                    "**Example:**\n" +
+                    "• Booking amount: ₹5,000\n" +
+                    "• Cancel 2 days before → ₹4,000 refund (80%)\n" +
+                    "• Cancel same day → ₹0 refund\n\n" +
+                    "💡 The refund amount is shown when you request cancellation in **My Dashboard → Bookings**.";
+
+            if (ContainsAny(lower, "refund", "money", "get back", "money back"))
                 return
                     "💰 **Refund Policy:**\n\n" +
-                    "• **> 48 hours** before check-in → **100% refund**\n" +
-                    "• **24–48 hours** before check-in → **50% refund**\n" +
-                    "• **< 24 hours** before check-in → **No refund**\n\n" +
-                    "Refunds are processed within 5–7 business days after approval.";
+                    "StayEase uses an automatic refund calculator based on how early you cancel:\n\n" +
+                    "• **24+ hours before check-in** → **80% refund** of total booking amount\n" +
+                    "• **Less than 24 hours before check-in** → **No refund**\n\n" +
+                    "**How it works:**\n" +
+                    "The system calculates your refund automatically using our refund policy delegate " +
+                    "when you submit a cancellation request.\n\n" +
+                    "Refunds are processed within **5–7 business days** after admin approval.\n\n" +
+                    "Type **calculate refund** to see examples.";
 
-            if (ContainsAny(lower, "how to cancel", "cancel my", "request cancel"))
+            if (ContainsAny(lower, "how to cancel", "cancel my", "request cancel", "steps to cancel"))
                 return
                     "❌ **How to Cancel a Booking:**\n\n" +
                     "1. Go to **My Dashboard → Bookings**\n" +
                     "2. Find your booking and click **Request Cancellation**\n" +
-                    "3. Provide a reason and submit\n" +
-                    "4. Admin will review and approve/reject within 24 hours\n\n" +
-                    "For **Pending** bookings, you can cancel directly without a request.";
+                    "3. Enter a reason and submit\n" +
+                    "4. The system auto-calculates your refund:\n" +
+                    "   • Cancel **24h+ before** check-in → **80% refund**\n" +
+                    "   • Cancel **within 24h** → **No refund**\n" +
+                    "5. Admin reviews and approves/rejects within 24 hours\n\n" +
+                    "💡 **Pending** bookings can be cancelled directly without a request.";
 
+            // Default cancellation policy summary
             return
-                "📋 **Cancellation Policy Summary:**\n\n" +
-                "• Free cancellation if cancelled **48+ hours** before check-in\n" +
-                "• 50% refund for cancellations **24–48 hours** before check-in\n" +
-                "• No refund for cancellations **less than 24 hours** before check-in\n\n" +
-                "To cancel, visit **My Dashboard → Bookings** and click Request Cancellation.";
+                "📋 **Cancellation Policy:**\n\n" +
+                "Our refund policy is calculated automatically:\n\n" +
+                "• Cancel **24+ hours** before check-in → **80% refund**\n" +
+                "• Cancel **less than 24 hours** before check-in → **No refund**\n\n" +
+                "The refund amount is computed by our system at the time of cancellation request.\n\n" +
+                "To cancel, visit **My Dashboard → Bookings** and click **Request Cancellation**.\n\n" +
+                "Ask me:\n• **How to cancel** — step-by-step guide\n• **Calculate refund** — see refund examples";
         }
 
         private static string HandlePaymentQuery(string lower)

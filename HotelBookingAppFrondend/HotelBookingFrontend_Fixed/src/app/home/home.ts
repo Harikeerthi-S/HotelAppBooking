@@ -51,12 +51,12 @@ export class Home {
   activeAmenityFilter = signal('');
 
   cities = [
-    { name: 'Mumbai', emoji: '🌆', count: 10 },
-    { name: 'Delhi', emoji: '🏛️', count: 10 },
-    { name: 'Goa', emoji: '🏖️', count: 10 },
-    { name: 'Bangalore', emoji: '🌿', count: 10 },
-    { name: 'Jaipur', emoji: '🏰', count: 10 },
-    { name: 'Chennai', emoji: '🌊', count: 10 }
+    { name: 'Mumbai', emoji: '🌆', count: 2 },
+    { name: 'Delhi', emoji: '🏛️', count: 2 },
+    { name: 'Goa', emoji: '🏖️', count: 2 },
+    { name: 'Bangalore', emoji: '🌿', count: 2 },
+    { name: 'Jaipur', emoji: '🏰', count: 2},
+    { name: 'Chennai', emoji: '🌊', count: 2 }
   ];
 
   constructor() {

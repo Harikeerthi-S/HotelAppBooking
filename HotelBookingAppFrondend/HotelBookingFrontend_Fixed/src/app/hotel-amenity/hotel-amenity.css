@@ -1,21 +1,22 @@
-.btn-primary-custom { background: linear-gradient(135deg,#e84393,#c2185b); border:none; color:#fff; box-shadow:0 4px 14px rgba(232,67,147,.3); transition:all .2s; }
+.btn-primary-custom { background:linear-gradient(135deg,#e84393,#c2185b); border:none; color:#fff; box-shadow:0 4px 14px rgba(232,67,147,.3); transition:all .2s; }
 .btn-primary-custom:hover { transform:translateY(-1px); color:#fff; }
 .btn-primary-custom:disabled { opacity:.65; pointer-events:none; }
 .fw-600 { font-weight:600; }
 .fw-700 { font-weight:700; }
 .btn-xs { padding:3px 10px; font-size:.78rem; border-radius:20px; }
-.amenity-badge { background:#fce4ec; color:#c2185b; padding:3px 10px; border-radius:50px; font-size:.82rem; font-weight:600; }
-.amenity-chip { background:#f8f9fc; border:1px solid #dee2e6; border-radius:50px; padding:4px 12px; font-size:.82rem; display:inline-flex; align-items:center; gap:4px; }
-.hotel-amenity-group { background:#f8f9fc; }
 
-/* ── User Preferences panel ── */
-.pref-group { background: #f8f9fc; transition: box-shadow .15s; }
-.pref-group:hover { box-shadow: 0 4px 16px rgba(232,67,147,.1); }
-.pref-icon { font-size: 2rem; width: 48px; text-align: center; flex-shrink: 0; }
-.demand-bar-wrap { width: 80px; height: 8px; background: #e0e0e0; border-radius: 50px; overflow: hidden; }
-.demand-bar { height: 100%; background: linear-gradient(135deg,#e84393,#c2185b); border-radius: 50px; max-width: 100%; transition: width .3s; }
-.empty-state { text-align: center; padding: 40px 20px; color: #6c757d; }
-.empty-icon  { font-size: 3rem; display: block; margin-bottom: 10px; opacity: .35; }
-.spinner-wrap { display: flex; justify-content: center; padding: 40px; }
-.spinner-ring { width: 36px; height: 36px; border: 4px solid #fce4ec; border-top-color: #e84393; border-radius: 50%; animation: spin .75s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+.amenity-badge { background:var(--primary-light); color:#c2185b; padding:3px 10px; border-radius:50px; font-size:.82rem; font-weight:600; }
+.amenity-chip { background:var(--bg); border:1px solid var(--border); border-radius:50px; padding:4px 12px; font-size:.82rem; display:inline-flex; align-items:center; gap:4px; color:var(--text); }
+.hotel-amenity-group { background:var(--bg); }
+
+.pref-group { background:var(--bg); transition:box-shadow .15s; }
+.pref-group:hover { box-shadow:0 4px 16px rgba(232,67,147,.1); }
+.pref-icon { font-size:2rem; width:48px; text-align:center; flex-shrink:0; }
+.demand-bar-wrap { width:80px; height:8px; background:var(--border); border-radius:50px; overflow:hidden; }
+.demand-bar { height:100%; background:linear-gradient(135deg,#e84393,#c2185b); border-radius:50px; max-width:100%; transition:width .3s; }
+
+.empty-state { text-align:center; padding:40px 20px; color:var(--text-muted); }
+.empty-icon  { font-size:3rem; display:block; margin-bottom:10px; opacity:.35; }
+.spinner-wrap { display:flex; justify-content:center; padding:40px; }
+.spinner-ring { width:36px; height:36px; border:4px solid var(--primary-light); border-top-color:var(--primary); border-radius:50%; animation:spin .75s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }

@@ -1,37 +1,27 @@
-.btn-primary-custom { background: linear-gradient(135deg,#e84393,#c2185b); border:none; color:#fff; box-shadow:0 4px 14px rgba(232,67,147,.3); transition:all .2s; }
+.btn-primary-custom { background:linear-gradient(135deg,#e84393,#c2185b); border:none; color:#fff; box-shadow:0 4px 14px rgba(232,67,147,.3); transition:all .2s; }
 .btn-primary-custom:hover { transform:translateY(-1px); color:#fff; }
 .fw-600 { font-weight:600; }
-.text-pink { color:#e84393; }
+.text-pink { color:var(--primary); }
 
-/* ── Page header ── */
-.page-header { background: linear-gradient(135deg,#e84393,#c2185b); color:#fff; padding:2.5rem 0 2rem; margin-bottom:2rem; }
+.page-header { background:linear-gradient(135deg,#e84393,#c2185b); color:#fff; padding:2.5rem 0 2rem; margin-bottom:2rem; }
 .page-header h1 { font-size:1.8rem; font-weight:700; margin:0; }
 .page-header p  { margin:.3rem 0 0; opacity:.85; font-size:.95rem; }
 
-/* ── Filter tabs ── */
-.filter-tab { background:#f8f9fc; color:#6c757d; border:1px solid #e9ecef; transition:all .15s; }
-.filter-tab:hover  { background:#fce4ec; color:#c2185b; border-color:#f8bbd0; }
+.filter-tab { background:var(--card-bg); color:var(--text-muted); border:1px solid var(--border); transition:all .15s; }
+.filter-tab:hover  { background:var(--primary-light); color:#c2185b; border-color:#f8bbd0; }
 .filter-tab.active { background:linear-gradient(135deg,#e84393,#c2185b); color:#fff; border-color:transparent; }
 
-/* ── Preference card ── */
-.pref-card { border-radius:14px; transition:transform .2s, box-shadow .2s; }
+.pref-card { border-radius:14px; transition:transform .2s,box-shadow .2s; background:var(--card-bg); }
 .pref-card:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,.1) !important; }
 .amenity-icon { font-size:1.5rem; line-height:1; }
 
-/* ── Status badges ── */
 .badge-pending  { background:#fff3e0; color:#e65100; border:1px solid #ffe0b2; font-weight:600; }
 .badge-approved { background:#e8f5e9; color:#2e7d32; border:1px solid #c8e6c9; font-weight:600; }
 .badge-rejected { background:#fce4ec; color:#c62828; border:1px solid #f8bbd0; font-weight:600; }
 
-/* ── Empty state ── */
 .empty-state { text-align:center; border-radius:16px; }
-.empty-icon  { font-size:3rem; color:#e84393; opacity:.5; }
+.empty-icon  { font-size:3rem; color:var(--primary); opacity:.5; }
 
-/* ── Spinner ── */
 .spinner-wrap { display:flex; justify-content:center; padding:3rem 0; }
-.spinner-ring {
-  width:44px; height:44px; border-radius:50%;
-  border:4px solid #fce4ec; border-top-color:#e84393;
-  animation:spin .8s linear infinite;
-}
+.spinner-ring { width:44px; height:44px; border-radius:50%; border:4px solid var(--primary-light); border-top-color:var(--primary); animation:spin .8s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }

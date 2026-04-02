@@ -2,7 +2,7 @@
   "openapi": "3.0.4",
   "info": {
     "title": "Hotel Booking API",
-    "description": "Hotel Booking REST API — .NET 10 | EF Core | JWT Auth",
+    "description": "Hotel Booking WEB API — .NET 10 | EF Core | JWT Auth",
     "contact": {
       "name": "StayEase Dev Team"
     },

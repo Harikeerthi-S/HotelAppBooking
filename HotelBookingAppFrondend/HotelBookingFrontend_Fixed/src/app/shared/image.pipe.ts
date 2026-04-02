@@ -1,7 +1,4 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { environment } from '../../environments/environment';
-
-const SERVER_BASE = environment.apiUrl.replace(/\/api\/?$/, '');
 
 // Unsplash fallbacks
 const HOTEL_IMGS = [

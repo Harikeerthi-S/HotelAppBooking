@@ -1,10 +1,10 @@
-.price-tag { font-size: 1.4rem; font-weight: 700; color: #e84393; }
-.pay-method { border: 2px solid #dee2e6; border-radius: 10px; padding: 14px 8px; cursor: pointer; transition: all .2s; text-align: center; }
-.pay-method:hover { border-color: #e84393; background: #fce4ec; }
-.pay-method.selected { border-color: #e84393; background: #fce4ec; }
-.pay-icon { font-size: 1.8rem; }
-.btn-primary-custom { background: linear-gradient(135deg, #e84393, #c2185b); border: none; color: #fff; box-shadow: 0 4px 14px rgba(232,67,147,.3); transition: all .2s; }
-.btn-primary-custom:hover { transform: translateY(-1px); color: #fff; }
-.btn-primary-custom:disabled { opacity: .65; pointer-events: none; }
-.fw-600 { font-weight: 600; }
-.fw-700 { font-weight: 700; }
+.price-tag { font-size:1.4rem; font-weight:700; color:var(--primary); }
+.pay-method { border:2px solid var(--border); border-radius:10px; padding:14px 8px; cursor:pointer; transition:all .2s; text-align:center; background:var(--card-bg); color:var(--text); }
+.pay-method:hover { border-color:#e84393; background:var(--primary-light); }
+.pay-method.selected { border-color:#e84393; background:var(--primary-light); }
+.pay-icon { font-size:1.8rem; }
+.btn-primary-custom { background:linear-gradient(135deg,#e84393,#c2185b); border:none; color:#fff; box-shadow:0 4px 14px rgba(232,67,147,.3); transition:all .2s; }
+.btn-primary-custom:hover { transform:translateY(-1px); color:#fff; }
+.btn-primary-custom:disabled { opacity:.65; pointer-events:none; }
+.fw-600 { font-weight:600; }
+.fw-700 { font-weight:700; }

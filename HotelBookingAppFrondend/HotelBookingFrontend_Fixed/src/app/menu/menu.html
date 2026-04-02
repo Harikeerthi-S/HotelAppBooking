@@ -67,6 +67,15 @@
       </ul>
 
       <div class="d-flex align-items-center gap-2">
+        <!-- Theme toggle -->
+        <button class="btn btn-sm theme-toggle" (click)="theme.toggle()" [title]="theme.isDark() ? 'Switch to light mode' : 'Switch to dark mode'">
+          @if (theme.isDark()) {
+            <i class="bi bi-sun-fill"></i>
+          } @else {
+            <i class="bi bi-moon-fill"></i>
+          }
+        </button>
+
         @if(isLoggedIn()) {
           <a class="btn btn-sm btn-outline-secondary" routerLink="/notifications">
             <i class="bi bi-bell"></i>

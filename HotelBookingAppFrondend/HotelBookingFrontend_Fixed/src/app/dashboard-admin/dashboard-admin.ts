@@ -236,6 +236,8 @@ export class DashboardAdmin {
   loadAll(): void {
     this.loadHotels(1);
     this.loadRooms(1);
+    this.loadBookings(1);
+    this.loadCancellations(1);
     this.loadAuditLogs(1);
     this.api.apiGetAllUsers().subscribe({ next: u => { const l = u ?? []; this.users.set(l); this.usersForDropdown.set(l); this.usersPage.set(1); }, error: () => {} });
     this.api.apiGetAmenities().subscribe({ next: a => this.amenities.set(a ?? []), error: () => {} });
@@ -377,7 +379,7 @@ export class DashboardAdmin {
     if (t === 'Rooms'         && !this.roomsMeta())    this.loadRooms(1);
     if (t === 'Bookings'      && !this.bookingsMeta()) this.loadBookings(1);
     if (t === 'Reviews'       && !this.reviewsMeta())  this.loadReviews(1);
-    if (t === 'Cancellations' && !this.cancelMeta())   { this.loadBookings(1); this.loadCancellations(1); }
+    if (t === 'Cancellations' && !this.cancelMeta())   this.loadCancellations(1);
     if (t === 'Notifications')                         this.loadNotifications();
     if (t === 'Audit Logs' && !this.auditMeta())      this.loadAuditLogs(1);
     if (t === 'User Preferences')                     this.loadUserAmenityPreferences();

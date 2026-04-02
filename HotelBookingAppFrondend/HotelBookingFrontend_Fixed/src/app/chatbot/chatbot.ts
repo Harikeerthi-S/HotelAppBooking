@@ -27,7 +27,7 @@ export class Chatbot implements AfterViewChecked {
     const raw = localStorage.getItem('userId');
     if (raw) this.userId = Number(raw);
     this.addBotMessage(
-      "👋 Hi! I'm StayEase Assistant. Ask me about bookings, cancellations, hotels, or payments.",
+      "👋 Hi! I'm StayEase Assistant. Ask me about bookings, cancellations, refunds, hotels, or payments.",
       'greeting'
     );
   }
@@ -78,6 +78,7 @@ export class Chatbot implements AfterViewChecked {
   }
 
   private addBotMessage(text: string, intent: string): void {
+    this._lastIntent = intent;
     this.messages.update(m => [...m, {
       chatMessageId: Date.now() + 1, sender: 'bot', message: text,
       intent, sessionId: this.sessionId, createdAt: new Date().toISOString()
@@ -88,8 +89,21 @@ export class Chatbot implements AfterViewChecked {
     try { this.messagesEnd?.nativeElement.scrollIntoView({ behavior: 'smooth' }); } catch {}
   }
 
+  // Quick replies by intent — shown after each bot response
+  private readonly quickRepliesByIntent: Record<string, string[]> = {
+    greeting:     ['How to book?', 'Cancellation policy', 'Calculate refund', 'Payment methods'],
+    booking:      ['Booking status', 'How to cancel?', 'Calculate refund', 'Payment methods'],
+    cancellation: ['Calculate refund', 'How to cancel?', 'Refund policy', 'How to book?'],
+    payment:      ['Payment failed?', 'Cancellation policy', 'Calculate refund', 'How to book?'],
+    hotel:        ['Hotel amenities', 'Hotel ratings', 'How to book?', 'Cancellation policy'],
+    general:      ['How to book?', 'Cancellation policy', 'Calculate refund', 'Hotel amenities'],
+    support:      ['How to book?', 'Calculate refund', 'Cancellation policy', 'Payment methods'],
+  };
+
+  private _lastIntent = 'greeting';
+
   get quickReplies(): string[] {
-    return ['How to book?', 'Cancellation policy', 'Payment methods', 'Hotel amenities'];
+    return this.quickRepliesByIntent[this._lastIntent] ?? this.quickRepliesByIntent['general'];
   }
 
   sendQuick(text: string): void { this.inputText.set(text); this.send(); }
@@ -97,6 +111,10 @@ export class Chatbot implements AfterViewChecked {
   formatMessage(text: string): string {
     return text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\|(.+)\|/g, (match) => {
+        // Simple markdown table row → styled span
+        return match;
+      })
       .replace(/\n/g, '<br>');
   }
 }

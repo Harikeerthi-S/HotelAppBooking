@@ -127,13 +127,13 @@ export class DashboardUser implements OnInit, OnDestroy, AfterViewChecked {
   chatScrollNeeded = false;
 
   private readonly chatSuggestionsMap: Record<string, string[]> = {
-    greeting:     ['How to book?', 'Cancellation policy', 'Payment methods'],
-    booking:      ['Booking status', 'How to cancel?', 'Payment methods'],
-    cancellation: ['Refund policy', 'How to book?', 'Contact support'],
-    payment:      ['Payment failed?', 'Cancellation policy', 'How to book?'],
+    greeting:     ['How to book?', 'Cancellation policy', 'Calculate refund'],
+    booking:      ['Booking status', 'How to cancel?', 'Calculate refund'],
+    cancellation: ['Calculate refund', 'Refund policy', 'How to book?'],
+    payment:      ['Payment failed?', 'Calculate refund', 'How to book?'],
     hotel:        ['Check-in time', 'Hotel amenities', 'How to book?'],
-    general:      ['How to book?', 'Cancellation policy', 'Hotel amenities'],
-    support:      ['How to book?', 'Cancellation policy', 'Payment methods'],
+    general:      ['How to book?', 'Calculate refund', 'Hotel amenities'],
+    support:      ['How to book?', 'Calculate refund', 'Cancellation policy'],
   };
   chatLastIntent = signal('greeting');
   chatSuggestions = computed(() => this.chatSuggestionsMap[this.chatLastIntent()] ?? this.chatSuggestionsMap['general']);
@@ -154,6 +154,7 @@ export class DashboardUser implements OnInit, OnDestroy, AfterViewChecked {
         this.loadNotifications();
         this.loadCancellations();
         this.loadAmenities();
+        this.loadPayments();
       }
     });
     this.chatMessages.set([{
@@ -203,9 +204,11 @@ export class DashboardUser implements OnInit, OnDestroy, AfterViewChecked {
 
   switchTab(tab: string): void {
     this.activeTab.set(tab as DashTab);
-    if (tab === 'payments'  && !this.payLoaded())    this.loadPayments();
     if (tab === 'reviews'   && !this.reviewLoaded()) this.loadReviews();
-    if (tab === 'amenities')                         this.loadMyPreferences();
+    if (tab === 'amenities') {
+      this.loadAmenities();
+      this.loadMyPreferences();
+    }
   }
 
   loadBookings(page: number = 1): void {
@@ -314,7 +317,10 @@ export class DashboardUser implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   loadAmenities(): void {
-    this.api.apiGetAmenities().subscribe({ next: a => this.amenities.set(a ?? []), error: () => {} });
+    this.api.apiGetAmenities().subscribe({
+      next: a => { this.amenities.set(a ?? []); this.amenitiesPage.set(1); },
+      error: () => {}
+    });
   }
 
   cancelBookingDirect(b: BookingModel): void {
@@ -422,6 +428,8 @@ export class DashboardUser implements OnInit, OnDestroy, AfterViewChecked {
   loadMyPreferences(): void {
     const uid = this._uid;
     if (!uid) return;
+    // Reload amenities if not yet loaded
+    if (this.amenities().length === 0) this.loadAmenities();
     this.prefLoading.set(true);
     this.api.apiGetMyAmenityPreferences(uid).subscribe({
       next: p => { this.myPreferences.set(p ?? []); this.prefLoading.set(false); },
