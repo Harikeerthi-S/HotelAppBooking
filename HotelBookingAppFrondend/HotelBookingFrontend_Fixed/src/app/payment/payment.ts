@@ -1,13 +1,14 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, ActivatedRoute, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { APIService } from '../services/api.service';
 import { ToastrService } from 'ngx-toastr';
 import { BookingModel } from '../models/booking.model';
 
 @Component({
   selector: 'app-payment',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './payment.html',
   styleUrl: './payment.css'
 })
@@ -21,12 +22,11 @@ export class Payment {
   selectedMethod = signal('');
   loading        = signal(false);
 
+  step           = signal<'select' | 'confirm' | 'processing'>('select');
+
   paymentMethods = [
-    { value: 'CreditCard', label: 'Credit Card',  icon: '💳', sub: 'Visa / Mastercard' },
-    { value: 'DebitCard',  label: 'Debit Card',   icon: '🏦', sub: 'All banks'         },
-    { value: 'UPI',        label: 'UPI',           icon: '📱', sub: 'GPay / PhonePe'   },
-    { value: 'Wallet',     label: 'Wallet',        icon: '👛', sub: 'Paytm / Amazon'   },
-    { value: 'PayPal',     label: 'PayPal',        icon: '🅿️', sub: 'International'    }
+    { value: 'CreditCard', label: 'Credit Card', icon: '💳', sub: 'Visa / Mastercard' },
+    { value: 'DebitCard',  label: 'Debit Card',  icon: '🏦', sub: 'All banks'         }
   ];
 
   constructor() {
@@ -37,14 +37,25 @@ export class Payment {
     });
   }
 
-  selectMethod(value: string): void { this.selectedMethod.set(value); }
+  selectMethod(value: string): void {
+    this.selectedMethod.set(value);
+    this.step.set('select');
+  }
 
   getMethodLabel(): string {
     return this.paymentMethods.find(m => m.value === this.selectedMethod())?.label ?? '';
   }
 
-  pay(): void {
+  proceedToConfirm(): void {
     if (!this.selectedMethod()) { this.toastr.warning('Please select a payment method.'); return; }
+    this.pay();
+  }
+
+  isConfirmDetailsValid(): boolean {
+    return true;
+  }
+
+  pay(): void {
     if (!this.booking()) return;
 
     this.loading.set(true);
@@ -55,14 +66,14 @@ export class Payment {
     ).subscribe({
       next: p => {
         this.loading.set(false);
-        if (p.paymentStatus === 'Completed') {
+        const status = p?.paymentStatus || (p as any)?.PaymentStatus;
+        if (status === 'Completed') {
           this.toastr.success('Payment successful! Booking confirmed. 🎉', 'Payment Done');
           this.router.navigateByUrl('/dashboard-user');
-        } else if (p.paymentStatus === 'Pending') {
-          this.toastr.info('Payment is pending confirmation.', 'Pending');
-          this.router.navigateByUrl('/dashboard-user');
+        } else if (status === 'Failed') {
+          this.toastr.error('Payment failed. Please try again.', 'Failed');
         } else {
-          this.toastr.warning('Payment failed. Please try again.', 'Failed');
+          this.toastr.warning('Payment could not be processed. Please try again.', 'Error');
         }
       },
       error: (e) => {

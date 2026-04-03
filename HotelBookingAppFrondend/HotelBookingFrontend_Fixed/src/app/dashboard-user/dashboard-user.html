@@ -59,7 +59,6 @@
       {key:'cancellations', label:'Cancellations', icon:'bi-x-circle',       badge: 0},
       {key:'notifications', label:'Notifications', icon:'bi-bell',           badge: unreadCount()},
       {key:'reviews',       label:'My Reviews',    icon:'bi-star',           badge: 0},
-      {key:'amenities',     label:'Amenities',     icon:'bi-stars',          badge: 0},
       {key:'support',       label:'Support',       icon:'bi-chat-dots',      badge: 0}
     ]; track t.key) {
       <button class="btn btn-sm rounded-pill tab-btn"
@@ -393,87 +392,6 @@
               <i class="bi bi-chevron-right"></i>
             </button>
             <span class="dash-pager__meta">{{ reviewsPage() }} / {{ reviewsTotalPages() }}</span>
-          </nav>
-        }
-      </div>
-    </div>
-  }
-
-  <!-- ══════════════════ AMENITIES TAB ══════════════════ -->
-  @if (activeTab() === 'amenities') {
-    <div class="card border-0 shadow-sm">
-      <div class="card-body p-4">
-        <div class="d-flex justify-content-between align-items-center mb-1">
-          <h5 class="fw-700 mb-0"><i class="bi bi-stars me-2 text-warning"></i>Available Amenities</h5>
-          <div class="d-flex align-items-center gap-2">
-            @if (prefLoading() || prefSaving()) { <span class="spinner-border spinner-border-sm text-primary"></span> }
-            <span class="badge bg-primary rounded-pill">{{ amenities().length }} total</span>
-          </div>
-        </div>
-        <p class="text-muted small mb-3">Request amenities you care about. Each request stays <strong>Pending</strong> until an admin or hotel manager <strong>approves</strong> or rejects it. Approved preferences are tied to your account.</p>
-
-        <!-- Selected count -->
-        @if (myPreferences().length > 0) {
-          <div class="alert alert-info py-2 px-3 rounded-3 mb-3 d-flex align-items-start gap-2" style="font-size:.84rem">
-            <i class="bi bi-info-circle-fill text-primary mt-1"></i>
-            <span>You have <strong>{{ myPreferences().length }}</strong> preference request(s). Check the status badge on each tile (Pending → Approved / Rejected).</span>
-          </div>
-        }
-
-        <!-- Search -->
-        <div class="mb-4">
-          <input class="form-control form-control-sm rounded-pill"
-            placeholder="🔍 Search amenities…"
-            [value]="amenitySearch()"
-            (input)="amenitySearch.set($any($event.target).value); amenitiesPage.set(1)">
-        </div>
-
-        @if (amenities().length === 0) {
-          <div class="empty-state"><i class="bi bi-stars empty-icon"></i><p>No amenities listed yet.</p></div>
-        } @else if (filteredAmenities().length === 0) {
-          <div class="empty-state"><i class="bi bi-search empty-icon"></i><p>No amenities match "{{ amenitySearch() }}"</p></div>
-        } @else {
-          <div class="row g-3">
-            @for (a of pagedAmenities(); track a.amenityId) {
-              <div class="col-6 col-sm-4 col-md-3">
-                <div class="amenity-tile text-center p-3 rounded-3 h-100 d-flex flex-column align-items-center justify-content-between"
-                  [class.amenity-selected]="selectedAmenityIds().has(a.amenityId)"
-                  (click)="togglePreference(a)"
-                  style="cursor:pointer;transition:all .2s">
-                  <div>
-                    <div class="fs-2 mb-2">{{ a.icon || '✨' }}</div>
-                    <div class="fw-600 small mb-1">{{ a.name }}</div>
-                    @if (a.description) {
-                      <div class="text-muted" style="font-size:.7rem">{{ a.description }}</div>
-                    }
-                  </div>
-                  <div class="mt-2 d-flex flex-column align-items-center gap-1">
-                    @if (selectedAmenityIds().has(a.amenityId)) {
-                      <span class="badge bg-primary rounded-pill" style="font-size:.65rem">
-                        <i class="bi bi-send-check me-1"></i>Requested
-                      </span>
-                      <span class="badge rounded-pill" [ngClass]="preferenceStatusClass(preferenceForAmenity(a.amenityId)?.status)" style="font-size:.65rem">
-                        {{ preferenceForAmenity(a.amenityId)?.status || 'Pending' }}
-                      </span>
-                    } @else {
-                      <span class="badge bg-light text-muted border rounded-pill" style="font-size:.7rem">
-                        <i class="bi bi-plus-circle me-1"></i>Select
-                      </span>
-                    }
-                  </div>
-                </div>
-              </div>
-            }
-          </div>
-          <nav class="dash-pager" aria-label="Amenities pagination">
-            <button type="button" class="dash-pager__btn" [disabled]="amenitiesPage() <= 1" (click)="amenitiesPage.set(amenitiesPage() - 1)" title="Previous page">
-              <i class="bi bi-chevron-left"></i>
-            </button>
-            <span class="dash-pager__current">{{ amenitiesPage() }}</span>
-            <button type="button" class="dash-pager__btn" [disabled]="amenitiesPage() >= amenitiesTotalPages()" (click)="amenitiesPage.set(amenitiesPage() + 1)" title="Next page">
-              <i class="bi bi-chevron-right"></i>
-            </button>
-            <span class="dash-pager__meta">{{ amenitiesPage() }} / {{ amenitiesTotalPages() }}</span>
           </nav>
         }
       </div>

@@ -13,7 +13,6 @@ import { AmenityModel } from '../models/amenity.model';
 import { PaymentModel } from '../models/payment.model';
 import { ReviewModel } from '../models/review.model';
 import { CancellationModel } from '../models/cancellation.model';
-import { UserAmenityPreferenceModel } from '../models/user-amenity-preference.model';
 interface CancellationItem extends CancellationModel { hotelName: string; }
 
 @Component({
@@ -28,7 +27,7 @@ export class DashboardManager {
   private toast = inject(ToastrService);
 
   activeTab = signal('Hotels');
-  readonly tabs = ['Hotels','Rooms','Users','Bookings','Amenities','User Preferences','Hotel Amenities','Payments','Reviews','Cancellations'];
+  readonly tabs = ['Hotels','Rooms','Users','Bookings','Amenities','Hotel Amenities','Payments','Reviews','Cancellations'];
   saving = signal(false);
 
   hotels        = signal<HotelModel[]>([]);
@@ -103,13 +102,6 @@ export class DashboardManager {
   bookingsLoading = signal(false);
   reviewsLoading  = signal(false);
   cancelLoading   = signal(false);
-  userPrefLoading = signal(false);
-  userAmenityPreferences = signal<UserAmenityPreferenceModel[]>([]);
-  userPrefPage     = signal(1);
-  readonly PREF_PS = 10;
-  pagedUserPrefs   = computed(() => this.userAmenityPreferences().slice((this.userPrefPage()-1)*this.PREF_PS, this.userPrefPage()*this.PREF_PS));
-  userPrefTotalPages = computed(() => Math.max(1, Math.ceil(this.userAmenityPreferences().length / this.PREF_PS)));
-  userPrefActionPendingId = signal<number | null>(null);
 
   editHotelId = signal<number | null>(null);
   editRoomId  = signal<number | null>(null);
@@ -318,45 +310,12 @@ export class DashboardManager {
     if (t === 'Cancellations' && !this.cancellations().length && !this.cancelLoading() && this.bookings().length) {
       this.loadCancellations(1);
     }
-    if (t === 'User Preferences') {
-      this.loadUserAmenityPreferences();
     }
   }
 
-  loadUserAmenityPreferences(): void {
-    this.userPrefLoading.set(true);
-    this.api.apiGetAllAmenityPreferences().subscribe({
-      next: list => { this.userAmenityPreferences.set(list ?? []); this.userPrefPage.set(1); this.userPrefLoading.set(false); },
-      error: () => { this.userPrefLoading.set(false); }
-    });
-  }
 
-  approveUserPref(p: UserAmenityPreferenceModel): void {
-    this.userPrefActionPendingId.set(p.preferenceId);
-    this.api.apiApproveAmenityPreference(p.preferenceId).pipe(finalize(() => this.userPrefActionPendingId.set(null))).subscribe({
-      next: updated => {
-        this.userAmenityPreferences.update(arr => arr.map(x => (x.preferenceId === p.preferenceId ? updated : x)));
-        this.toast.success(`Approved: ${p.userName} → ${p.amenityName}`);
-      }
-    });
-  }
 
-  rejectUserPref(p: UserAmenityPreferenceModel): void {
-    this.userPrefActionPendingId.set(p.preferenceId);
-    this.api.apiRejectAmenityPreference(p.preferenceId).pipe(finalize(() => this.userPrefActionPendingId.set(null))).subscribe({
-      next: updated => {
-        this.userAmenityPreferences.update(arr => arr.map(x => (x.preferenceId === p.preferenceId ? updated : x)));
-        this.toast.success(`Rejected: ${p.userName} → ${p.amenityName}`);
-      }
-    });
-  }
 
-  userPrefStatusClass(s: string | undefined): string {
-    const x = (s || 'Pending').toLowerCase();
-    if (x === 'approved') return 'bg-success';
-    if (x === 'rejected') return 'bg-danger';
-    return 'bg-warning text-dark';
-  }
 
   saveHotel(): void {
     const f = this.hf();
@@ -434,14 +393,26 @@ export class DashboardManager {
 
   confirmBooking(b: BookingModel): void {
     this.api.apiConfirmBooking(b.bookingId).subscribe({
-      next: () => { this.bookings.update(l => l.map(x => x.bookingId === b.bookingId ? { ...x, status:'Confirmed' } : x)); this.toast.success('Booking confirmed!'); },
-      error: e  => this.toast.error(e?.error?.message || 'Error.', 'Error')
+      next: () => {
+        this.bookings.update(l => l.map(x => x.bookingId === b.bookingId ? { ...x, status:'Confirmed' } : x));
+        this.toast.success('Booking confirmed!');
+      },
+      error: e => {
+        this.toast.error(e?.error?.message || 'Failed to confirm booking.', 'Error');
+        this.loadBookings(this.bookingsPage());
+      }
     });
   }
   completeBooking(b: BookingModel): void {
     this.api.apiCompleteBooking(b.bookingId).subscribe({
-      next: () => { this.bookings.update(l => l.map(x => x.bookingId === b.bookingId ? { ...x, status:'Completed' } : x)); this.toast.success('Booking completed!'); },
-      error: e  => this.toast.error(e?.error?.message || 'Error.', 'Error')
+      next: () => {
+        this.bookings.update(l => l.map(x => x.bookingId === b.bookingId ? { ...x, status:'Completed' } : x));
+        this.toast.success('Booking completed!');
+      },
+      error: e => {
+        this.toast.error(e?.error?.message || 'Failed to complete booking.', 'Error');
+        this.loadBookings(this.bookingsPage());
+      }
     });
   }
 

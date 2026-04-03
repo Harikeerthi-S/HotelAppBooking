@@ -3536,11 +3536,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\hotel\\HotelBookingApp\\HotelBookingApp Backend\\HotelBookingApp\\HotelBookingApp.csproj",
+      "projectUniqueName": "C:\\hotel\\hotelbooking\\HotelBookingApp Backend\\HotelBookingApp\\HotelBookingApp.csproj",
       "projectName": "HotelBookingApp",
-      "projectPath": "C:\\hotel\\HotelBookingApp\\HotelBookingApp Backend\\HotelBookingApp\\HotelBookingApp.csproj",
+      "projectPath": "C:\\hotel\\hotelbooking\\HotelBookingApp Backend\\HotelBookingApp\\HotelBookingApp.csproj",
       "packagesPath": "C:\\Users\\Harikeerthi.S\\.nuget\\packages\\",
-      "outputPath": "C:\\hotel\\HotelBookingApp\\HotelBookingApp Backend\\HotelBookingApp\\obj\\",
+      "outputPath": "C:\\hotel\\hotelbooking\\HotelBookingApp Backend\\HotelBookingApp\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

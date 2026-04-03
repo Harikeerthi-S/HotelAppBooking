@@ -1,5 +1,4 @@
 import { Component, inject, signal, computed, OnDestroy } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of, Subscription } from 'rxjs';
@@ -15,7 +14,7 @@ interface CancellationItem extends CancellationModel { hotelName: string; }
 @Component({
   selector: 'app-cancellation',
   standalone: true,
-  imports: [RouterLink, CommonModule, DatePipe, FormsModule],
+  imports: [CommonModule, DatePipe, FormsModule],
   templateUrl: './cancellation.html',
   styleUrl: './cancellation.css'
 })

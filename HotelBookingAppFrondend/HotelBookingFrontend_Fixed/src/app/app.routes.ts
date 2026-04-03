@@ -33,7 +33,6 @@ export const routes: Routes = [
   // ── Admin only ────────────────────────────────────────────────────────────
   { path: 'dashboard-admin',      canActivate: [adminGuard], loadComponent: () => import('./dashboard-admin/dashboard-admin').then(m => m.DashboardAdmin) },
   { path: 'audit-log',            canActivate: [adminGuard], loadComponent: () => import('./audit-log/audit-log').then(m => m.AuditLog) },
-  { path: 'amenity-preferences',  canActivate: [authGuard],  loadComponent: () => import('./user-amenity-preference/user-amenity-preference').then(m => m.UserAmenityPreference) },
 
   // ── HotelManager only ─────────────────────────────────────────────────────
   { path: 'dashboard-manager', canActivate: [managerGuard], loadComponent: () => import('./dashboard-manager/dashboard-manager').then(m => m.DashboardManager) },

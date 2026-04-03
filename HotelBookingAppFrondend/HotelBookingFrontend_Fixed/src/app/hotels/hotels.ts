@@ -47,6 +47,7 @@ export class Hotels implements OnDestroy {
   fMinPrice  = signal('');
   fMaxPrice  = signal('');
   fAmenity   = signal('');
+  fAmenityId = signal<number | null>(null);
 
   readonly cityOptions = [
     'Mumbai', 'Delhi', 'Goa', 'Bangalore', 'Jaipur',
@@ -101,10 +102,12 @@ export class Hotels implements OnDestroy {
       }
     });
 
-    // ✅ QUERY PARAMS (FROM HOME SEARCH)
+    // ✅ QUERY PARAMS (FROM HOME SEARCH OR AMENITY CLICK)
     this.route.queryParams.subscribe(p => {
-      if (p['location']) this.fLocation.set(p['location']);
-      if (p['amenity'])  this.fAmenity.set(p['amenity']);
+      if (p['location'])  this.fLocation.set(p['location']);
+      if (p['amenity'])   this.fAmenity.set(p['amenity']);
+      if (p['amenityId']) this.fAmenityId.set(+p['amenityId']);
+      else                this.fAmenityId.set(null);
       this.loadHotels();
     });
 
@@ -143,16 +146,45 @@ export class Hotels implements OnDestroy {
     obs.subscribe({
       next: res => {
         this.paged.set(res);
-        const sorted = this.sortHotels([...res.data]);
-        this.hotels.set(sorted);
-        this.loading.set(false);
-        // Load amenities for each hotel
-        sorted.forEach(h => {
-          this.apiService.apiGetHotelAmenitiesByHotel(h.hotelId).subscribe({
-            next: a => this.hotelAmenityMap.update(m => ({ ...m, [h.hotelId]: a ?? [] })),
-            error: () => {}
+        let hotels = [...res.data];
+
+        // Load amenity map first, then apply amenity filter
+        const amenityId = this.fAmenityId();
+        if (amenityId) {
+          // Load all hotel amenities to filter, then set hotels
+          this.apiService.apiGetAllHotelAmenities().subscribe({
+            next: allHA => {
+              const matchingHotelIds = new Set(
+                allHA.filter(ha => ha.amenityId === amenityId).map(ha => ha.hotelId)
+              );
+              hotels = hotels.filter(h => matchingHotelIds.has(h.hotelId));
+              const sorted = this.sortHotels(hotels);
+              this.hotels.set(sorted);
+              this.loading.set(false);
+              sorted.forEach(h => {
+                this.apiService.apiGetHotelAmenitiesByHotel(h.hotelId).subscribe({
+                  next: a => this.hotelAmenityMap.update(m => ({ ...m, [h.hotelId]: a ?? [] })),
+                  error: () => {}
+                });
+              });
+            },
+            error: () => {
+              const sorted = this.sortHotels(hotels);
+              this.hotels.set(sorted);
+              this.loading.set(false);
+            }
           });
-        });
+        } else {
+          const sorted = this.sortHotels(hotels);
+          this.hotels.set(sorted);
+          this.loading.set(false);
+          sorted.forEach(h => {
+            this.apiService.apiGetHotelAmenitiesByHotel(h.hotelId).subscribe({
+              next: a => this.hotelAmenityMap.update(m => ({ ...m, [h.hotelId]: a ?? [] })),
+              error: () => {}
+            });
+          });
+        }
       },
       error: () => {
         this.loading.set(false);
@@ -171,6 +203,7 @@ export class Hotels implements OnDestroy {
     this.fMinPrice.set('');
     this.fMaxPrice.set('');
     this.fAmenity.set('');
+    this.fAmenityId.set(null);
     this.selectedPriceRange.set('');
     this.loadHotels();
   }

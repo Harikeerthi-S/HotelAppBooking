@@ -8,3 +8,6 @@
 .btn-primary-custom:disabled { opacity:.65; pointer-events:none; }
 .fw-600 { font-weight:600; }
 .fw-700 { font-weight:700; }
+
+.modal-backdrop-custom { position:fixed; inset:0; background:rgba(0,0,0,.55); display:flex; align-items:center; justify-content:center; z-index:1050; padding:16px; }
+.modal-card { width:100%; max-width:440px; border-radius:16px !important; }

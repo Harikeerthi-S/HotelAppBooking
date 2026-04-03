@@ -33,7 +33,13 @@ export class Booking implements OnInit, OnDestroy {
   dateAvailability = signal<boolean | null>(null);
   dateChecking     = signal(false);
 
-  availableOptions = computed(() => [1]);
+  availableOptions = computed(() => {
+    const total = this.hotel()?.totalRooms ?? 1;
+    const max   = Math.min(total, 5); // cap at 5 rooms per booking
+    return Array.from({ length: max }, (_, i) => i + 1);
+    // hotel with 10 rooms → [1, 2, 3, 4, 5]
+    // hotel with 2 rooms  → [1, 2]
+  });
 
   // FIX: userId from Observable (localStorage) — not sessionStorage
   private currentUser = signal<UserState>({ userId: 0, userName: '', email: '', role: '' });

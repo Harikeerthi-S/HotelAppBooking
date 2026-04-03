@@ -56,8 +56,8 @@ describe('Payment', () => {
     expect(component.booking()?.totalAmount).toBe(5000);
   });
 
-  it('should have 5 payment methods', () => {
-    expect(component.paymentMethods.length).toBe(5);
+  it('should have 2 payment methods', () => {
+    expect(component.paymentMethods.length).toBe(2);
   });
 
   it('should contain CreditCard as payment method', () => {
@@ -65,9 +65,9 @@ describe('Payment', () => {
     expect(values).toContain('CreditCard');
   });
 
-  it('should contain UPI as payment method', () => {
+  it('should contain DebitCard as payment method', () => {
     const values = component.paymentMethods.map(m => m.value);
-    expect(values).toContain('UPI');
+    expect(values).toContain('DebitCard');
   });
 
   it('selectedMethod defaults to empty string', () => {
@@ -75,18 +75,18 @@ describe('Payment', () => {
   });
 
   it('selectMethod should update selectedMethod signal', () => {
-    component.selectMethod('UPI');
-    expect(component.selectedMethod()).toBe('UPI');
-  });
-
-  it('getMethodLabel should return correct label for UPI', () => {
-    component.selectMethod('UPI');
-    expect(component.getMethodLabel()).toBe('UPI');
+    component.selectMethod('CreditCard');
+    expect(component.selectedMethod()).toBe('CreditCard');
   });
 
   it('getMethodLabel should return correct label for CreditCard', () => {
     component.selectMethod('CreditCard');
     expect(component.getMethodLabel()).toBe('Credit Card');
+  });
+
+  it('getMethodLabel should return correct label for DebitCard', () => {
+    component.selectMethod('DebitCard');
+    expect(component.getMethodLabel()).toBe('Debit Card');
   });
 
   it('getMethodLabel returns empty string when no method selected', () => {
@@ -105,6 +105,6 @@ describe('Payment', () => {
   it('should render payment methods', async () => {
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelectorAll('.pay-method').length).toBe(5);
+    expect(compiled.querySelectorAll('.pay-method').length).toBe(2);
   });
 });

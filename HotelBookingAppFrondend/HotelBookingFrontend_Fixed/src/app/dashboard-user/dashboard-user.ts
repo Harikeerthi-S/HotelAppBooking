@@ -11,11 +11,9 @@ import { CancellationModel } from '../models/cancellation.model';
 import { NotificationModel } from '../models/notification.model';
 import { PaymentModel } from '../models/payment.model';
 import { ReviewModel } from '../models/review.model';
-import { AmenityModel } from '../models/amenity.model';
 import { PagedResponse } from '../models/paged.model';
 import { $userStatus, UserState } from '../dynamicCommunication/userObservable';
-import { UserAmenityPreferenceModel } from '../models/user-amenity-preference.model';
-type DashTab = 'bookings' | 'payments' | 'cancellations' | 'notifications' | 'reviews' | 'amenities' | 'support';
+type DashTab = 'bookings' | 'payments' | 'cancellations' | 'notifications' | 'reviews' | 'support';
 
 @Component({
   selector: 'app-dashboard-user',
@@ -85,39 +83,8 @@ export class DashboardUser implements OnInit, OnDestroy, AfterViewChecked {
   pagedReviews = computed(() => this._clientSlice(this.reviews(), this.reviewsPage(), this.REVIEW_PS));
   reviewsTotalPages = computed(() => Math.ceil(this.reviews().length / this.REVIEW_PS) || 1);
 
-  amenities     = signal<AmenityModel[]>([]);
-  amenitySearch = signal('');
-  amenitiesPage = signal(1);
-  readonly AMENITY_PS = 8;
-  filteredAmenities = computed(() => {
-    const q = this.amenitySearch().toLowerCase().trim();
-    if (!q) return this.amenities();
-    return this.amenities().filter(a =>
-      a.name.toLowerCase().includes(q) ||
-      (a.description ?? '').toLowerCase().includes(q)
-    );
-  });
-  pagedAmenities = computed(() => this._clientSlice(this.filteredAmenities(), this.amenitiesPage(), this.AMENITY_PS));
-  amenitiesTotalPages = computed(() => Math.ceil(this.filteredAmenities().length / this.AMENITY_PS) || 1);
-
   private _clientSlice<T>(arr: T[], page: number, size: number): T[] {
     return arr.slice((page - 1) * size, page * size);
-  }
-
-  myPreferences     = signal<UserAmenityPreferenceModel[]>([]);
-  prefLoading       = signal(false);
-  prefSaving        = signal(false);
-  selectedAmenityIds = computed(() => new Set(this.myPreferences().map(p => p.amenityId)));
-
-  preferenceForAmenity(amenityId: number): UserAmenityPreferenceModel | undefined {
-    return this.myPreferences().find(p => p.amenityId === amenityId);
-  }
-
-  preferenceStatusClass(status: string | undefined): string {
-    const s = (status || 'Pending').toLowerCase();
-    if (s === 'approved') return 'bg-success';
-    if (s === 'rejected') return 'bg-danger';
-    return 'bg-warning text-dark';
   }
 
   chatMessages  = signal<{ sender: 'user'|'bot'; text: string; time: Date }[]>([]);
@@ -153,7 +120,6 @@ export class DashboardUser implements OnInit, OnDestroy, AfterViewChecked {
         this.loadBookings(1);
         this.loadNotifications();
         this.loadCancellations();
-        this.loadAmenities();
         this.loadPayments();
       }
     });
@@ -204,11 +170,7 @@ export class DashboardUser implements OnInit, OnDestroy, AfterViewChecked {
 
   switchTab(tab: string): void {
     this.activeTab.set(tab as DashTab);
-    if (tab === 'reviews'   && !this.reviewLoaded()) this.loadReviews();
-    if (tab === 'amenities') {
-      this.loadAmenities();
-      this.loadMyPreferences();
-    }
+    if (tab === 'reviews' && !this.reviewLoaded()) this.loadReviews();
   }
 
   loadBookings(page: number = 1): void {
@@ -252,7 +214,12 @@ export class DashboardUser implements OnInit, OnDestroy, AfterViewChecked {
       next: res => {
         const bookings = res.data ?? [];
         if (!bookings.length) { this.payments.set([]); this.payLoading.set(false); return; }
-        const reqs = bookings.map(b =>
+        // Only fetch payments for bookings that would have a payment record
+        const payableBookings = bookings.filter(b =>
+          b.status && !['Pending', 'Cancelled'].includes(b.status)
+        );
+        if (!payableBookings.length) { this.payments.set([]); this.payLoading.set(false); return; }
+        const reqs = payableBookings.map(b =>
           this.api.apiGetPaymentByBookingId(b.bookingId).pipe(catchError(() => of(null)))
         );
         forkJoin(reqs).subscribe({
@@ -313,13 +280,6 @@ export class DashboardUser implements OnInit, OnDestroy, AfterViewChecked {
         this.reviewLoading.set(false);
       },
       error: () => this.reviewLoading.set(false)
-    });
-  }
-
-  loadAmenities(): void {
-    this.api.apiGetAmenities().subscribe({
-      next: a => { this.amenities.set(a ?? []); this.amenitiesPage.set(1); },
-      error: () => {}
     });
   }
 
@@ -423,51 +383,6 @@ export class DashboardUser implements OnInit, OnDestroy, AfterViewChecked {
     return text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\n/g, '<br>');
-  }
-
-  loadMyPreferences(): void {
-    const uid = this._uid;
-    if (!uid) return;
-    // Reload amenities if not yet loaded
-    if (this.amenities().length === 0) this.loadAmenities();
-    this.prefLoading.set(true);
-    this.api.apiGetMyAmenityPreferences(uid).subscribe({
-      next: p => { this.myPreferences.set(p ?? []); this.prefLoading.set(false); },
-      error: () => { this.myPreferences.set([]); this.prefLoading.set(false); }
-    });
-  }
-
-  togglePreference(amenity: AmenityModel): void {
-    const uid = this._uid;
-    if (!uid) return;
-    const isSelected = this.selectedAmenityIds().has(amenity.amenityId);
-
-    if (isSelected) {
-      this.prefSaving.set(true);
-      this.api.apiRemoveAmenityPreferenceByUserAmenity(uid, amenity.amenityId).subscribe({
-        next: () => {
-          this.myPreferences.update(l => l.filter(p => p.amenityId !== amenity.amenityId));
-          this.prefSaving.set(false);
-          this.toast.info(`Removed "${amenity.name}" from preferences.`);
-        },
-        error: e => { this.prefSaving.set(false); this.toast.error(e?.error?.message || 'Error.', 'Error'); }
-      });
-    } else {
-      this.prefSaving.set(true);
-      this.api.apiAddAmenityPreference(uid, amenity.amenityId).subscribe({
-        next: p => {
-          this.myPreferences.update(l => [...l, p]);
-          this.prefSaving.set(false);
-          this.toast.success(`"${amenity.name}" added to your preferences!`);
-        },
-        error: e => {
-          this.prefSaving.set(false);
-          if (e.status === 409) this.toast.warning('Already in your preferences.');
-          else if (e.status === 503) this.toast.warning('Preference feature requires a database migration. Please contact admin.');
-          else this.toast.error(e?.error?.message || 'Error.', 'Error');
-        }
-      });
-    }
   }
 
   statusClass(s: string): string {

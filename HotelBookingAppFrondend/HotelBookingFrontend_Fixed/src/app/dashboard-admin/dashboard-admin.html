@@ -96,7 +96,7 @@
                 <tbody>
                   @for (h of hotels(); track h.hotelId) {
                     <tr><td class="fw-600">{{ h.hotelName }}</td><td>{{ h.location }}</td><td>{{ h.starRating }}★</td><td>{{ h.totalRooms }}</td>
-                    <td><button class="btn btn-xs btn-outline-primary me-1" title="Edit Hotel" (click)="editHotel(h)"><i class="bi bi-pencil-fill"></i></button><button class="btn btn-xs btn-outline-danger" title="Delete Hotel" (click)="deleteHotel(h)"><i class="bi bi-trash3-fill"></i></button></td></tr>
+                    <td><button class="btn btn-xs btn-outline-primary me-1" title="Edit Hotel" (click)="editHotel(h)"><i class="bi bi-pencil-fill"></i></button><button class="btn btn-xs btn-outline-danger" title="Deactivate Hotel" (click)="deleteHotel(h)"><i class="bi bi-slash-circle-fill"></i></button></td></tr>
                   }
                 </tbody>
               </table>
@@ -212,7 +212,7 @@
               @for (u of pagedUsers(); track u.userId) {
                 <tr><td>{{ u.userId }}</td><td class="fw-600">{{ u.userName }}</td><td>{{ u.email }}</td>
                 <td><span class="badge rounded-pill px-2" [class.bg-danger]="u.role==='admin'" [class.bg-success]="u.role==='hotelmanager'" [class.bg-primary]="u.role==='user'">{{ u.role }}</span></td>
-                <td><button class="btn btn-xs btn-outline-danger" title="Delete User" (click)="deleteUser(u)"><i class="bi bi-person-x-fill"></i></button></td></tr>
+                <td><button class="btn btn-xs btn-outline-danger" title="Deactivate User" (click)="deleteUser(u)"><i class="bi bi-person-slash"></i></button></td></tr>
               }
             </tbody>
           </table>
@@ -292,63 +292,6 @@
   }
 
   <!-- ═══ USER AMENITY PREFERENCES ═══ -->
-  @if (activeTab() === 'User Preferences') {
-    <div class="card border-0 shadow-sm">
-      <div class="card-body p-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h6 class="fw-700 mb-0">
-            <i class="bi bi-stars me-1 text-primary"></i>
-            User Amenity Preferences ({{ userAmenityPreferences().length }})
-          </h6>
-          <div class="d-flex gap-2 align-items-center">
-            @if (userPrefLoading()) { <span class="spinner-border spinner-border-sm"></span> }
-            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" (click)="loadUserAmenityPreferences()" [disabled]="userPrefLoading()">
-              <i class="bi bi-arrow-clockwise"></i>
-            </button>
-            <a routerLink="/amenities" class="btn btn-sm btn-primary-custom rounded-pill">Amenities page</a>
-          </div>
-        </div>
-        <p class="text-muted small mb-3">Guests choose amenities on their dashboard. Approve to confirm for that user, or reject.</p>
-        @if (userPrefLoading() && userAmenityPreferences().length === 0) {
-          <div class="text-center py-5 text-muted"><span class="spinner-border" role="status" aria-label="Loading"></span></div>
-        } @else if (userAmenityPreferences().length === 0) {
-          <div class="empty-state"><i class="bi bi-inbox empty-icon"></i><p>No user amenity preferences yet.</p></div>
-        } @else {
-          <div class="table-responsive" [class.opacity-50]="userPrefLoading()">
-            <table class="table table-hover align-middle small">
-              <thead class="table-light">
-                <tr><th>User</th><th>Amenity</th><th>Status</th><th>Requested</th><th>Actions</th></tr>
-              </thead>
-              <tbody>
-                @for (p of pagedUserPrefs(); track p.preferenceId) {
-                  <tr>
-                    <td class="fw-600">#{{ p.userId }} {{ p.userName }}</td>
-                    <td><span class="me-1">{{ p.amenityIcon || '✨' }}</span>{{ p.amenityName }}</td>
-                    <td><span class="badge rounded-pill" [ngClass]="userPrefStatusClass(p.status)">{{ p.status || 'Pending' }}</span></td>
-                    <td class="text-muted text-nowrap">{{ p.createdAt ? (p.createdAt | date:'dd MMM y, HH:mm') : '—' }}</td>
-                    <td>
-                      @if ((p.status || 'Pending').toLowerCase() === 'pending') {
-                        <button type="button" class="btn btn-xs btn-success me-1" [disabled]="userPrefActionPendingId() === p.preferenceId" (click)="approveUserPref(p)">Approve</button>
-                        <button type="button" class="btn btn-xs btn-outline-danger" [disabled]="userPrefActionPendingId() === p.preferenceId" (click)="rejectUserPref(p)">Reject</button>
-                      } @else {
-                        <span class="text-muted small">—</span>
-                      }
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-          <nav class="dash-pager" aria-label="User Preferences pagination">
-            <button type="button" class="dash-pager__btn" [disabled]="userPrefPage()<=1" (click)="userPrefPage.set(userPrefPage()-1)" title="Previous"><i class="bi bi-chevron-left"></i></button>
-            <span class="dash-pager__current">{{ userPrefPage() }}</span>
-            <button type="button" class="dash-pager__btn" [disabled]="userPrefPage()>=userPrefTotalPages()" (click)="userPrefPage.set(userPrefPage()+1)" title="Next"><i class="bi bi-chevron-right"></i></button>
-            <span class="dash-pager__meta">{{ userPrefPage() }} / {{ userPrefTotalPages() }}</span>
-          </nav>
-        }
-      </div>
-    </div>
-  }
 
   <!-- ═══ HOTEL AMENITIES ═══ -->
   @if (activeTab() === 'Hotel Amenities') {
@@ -713,12 +656,19 @@
       <div class="card-body p-4">
         <h5 class="fw-700 mb-3">Update Cancellation #{{ activeCancelId() }}</h5>
         <div class="mb-3"><label class="form-label fw-600 small">Status</label>
-          <select class="form-select form-select-sm" [value]="modalStatus()" (change)="modalStatus.set($any($event.target).value)">
+          <select class="form-select form-select-sm" [value]="modalStatus()" (change)="onModalStatusChange($any($event.target).value)">
             <option value="Pending">⏳ Pending</option><option value="Approved">✅ Approved</option><option value="Rejected">❌ Rejected</option>
           </select>
         </div>
         <div class="mb-4"><label class="form-label fw-600 small">Refund Amount (₹)</label>
-          <input type="number" class="form-control form-control-sm" min="0" [value]="modalRefund()" (input)="modalRefund.set(+$any($event.target).value)">
+          <input type="number" class="form-control form-control-sm" min="0"
+            [value]="modalRefund()"
+            (input)="modalRefund.set(+$any($event.target).value)"
+            [disabled]="modalStatus() !== 'Approved'"
+            [class.bg-light]="modalStatus() !== 'Approved'">
+          @if (modalStatus() !== 'Approved') {
+            <div class="form-text text-muted">Refund amount can only be set when status is Approved.</div>
+          }
         </div>
         <div class="d-flex gap-2">
           <button class="btn btn-primary-custom rounded-pill flex-fill" [disabled]="updatingCancel()" (click)="updateCancelStatus()">

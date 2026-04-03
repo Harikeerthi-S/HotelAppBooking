@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { map } from 'rxjs/operators';
+import { map, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { LoginModel } from '../models/login.model';
 import { RegisterModel } from '../models/register.model';
@@ -10,7 +11,6 @@ import { RoomModel, CreateRoomModel } from '../models/room.model';
 import { BookingModel, CreateBookingModel } from '../models/booking.model';
 import { PaymentModel } from '../models/payment.model';
 import { ChatRequestModel, ChatResponseModel, ChatHistoryModel } from '../models/chat.model';
-import { UserAmenityPreferenceModel } from '../models/user-amenity-preference.model';
 import { CancellationModel } from '../models/cancellation.model';
 import { ReviewModel } from '../models/review.model';
 import { AmenityModel } from '../models/amenity.model';
@@ -23,12 +23,9 @@ import { AuditLogModel, CreateAuditLogModel } from '../models/audit-log.model';
 
 const API = environment.apiUrl;
 
-function normalizeUserAmenityPreference(raw: unknown): UserAmenityPreferenceModel {
   const r = raw as Record<string, unknown>;
   if (!r || typeof r !== 'object') {
-    return Object.assign(new UserAmenityPreferenceModel(), { status: 'Pending' });
   }
-  const m = new UserAmenityPreferenceModel();
   m.preferenceId = Number(r['preferenceId'] ?? r['PreferenceId'] ?? 0);
   m.userId = Number(r['userId'] ?? r['UserId'] ?? 0);
   m.userName = String(r['userName'] ?? r['UserName'] ?? '');
@@ -158,7 +155,9 @@ export class APIService {
     return this.http.get<PaymentModel>(`${API}/payment/${paymentId}`);
   }
   apiGetPaymentByBookingId(bookingId: number) {
-    return this.http.get<PaymentModel>(`${API}/payment/booking/${bookingId}`);
+    return this.http.get<PaymentModel>(`${API}/payment/booking/${bookingId}`).pipe(
+      catchError(err => err.status === 404 ? of(null) : of(null))
+    );
   }
   apiUpdatePaymentStatus(paymentId: number, status: string) {
     return this.http.put<PaymentModel>(`${API}/payment/${paymentId}/status`, null, { params: { status } });
@@ -334,36 +333,5 @@ export class APIService {
   }
 
   /* ── User Amenity Preferences ── */
-  apiAddAmenityPreference(userId: number, amenityId: number) {
-    return this.http
-      .post<unknown>(`${API}/user-amenity-preference`, { userId, amenityId })
-      .pipe(map(normalizeUserAmenityPreference));
-  }
-  apiGetMyAmenityPreferences(userId: number) {
-    return this.http
-      .get<unknown[]>(`${API}/user-amenity-preference/user/${userId}`)
-      .pipe(map(arr => (arr ?? []).map(normalizeUserAmenityPreference)));
-  }
-  apiGetAllAmenityPreferences() {
-    return this.http
-      .get<unknown[]>(`${API}/user-amenity-preference/all`)
-      .pipe(map(arr => (arr ?? []).map(normalizeUserAmenityPreference)));
-  }
   /** POST empty JSON — matches ASP.NET Core [HttpPost("…/approve")] */
-  apiApproveAmenityPreference(preferenceId: number) {
-    return this.http
-      .post<unknown>(`${API}/user-amenity-preference/${preferenceId}/approve`, {})
-      .pipe(map(normalizeUserAmenityPreference));
-  }
-  apiRejectAmenityPreference(preferenceId: number) {
-    return this.http
-      .post<unknown>(`${API}/user-amenity-preference/${preferenceId}/reject`, {})
-      .pipe(map(normalizeUserAmenityPreference));
-  }
-  apiRemoveAmenityPreference(preferenceId: number) {
-    return this.http.delete(`${API}/user-amenity-preference/${preferenceId}`);
-  }
-  apiRemoveAmenityPreferenceByUserAmenity(userId: number, amenityId: number) {
-    return this.http.delete(`${API}/user-amenity-preference/user/${userId}/amenity/${amenityId}`);
-  }
 }

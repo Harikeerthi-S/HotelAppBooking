@@ -21,7 +21,7 @@ namespace HotelBookingApp.Services
             { "Pending", "Completed", "Failed", "Refunded" };
 
         private static readonly string[] ValidMethods =
-            { "CreditCard", "DebitCard", "UPI", "Wallet", "PayPal", "NetBanking" };
+            { "CreditCard", "DebitCard", "NetBanking" };
 
         public PaymentService(
             IRepository<int, Payment> paymentRepo,

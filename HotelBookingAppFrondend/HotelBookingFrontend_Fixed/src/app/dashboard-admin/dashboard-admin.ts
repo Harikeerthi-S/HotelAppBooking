@@ -16,7 +16,6 @@ import { CancellationModel } from '../models/cancellation.model';
 import { AuditLogModel } from '../models/audit-log.model';
 import { NotificationModel } from '../models/notification.model';
 import { PagedResponse } from '../models/paged.model';
-import { UserAmenityPreferenceModel } from '../models/user-amenity-preference.model';
 
 interface CancellationItem extends CancellationModel { hotelName: string; }
 
@@ -33,7 +32,7 @@ export class DashboardAdmin {
   private toast = inject(ToastrService);
 
   activeTab = signal('Hotels');
-  readonly tabs = ['Hotels','Rooms','Users','Bookings','Amenities','User Preferences','Hotel Amenities','Payments','Reviews','Cancellations','Notifications','Audit Logs'];
+  readonly tabs = ['Hotels','Rooms','Users','Bookings','Amenities','Hotel Amenities','Payments','Reviews','Cancellations','Notifications','Audit Logs'];
   saving = signal(false);
 
   // ── Data ──────────────────────────────────────────────────────────────────
@@ -150,14 +149,6 @@ export class DashboardAdmin {
   });
   notifLoading     = signal(false);
   notifSending     = signal(false);
-  userPrefLoading  = signal(false);
-  userAmenityPreferences = signal<UserAmenityPreferenceModel[]>([]);
-  userPrefPage     = signal(1);
-  readonly PREF_PS = 10;
-  pagedUserPrefs   = computed(() => this.userAmenityPreferences().slice((this.userPrefPage()-1)*this.PREF_PS, this.userPrefPage()*this.PREF_PS));
-  userPrefTotalPages = computed(() => Math.max(1, Math.ceil(this.userAmenityPreferences().length / this.PREF_PS)));
-  /** Disables Approve/Reject while a request is in flight for that row */
-  userPrefActionPendingId = signal<number | null>(null);
 
   // ── Client-side pagination (Users, Payments, Notifications) ───────────────
   readonly CPS = 10;
@@ -382,43 +373,11 @@ export class DashboardAdmin {
     if (t === 'Cancellations' && !this.cancelMeta())   this.loadCancellations(1);
     if (t === 'Notifications')                         this.loadNotifications();
     if (t === 'Audit Logs' && !this.auditMeta())      this.loadAuditLogs(1);
-    if (t === 'User Preferences')                     this.loadUserAmenityPreferences();
   }
 
-  loadUserAmenityPreferences(): void {
-    this.userPrefLoading.set(true);
-    this.api.apiGetAllAmenityPreferences().subscribe({
-      next: list => { this.userAmenityPreferences.set(list ?? []); this.userPrefPage.set(1); this.userPrefLoading.set(false); },
-      error: () => { this.userPrefLoading.set(false); }
-    });
-  }
 
-  approveUserPref(p: UserAmenityPreferenceModel): void {
-    this.userPrefActionPendingId.set(p.preferenceId);
-    this.api.apiApproveAmenityPreference(p.preferenceId).pipe(finalize(() => this.userPrefActionPendingId.set(null))).subscribe({
-      next: updated => {
-        this.userAmenityPreferences.update(arr => arr.map(x => (x.preferenceId === p.preferenceId ? updated : x)));
-        this.toast.success(`Approved: ${p.userName} → ${p.amenityName}`);
-      }
-    });
-  }
 
-  rejectUserPref(p: UserAmenityPreferenceModel): void {
-    this.userPrefActionPendingId.set(p.preferenceId);
-    this.api.apiRejectAmenityPreference(p.preferenceId).pipe(finalize(() => this.userPrefActionPendingId.set(null))).subscribe({
-      next: updated => {
-        this.userAmenityPreferences.update(arr => arr.map(x => (x.preferenceId === p.preferenceId ? updated : x)));
-        this.toast.success(`Rejected: ${p.userName} → ${p.amenityName}`);
-      }
-    });
-  }
 
-  userPrefStatusClass(s: string | undefined): string {
-    const x = (s || 'Pending').toLowerCase();
-    if (x === 'approved') return 'bg-success';
-    if (x === 'rejected') return 'bg-danger';
-    return 'bg-warning text-dark';
-  }
 
   // ── Hotel CRUD ────────────────────────────────────────────────────────────
   saveHotel(): void {
@@ -441,8 +400,8 @@ export class DashboardAdmin {
   resetHotel(): void { this.editHotelId.set(null); this.hf.set({ hotelName:'', location:'', address:'', starRating:3, totalRooms:10, contactNumber:'', imagePath:'' }); }
   deleteHotel(h: HotelModel): void {
     this.openConfirm(
-      'Delete Hotel',
-      `Are you sure you want to delete "${h.hotelName}"? This action cannot be undone.`,
+      'Deactivate Hotel',
+      `Are you sure you want to deactivate "${h.hotelName}"? It will no longer be visible to users.`,
       () => this.api.apiDeleteHotel(h.hotelId).subscribe({
         next: () => { this.toast.success('Hotel deleted.'); this.loadHotels(this.hotelsPage()); this.refreshHotelsForRoomForm(); },
         error: e  => this.toast.error(e?.error?.message || 'Failed to delete hotel.', 'Error')
@@ -485,8 +444,8 @@ export class DashboardAdmin {
   // ── Users ─────────────────────────────────────────────────────────────────
   deleteUser(u: UserModel): void {
     this.openConfirm(
-      'Delete User',
-      `Are you sure you want to delete user "${u.userName}"? This will permanently remove the account.`,
+      'Deactivate User',
+      `Are you sure you want to deactivate user "${u.userName}"? Their account will be disabled.`,
       () => this.api.apiDeleteUser(u.userId).subscribe({
         next: () => {
           this.users.update(l => l.filter(x => x.userId !== u.userId));
@@ -502,14 +461,26 @@ export class DashboardAdmin {
   // ── Booking actions ───────────────────────────────────────────────────────
   confirmBooking(b: BookingModel): void {
     this.api.apiConfirmBooking(b.bookingId).subscribe({
-      next: () => { this.bookings.update(l => l.map(x => x.bookingId === b.bookingId ? { ...x, status:'Confirmed' } : x)); this.toast.success('Booking confirmed!'); },
-      error: e  => this.toast.error(e?.error?.message || 'Error.', 'Error')
+      next: () => {
+        this.bookings.update(l => l.map(x => x.bookingId === b.bookingId ? { ...x, status:'Confirmed' } : x));
+        this.toast.success('Booking confirmed!');
+      },
+      error: e => {
+        this.toast.error(e?.error?.message || 'Failed to confirm booking.', 'Error');
+        this.loadBookings(this.bookingsPage()); // reload to sync actual DB state
+      }
     });
   }
   completeBooking(b: BookingModel): void {
     this.api.apiCompleteBooking(b.bookingId).subscribe({
-      next: () => { this.bookings.update(l => l.map(x => x.bookingId === b.bookingId ? { ...x, status:'Completed' } : x)); this.toast.success('Booking completed!'); },
-      error: e  => this.toast.error(e?.error?.message || 'Error.', 'Error')
+      next: () => {
+        this.bookings.update(l => l.map(x => x.bookingId === b.bookingId ? { ...x, status:'Completed' } : x));
+        this.toast.success('Booking completed!');
+      },
+      error: e => {
+        this.toast.error(e?.error?.message || 'Failed to complete booking.', 'Error');
+        this.loadBookings(this.bookingsPage()); // reload to sync actual DB state
+      }
     });
   }
 
@@ -525,8 +496,8 @@ export class DashboardAdmin {
   }
   deleteAmenity(a: AmenityModel): void {
     this.openConfirm(
-      'Delete Amenity',
-      `Are you sure you want to delete amenity "${a.name}"? It will be removed from all hotels.`,
+      'Deactivate Amenity',
+      `Are you sure you want to deactivate amenity "${a.name}"? It will be removed from all hotels.`,
       () => this.api.apiDeleteAmenity(a.amenityId).subscribe({
         next: () => { this.amenities.update(l => l.filter(x => x.amenityId !== a.amenityId)); this.toast.success('Amenity deleted.'); },
         error: e  => this.toast.error(e?.error?.message || 'Error.', 'Error')
@@ -547,8 +518,8 @@ export class DashboardAdmin {
   // ── Reviews ───────────────────────────────────────────────────────────────
   deleteReview(r: ReviewModel): void {
     this.openConfirm(
-      'Delete Review',
-      'Are you sure you want to delete this review? This action cannot be undone.',
+      'Deactivate Review',
+      'Are you sure you want to deactivate this review? It will no longer be visible.',
       () => this.api.apiDeleteReview(r.reviewId).subscribe({
         next: () => { this.reviews.update(l => l.filter(x => x.reviewId !== r.reviewId)); this.toast.success('Review deleted.'); },
         error: e  => this.toast.error(e?.error?.message || 'Error.', 'Error')
@@ -562,6 +533,11 @@ export class DashboardAdmin {
     this.modalStatus.set(c.status);
     this.modalRefund.set(c.refundAmount ?? 0);
     this.showCancelModal.set(true);
+  }
+
+  onModalStatusChange(status: string): void {
+    this.modalStatus.set(status);
+    if (status !== 'Approved') this.modalRefund.set(0);
   }
   closeCancelModal(): void { this.showCancelModal.set(false); }
 
@@ -599,8 +575,8 @@ export class DashboardAdmin {
 
   deleteNotification(n: NotificationModel): void {
     this.openConfirm(
-      'Delete Notification',
-      'Are you sure you want to delete this notification?',
+      'Deactivate Notification',
+      'Are you sure you want to deactivate this notification?',
       () => this.api.apiDeleteNotification(n.notificationId).subscribe({
         next: () => { this.notifications.update(l => l.filter(x => x.notificationId !== n.notificationId)); this.toast.info('Deleted.'); },
         error: e => this.toast.error(e?.error?.message || 'Error.', 'Error')

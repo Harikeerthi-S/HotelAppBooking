@@ -62,7 +62,7 @@
 
           <button class="btn btn-primary-custom w-100 py-3 rounded-pill fw-700 fs-5"
                   [disabled]="!selectedMethod() || loading() || !booking()"
-                  (click)="pay()">
+                  (click)="proceedToConfirm()">
             @if (loading()) {
               <span class="spinner-border spinner-border-sm me-2"></span>Processing…
             } @else {
@@ -80,3 +80,4 @@
     </div>
   </div>
 </div>
+

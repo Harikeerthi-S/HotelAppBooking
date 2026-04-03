@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, OnDestroy } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { APIService } from '../services/api.service';
@@ -21,13 +21,14 @@ interface AssignmentItem extends HotelAmenityModel {
 @Component({
   selector: 'app-amenities',
   standalone: true,
-  imports: [RouterLink, CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './amenities.html',
   styleUrl: './amenities.css'
 })
 export class Amenities implements OnDestroy {
-  private api   = inject(APIService);
-  private toast = inject(ToastrService);
+  private api    = inject(APIService);
+  private toast  = inject(ToastrService);
+  private router = inject(Router);
 
   // ── Data signals ───────────────────────────────────────────────────────────
   amenities   = signal<AmenityModel[]>([]);
@@ -293,4 +294,9 @@ export class Amenities implements OnDestroy {
 
   // ── Icon preview helper ────────────────────────────────────────────────────
   iconPreview(icon: string): string { return icon?.trim() || '✨'; }
+
+  // ── Navigate to hotels filtered by this amenity ───────────────────────────
+  viewHotelsWithAmenity(amenityId: number, amenityName: string): void {
+    this.router.navigate(['/hotels'], { queryParams: { amenityId, amenity: amenityName } });
+  }
 }

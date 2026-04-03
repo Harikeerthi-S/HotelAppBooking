@@ -88,13 +88,19 @@
       <div class="row g-3">
         @for (a of filteredAmenities(); track a.amenityId) {
           <div class="col-sm-6 col-md-4 col-lg-3">
-            <div class="amenity-card card border-0 shadow-sm h-100">
+            <div class="amenity-card card border-0 shadow-sm h-100"
+                 style="cursor:pointer"
+                 (click)="viewHotelsWithAmenity(a.amenityId, a.name)"
+                 title="View hotels with {{ a.name }}">
               <div class="card-body p-4 text-center">
                 <div class="amenity-icon-wrap mb-3">{{ a.icon || '✨' }}</div>
                 <h6 class="fw-700 mb-1">{{ a.name }}</h6>
                 @if (a.description) {
-                  <p class="text-muted small mb-0">{{ a.description }}</p>
+                  <p class="text-muted small mb-2">{{ a.description }}</p>
                 }
+                <div class="text-primary small fw-600 mt-1">
+                  <i class="bi bi-building me-1"></i>View Hotels →
+                </div>
               </div>
             </div>
           </div>

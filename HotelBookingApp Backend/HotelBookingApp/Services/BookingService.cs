@@ -270,8 +270,20 @@ namespace HotelBookingApp.Services
             if (booking.Status == "Cancelled")
                 throw new BadRequestException("Already cancelled.");
 
-            booking.Status = "Cancelled";
-            await _bookingRepo.UpdateAsync(bookingId, booking);
+            var bookingCopy = new Booking
+            {
+                BookingId     = booking.BookingId,
+                UserId        = booking.UserId,
+                HotelId       = booking.HotelId,
+                RoomId        = booking.RoomId,
+                NumberOfRooms = booking.NumberOfRooms,
+                CheckIn       = booking.CheckIn,
+                CheckOut      = booking.CheckOut,
+                TotalAmount   = booking.TotalAmount,
+                Status        = "Cancelled"
+            };
+
+            await _bookingRepo.UpdateAsync(bookingId, bookingCopy);
             Log("BookingCancelled", "Booking", bookingId, booking.UserId, $"Status→Cancelled");
             return true;
         }
@@ -285,12 +297,25 @@ namespace HotelBookingApp.Services
             if (!allowed.Contains(booking.Status))
                 throw new BadRequestException($"Invalid status change {booking.Status} → {newStatus}");
 
-            booking.Status = newStatus;
-            await _bookingRepo.UpdateAsync(bookingId, booking);
+            // Use a clean copy to avoid EF Core tracking conflicts
+            var bookingCopy = new Booking
+            {
+                BookingId     = booking.BookingId,
+                UserId        = booking.UserId,
+                HotelId       = booking.HotelId,
+                RoomId        = booking.RoomId,
+                NumberOfRooms = booking.NumberOfRooms,
+                CheckIn       = booking.CheckIn,
+                CheckOut      = booking.CheckOut,
+                TotalAmount   = booking.TotalAmount,
+                Status        = newStatus
+            };
+
+            await _bookingRepo.UpdateAsync(bookingId, bookingCopy);
             Log($"Booking{newStatus}", "Booking", bookingId, booking.UserId, $"Status→{newStatus}");
             var hotel = await _hotelRepo.GetByIdAsync(booking.HotelId);
 
-            return MapToDto(booking, hotel?.HotelName ?? string.Empty);
+            return MapToDto(bookingCopy, hotel?.HotelName ?? string.Empty);
         }
 
         private static BookingResponseDto MapToDto(Booking b, string hotelName) => new()
