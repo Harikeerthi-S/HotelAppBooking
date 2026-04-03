@@ -26,6 +26,8 @@ builder.Logging.AddDebug();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
+        options.JsonSerializerOptions.PropertyNamingPolicy =
+            System.Text.Json.JsonNamingPolicy.CamelCase;
         options.JsonSerializerOptions.ReferenceHandler =
             System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.DefaultIgnoreCondition =
@@ -184,7 +186,6 @@ builder.Services.AddScoped<IWishlistService,              WishlistService>();
 builder.Services.AddScoped<INotificationService,          NotificationService>();
 builder.Services.AddScoped<IAuditLogService,              AuditLogService>();
 builder.Services.AddScoped<IChatService,                  ChatService>();
-builder.Services.AddScoped<IUserAmenityPreferenceService, UserAmenityPreferenceService>();
 builder.Services.AddScoped<JwtTokenHelper>();
 
 // ════════════════════════════════════════════════════════════════════════════

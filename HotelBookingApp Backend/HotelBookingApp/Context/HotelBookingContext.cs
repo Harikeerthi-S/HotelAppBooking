@@ -22,7 +22,6 @@ namespace HotelBookingApp.Context
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
-        public DbSet<UserAmenityPreference> UserAmenityPreferences { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -185,24 +184,6 @@ namespace HotelBookingApp.Context
                  .OnDelete(DeleteBehavior.SetNull);
             });
 
-            // ── USER AMENITY PREFERENCE ───────────────────────────────────
-            modelBuilder.Entity<UserAmenityPreference>(e =>
-            {
-                e.Property(p => p.Status).HasMaxLength(20).HasDefaultValue("Pending");
-
-                // Prevent duplicate user+amenity combinations
-                e.HasIndex(p => new { p.UserId, p.AmenityId }).IsUnique();
-
-                e.HasOne(p => p.User)
-                 .WithMany()
-                 .HasForeignKey(p => p.UserId)
-                 .OnDelete(DeleteBehavior.Cascade);
-
-                e.HasOne(p => p.Amenity)
-                 .WithMany()
-                 .HasForeignKey(p => p.AmenityId)
-                 .OnDelete(DeleteBehavior.Cascade);
-            });
         }
     }
 }
