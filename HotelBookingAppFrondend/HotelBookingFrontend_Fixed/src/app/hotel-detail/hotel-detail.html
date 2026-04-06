@@ -5,9 +5,8 @@
 
   <!-- HERO IMAGE -->
   <div class="hotel-hero position-relative">
-    @if (hotel()!.imagePath) {
-      <img [src]="hotel()!.imagePath" [alt]="hotel()!.hotelName" class="hotel-hero-img w-100">
-    }
+    <img [src]="getImage(hotel()!)" [alt]="hotel()!.hotelName" class="hotel-hero-img w-100"
+         onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&h=400&fit=crop&auto=format'">
     <div class="hotel-hero-overlay"></div>
     <a routerLink="/hotels" class="btn btn-light btn-sm position-absolute top-0 start-0 m-3 rounded-pill">
       <i class="bi bi-arrow-left me-1"></i>Back

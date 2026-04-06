@@ -51,6 +51,19 @@
           </select>
         </div>
 
+        <!-- Amenity Filter -->
+        <div class="mb-3">
+          <label class="form-label fw-600 small">Amenities</label>
+          <select class="form-select form-select-sm"
+                  [value]="fAmenityId() || ''"
+                  (change)="onAmenityChange($any($event.target).value)">
+            <option value="">All Amenities</option>
+            @for (amenity of amenities(); track amenity.amenityId) {
+              <option [value]="amenity.amenityId">{{ amenity.icon || '✨' }} {{ amenity.name }}</option>
+            }
+          </select>
+        </div>
+
         <!-- Price Range dropdown -->
         <div class="mb-3">
           <label class="form-label fw-600 small">Price Range (₹/night)</label>
@@ -98,6 +111,16 @@
           @if (fAmenity()) {
             <span class="badge bg-primary rounded-pill ms-2">
               {{ fAmenity() }} <i class="bi bi-x ms-1" style="cursor:pointer" (click)="clearFilter()"></i>
+            </span>
+          }
+          @if (fLocation()) {
+            <span class="badge bg-info rounded-pill ms-2">
+              📍 {{ fLocation() }} <i class="bi bi-x ms-1" style="cursor:pointer" (click)="fLocation.set(''); applyFilter()"></i>
+            </span>
+          }
+          @if (fMinRating()) {
+            <span class="badge bg-warning rounded-pill ms-2">
+              ⭐ {{ fMinRating() }}+ <i class="bi bi-x ms-1" style="cursor:pointer" (click)="fMinRating.set(''); applyFilter()"></i>
             </span>
           }
         </span>

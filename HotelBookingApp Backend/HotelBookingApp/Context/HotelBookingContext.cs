@@ -40,7 +40,7 @@ namespace HotelBookingApp.Context
                 e.HasMany(u => u.Reviews)
                  .WithOne(r => r.User)
                  .HasForeignKey(r => r.UserId)
-                 .OnDelete(DeleteBehavior.Cascade);
+                 .OnDelete(DeleteBehavior.Restrict);
 
                 e.HasMany(u => u.Notifications)
                  .WithOne(n => n.User)
@@ -59,7 +59,7 @@ namespace HotelBookingApp.Context
                 e.HasMany(h => h.Rooms)
                  .WithOne(r => r.Hotel)
                  .HasForeignKey(r => r.HotelId)
-                 .OnDelete(DeleteBehavior.Cascade);
+                 .OnDelete(DeleteBehavior.Restrict);
 
                 e.HasMany(h => h.Bookings)
                  .WithOne(b => b.Hotel)
@@ -69,7 +69,7 @@ namespace HotelBookingApp.Context
                 e.HasMany(h => h.Reviews)
                  .WithOne(r => r.Hotel)
                  .HasForeignKey(r => r.HotelId)
-                 .OnDelete(DeleteBehavior.Cascade);
+                 .OnDelete(DeleteBehavior.Restrict);
 
                 e.HasMany(h => h.HotelAmenities)
                  .WithOne(ha => ha.Hotel)

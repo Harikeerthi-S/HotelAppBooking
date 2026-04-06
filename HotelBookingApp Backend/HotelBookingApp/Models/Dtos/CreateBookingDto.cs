@@ -24,5 +24,6 @@ namespace HotelBookingApp.Models.Dtos
 
         [Required(ErrorMessage = "Check-out date is required.")]
         public DateTime CheckOut { get; set; }
+
     }
 }

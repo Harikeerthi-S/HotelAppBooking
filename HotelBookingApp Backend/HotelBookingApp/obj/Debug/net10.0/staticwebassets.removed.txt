@@ -1,3 +1,0 @@
-C:\hotel\hotelbooking\HotelBookingApp Backend\HotelBookingApp\wwwroot\.gitkeep
-C:\hotel\hotelbooking\HotelBookingApp Backend\HotelBookingApp\wwwroot\images\hotels\.gitkeep
-C:\hotel\hotelbooking\HotelBookingApp Backend\HotelBookingApp\wwwroot\images\rooms\.gitkeep

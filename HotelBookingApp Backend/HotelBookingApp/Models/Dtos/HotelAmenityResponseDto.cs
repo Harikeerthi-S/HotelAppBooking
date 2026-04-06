@@ -8,5 +8,6 @@ namespace HotelBookingApp.Models.Dtos
         public string  AmenityName    { get; set; } = string.Empty;
         public string? AmenityIcon    { get; set; }
         public string? AmenityDescription { get; set; }
+        public bool    IsAvailable   { get; set; } = true;
     }
 }

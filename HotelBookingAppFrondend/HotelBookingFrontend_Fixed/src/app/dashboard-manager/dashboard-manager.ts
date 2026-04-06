@@ -310,7 +310,6 @@ export class DashboardManager {
     if (t === 'Cancellations' && !this.cancellations().length && !this.cancelLoading() && this.bookings().length) {
       this.loadCancellations(1);
     }
-    }
   }
 
 

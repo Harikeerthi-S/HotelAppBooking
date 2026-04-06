@@ -25,6 +25,16 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         (typeof error.error === 'string' ? error.error : '') ||
         error.message || 'An error occurred.';
 
+      // Don't show toastr for expected 403 errors on amenity endpoints when not authenticated
+      const isAmenityEndpoint = req.url.includes('/amenities') || req.url.includes('/hotelamenity');
+      const is403 = error.status === 403;
+      const isUnauthenticated = !token;
+
+      if (is403 && isAmenityEndpoint && isUnauthenticated) {
+        // Silently handle expected 403 errors for amenity endpoints when not logged in
+        return throwError(() => error);
+      }
+
       switch (error.status) {
         case 0:   toastr.error('Cannot connect to server. Make sure the backend is running.', 'Network Error'); break;
         case 400: toastr.error(msg, 'Bad Request (400)'); break;

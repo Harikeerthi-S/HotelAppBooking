@@ -3,4 +3,5 @@ export class AmenityModel {
   name: string = '';
   description: string = '';
   icon: string = '';
+  isAvailable: boolean = true; // New field to track availability
 }

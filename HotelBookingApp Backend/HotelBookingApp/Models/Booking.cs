@@ -50,7 +50,6 @@ namespace HotelBookingApp.Models
         public ICollection<Payment>? Payments { get; set; }
         [System.Text.Json.Serialization.JsonIgnore]
         public ICollection<Cancellation>? Cancellations { get; set; }
-
         public int CompareTo(Booking? other) => other != null ? BookingId.CompareTo(other.BookingId) : 1;
         public bool Equals(Booking? other) => other != null && BookingId == other.BookingId;
         public override bool Equals(object? obj) => Equals(obj as Booking);

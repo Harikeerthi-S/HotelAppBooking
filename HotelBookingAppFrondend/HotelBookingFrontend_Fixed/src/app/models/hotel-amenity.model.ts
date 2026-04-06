@@ -5,6 +5,7 @@ export class HotelAmenityModel {
   amenityName: string = '';
   amenityIcon?: string;
   amenityDescription?: string;
+  isAvailable: boolean = true; // New field to track if this amenity is available for booking
 }
 
 export class CreateHotelAmenityModel {

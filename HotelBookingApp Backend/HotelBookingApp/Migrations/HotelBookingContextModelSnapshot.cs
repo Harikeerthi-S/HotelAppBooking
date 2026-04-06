@@ -35,8 +35,11 @@ namespace HotelBookingApp.Migrations
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Icon")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -264,6 +267,9 @@ namespace HotelBookingApp.Migrations
                     b.Property<int>("HotelId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.HasKey("HotelAmenityId");
 
                     b.HasIndex("AmenityId");
@@ -453,40 +459,6 @@ namespace HotelBookingApp.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("HotelBookingApp.Models.UserAmenityPreference", b =>
-                {
-                    b.Property<int>("PreferenceId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PreferenceId"));
-
-                    b.Property<int>("AmenityId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasDefaultValue("Pending");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("PreferenceId");
-
-                    b.HasIndex("AmenityId");
-
-                    b.HasIndex("UserId", "AmenityId")
-                        .IsUnique();
-
-                    b.ToTable("UserAmenityPreferences");
-                });
-
             modelBuilder.Entity("HotelBookingApp.Models.Wishlist", b =>
                 {
                     b.Property<int>("WishlistId")
@@ -617,13 +589,13 @@ namespace HotelBookingApp.Migrations
                     b.HasOne("HotelBookingApp.Models.Hotel", "Hotel")
                         .WithMany("Reviews")
                         .HasForeignKey("HotelId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("HotelBookingApp.Models.User", "User")
                         .WithMany("Reviews")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Hotel");
@@ -636,29 +608,10 @@ namespace HotelBookingApp.Migrations
                     b.HasOne("HotelBookingApp.Models.Hotel", "Hotel")
                         .WithMany("Rooms")
                         .HasForeignKey("HotelId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Hotel");
-                });
-
-            modelBuilder.Entity("HotelBookingApp.Models.UserAmenityPreference", b =>
-                {
-                    b.HasOne("HotelBookingApp.Models.Amenity", "Amenity")
-                        .WithMany()
-                        .HasForeignKey("AmenityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("HotelBookingApp.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Amenity");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("HotelBookingApp.Models.Wishlist", b =>

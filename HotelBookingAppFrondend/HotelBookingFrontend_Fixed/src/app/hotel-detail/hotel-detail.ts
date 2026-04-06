@@ -12,7 +12,7 @@ import { RoomModel } from '../models/room.model';
 import { ReviewModel } from '../models/review.model';
 import { HotelAmenityModel } from '../models/hotel-amenity.model';
 import { $userStatus, UserState } from '../dynamicCommunication/userObservable';
-import { ImgUrlPipe } from '../shared/image.pipe';
+import { ImgUrlPipe, resolveHotelImage } from '../shared/image.pipe';
 @Component({
   selector: 'app-hotel-detail',
   imports: [RouterLink, FormsModule, CommonModule, ImgUrlPipe],
@@ -286,5 +286,9 @@ export class HotelDetail implements OnInit, OnDestroy {
       single: '🛏️', double: '🛋️', suite: '🏰', deluxe: '💎', standard: '🛏️'
     };
     return m[type?.toLowerCase()] ?? '🛏️';
+  }
+
+  getImage(hotel: HotelModel): string {
+    return resolveHotelImage(hotel.imagePath, hotel.hotelId);
   }
 }

@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -9,6 +9,7 @@ import { HotelModel } from '../models/hotel.model';
 import { AmenityModel } from '../models/amenity.model';
 import { BookingModel } from '../models/booking.model';
 import { HotelAmenityModel } from '../models/hotel-amenity.model';
+import { resolveHotelImage } from '../shared/image.pipe';
 
 
 @Component({
@@ -22,20 +23,21 @@ export class Home {
   private tokenService = inject(TokenService);
   private router = inject(Router);
 
-  hotels   = signal<HotelModel[]>([]);
-  loading  = signal(false);
+  hotels = signal<HotelModel[]>([]);
+  loading = signal(false);
   amenities = signal<AmenityModel[]>([]);
+  availableAmenities = computed(() => this.amenities().filter(a => a.isAvailable));
   upcomingBookings = signal<BookingModel[]>([]);
   hotelAmenityMap = signal<Record<number, HotelAmenityModel[]>>({});
   isLoggedIn = () => this.tokenService.isLoggedIn();
 
   // ── Search ────────────────────────────────────────────────────────────────
-  selectedCity    = signal('');
+  selectedCity = signal('');
   selectedAmenity = signal('');  // amenity label e.g. "Pool"
-  checkIn         = signal('');
-  checkOut        = signal('');
-  guests          = signal(1);
-  today           = new Date().toISOString().split('T')[0];
+  checkIn = signal('');
+  checkOut = signal('');
+  guests = signal(1);
+  today = new Date().toISOString().split('T')[0];
 
   // ── Top amenity quick filters ─────────────────────────────────────────────
   readonly topAmenities = [
@@ -55,15 +57,40 @@ export class Home {
     { name: 'Delhi', emoji: '🏛️', count: 2 },
     { name: 'Goa', emoji: '🏖️', count: 2 },
     { name: 'Bangalore', emoji: '🌿', count: 2 },
-    { name: 'Jaipur', emoji: '🏰', count: 2},
+    { name: 'Jaipur', emoji: '🏰', count: 2 },
     { name: 'Chennai', emoji: '🌊', count: 2 }
   ];
 
   constructor() {
     this.getFeaturedHotels();
-    this.apiService.apiGetAmenities().subscribe({ next: res => this.amenities.set(res), error: () => {} });
-    $userStatus.subscribe(u => {
-      if (u.userId > 0 && u.role === 'user') this.loadUpcomingBookings(u.userId);
+    
+    // Only load amenities if user is logged in to avoid 403 errors
+    if (this.isLoggedIn()) {
+      this.apiService.apiGetAmenities().subscribe({ 
+        next: res => this.amenities.set(res || []), 
+        error: () => {
+          console.log('Amenities unavailable - user not authenticated');
+          this.amenities.set([]);
+        }
+      });
+    }
+    
+    $userStatus.subscribe({
+      next: u => {
+        if (u.userId > 0 && u.role === 'user') {
+          this.loadUpcomingBookings(u.userId);
+        }
+        // Load amenities when user logs in
+        if (u.userId > 0 && this.amenities().length === 0) {
+          this.apiService.apiGetAmenities().subscribe({ 
+            next: res => this.amenities.set(res || []), 
+            error: () => this.amenities.set([])
+          });
+        }
+      },
+      error: () => {
+        console.log('User status subscription error - continuing with default state');
+      }
     });
   }
 
@@ -72,7 +99,7 @@ export class Home {
       next: res => this.upcomingBookings.set(
         (res.data ?? []).filter(b => b.status === 'Pending' || b.status === 'Confirmed').slice(0, 3)
       ),
-      error: () => {}
+      error: () => { }
     });
   }
 
@@ -86,7 +113,7 @@ export class Home {
         (res.data || []).forEach(h => {
           this.apiService.apiGetHotelAmenitiesByHotel(h.hotelId).subscribe({
             next: a => this.hotelAmenityMap.update(m => ({ ...m, [h.hotelId]: a ?? [] })),
-            error: () => {}
+            error: () => { }
           });
         });
       },
@@ -94,16 +121,23 @@ export class Home {
     });
   }
 
-  onCityChange(city: string)    { this.selectedCity.set(city); }
+  onCityChange(city: string) { this.selectedCity.set(city); }
   onAmenityChange(label: string) { this.selectedAmenity.set(label); }
 
   search(): void {
     const query: any = {};
-    if (this.selectedCity())    query.location = this.selectedCity();
-    if (this.selectedAmenity()) query.amenity  = this.selectedAmenity();
-    if (this.checkIn())         query.checkIn   = this.checkIn();
-    if (this.checkOut())        query.checkOut  = this.checkOut();
-    if (this.guests() > 1)      query.guests    = this.guests();
+    if (this.selectedCity()) query.location = this.selectedCity();
+    if (this.selectedAmenity()) {
+      // Find amenity by name and use its ID for proper filtering
+      const amenity = this.amenities().find(a => a.name === this.selectedAmenity());
+      if (amenity) {
+        query.amenityId = amenity.amenityId;
+        query.amenity = amenity.name; // Keep for display
+      }
+    }
+    if (this.checkIn()) query.checkIn = this.checkIn();
+    if (this.checkOut()) query.checkOut = this.checkOut();
+    if (this.guests() > 1) query.guests = this.guests();
     this.router.navigate(['/hotels'], { queryParams: query });
   }
 
@@ -113,18 +147,33 @@ export class Home {
 
   searchByAmenity(label: string): void {
     this.activeAmenityFilter.set(this.activeAmenityFilter() === label ? '' : label);
-    this.router.navigate(['/hotels'], { queryParams: { amenity: label } });
+    // Find amenity by name and use its ID for proper filtering
+    const amenity = this.amenities().find(a => a.name === label);
+    if (amenity) {
+      this.router.navigate(['/hotels'], { queryParams: { amenityId: amenity.amenityId, amenity: label } });
+    } else {
+      this.router.navigate(['/hotels'], { queryParams: { amenity: label } });
+    }
   }
 
   openChat(): void { window.dispatchEvent(new CustomEvent('stayease:openchat')); }
 
 
   bookingStatusClass(s: string): string {
-    return ({ Pending: 'badge-pending', Confirmed: 'badge-confirmed' } as Record<string,string>)[s] ?? 'badge-pending';
+    return ({ Pending: 'badge-pending', Confirmed: 'badge-confirmed' } as Record<string, string>)[s] ?? 'badge-pending';
   }
 
   /** Always returns an array so templates avoid TS2532 on optional map entries. */
   getHotelAmenities(hotelId: number): HotelAmenityModel[] {
     return this.hotelAmenityMap()[hotelId] ?? [];
+  }
+
+  /** Returns only available amenities for a hotel */
+  getAvailableHotelAmenities(hotelId: number): HotelAmenityModel[] {
+    return this.getHotelAmenities(hotelId).filter(a => a.isAvailable);
+  }
+
+  getImage(hotel: HotelModel): string {
+    return resolveHotelImage(hotel.imagePath, hotel.hotelId);
   }
 }

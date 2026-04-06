@@ -339,26 +339,7 @@ public class CompleteCoverageTests
         Assert.Equal(0, result.TotalRecords);
     }
 
-    // ════════════════════════════════════════════════════════════════════
-    // USER AMENITY PREFERENCE — GetByUserAsync empty
-    // ════════════════════════════════════════════════════════════════════
-
-    [Fact]
-    public async Task UserAmenityPreferenceService_GetByUserAsync_NoPreferences_ReturnsEmpty()
-    {
-        var prefRepo    = new Mock<IRepository<int, UserAmenityPreference>>();
-        var userRepo    = new Mock<IRepository<int, User>>();
-        var amenityRepo = new Mock<IRepository<int, Amenity>>();
-
-        prefRepo.Setup(r => r.GetAllIncludingAsync(It.IsAny<System.Linq.Expressions.Expression<Func<UserAmenityPreference, object>>[]>()))
-                .ReturnsAsync(new List<UserAmenityPreference>());
-
-        var svc    = new UserAmenityPreferenceService(prefRepo.Object, userRepo.Object, amenityRepo.Object,
-                                                      new Mock<ILogger<UserAmenityPreferenceService>>().Object);
-        var result = (await svc.GetByUserAsync(99)).ToList();
-
-        Assert.Empty(result);
-    }
+   
 
     // ════════════════════════════════════════════════════════════════════
     // NOTIFICATION SERVICE — CreateAsync empty message

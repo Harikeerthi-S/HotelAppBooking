@@ -27,8 +27,8 @@ export const routes: Routes = [
   { path: 'profile',       canActivate: [authGuard], loadComponent: () => import('./profile/profile').then(m => m.Profile) },
 
   // ── Admin OR HotelManager ─────────────────────────────────────────────────
-  { path: 'rooms',       canActivate: [roomGuard], loadComponent: () => import('./room/room').then(m => m.Room) },
-  { path: 'hotel-amenity', canActivate: [roomGuard], loadComponent: () => import('./hotel-amenity/hotel-amenity').then(m => m.HotelAmenity) },
+  { path: 'rooms',           canActivate: [roomGuard], loadComponent: () => import('./room/room').then(m => m.Room) },
+  { path: 'hotel-amenity',   canActivate: [roomGuard], loadComponent: () => import('./hotel-amenity/hotel-amenity').then(m => m.HotelAmenity) },
 
   // ── Admin only ────────────────────────────────────────────────────────────
   { path: 'dashboard-admin',      canActivate: [adminGuard], loadComponent: () => import('./dashboard-admin/dashboard-admin').then(m => m.DashboardAdmin) },

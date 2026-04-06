@@ -1,4 +1,4 @@
-using HotelBookingApp.Delegates;
+using HotelBookingApp.Context;
 using HotelBookingApp.Exceptions;
 using HotelBookingApp.Interfaces.IRepositories;
 using HotelBookingApp.Interfaces.IServices;
@@ -14,9 +14,6 @@ namespace HotelBookingApp.Services
         private readonly IRepository<int, Room>    _roomRepo;
         private readonly IAuditLogService          _audit;
         private readonly ILogger<BookingService>   _logger;
-
-        private readonly DateRangeValidatorDelegate _dateValidator =
-            AppDelegateFactory.StrictDateRangeValidator;
 
         public BookingService(
             IRepository<int, Booking> bookingRepo,
@@ -47,9 +44,12 @@ namespace HotelBookingApp.Services
         {
             _logger.LogInformation("Creating booking for User:{UserId}", dto.UserId);
 
-            var dateError = _dateValidator(dto.CheckIn, dto.CheckOut);
-            if (dateError is not null)
-                throw new BadRequestException(dateError);
+            // Simple date validation
+            if (dto.CheckIn >= dto.CheckOut)
+                throw new BadRequestException("Check-out date must be after check-in date.");
+
+            if (dto.CheckIn < DateTime.Today)
+                throw new BadRequestException("Check-in date cannot be in the past.");
 
             var hotel = await _hotelRepo.GetByIdAsync(dto.HotelId);
             if (hotel is null || !hotel.IsActive)
@@ -119,6 +119,7 @@ namespace HotelBookingApp.Services
             };
 
             var created = await _bookingRepo.AddAsync(booking);
+
             _logger.LogInformation("Booking created: {BookingId}", created.BookingId);
             Log("BookingCreated", "Booking", created.BookingId, dto.UserId,
                 $"Hotel:{dto.HotelId} Room:{dto.RoomId} {dto.CheckIn:dd-MMM-yyyy}→{dto.CheckOut:dd-MMM-yyyy} ₹{totalAmount}");

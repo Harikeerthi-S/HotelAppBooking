@@ -3,6 +3,7 @@ import { RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule, SlicePipe } from '@angular/common';
 import { Subscription } from 'rxjs';
+import { catchError, of } from 'rxjs';
 
 import { APIService } from '../services/api.service';
 import { TokenService } from '../services/token.service';
@@ -71,6 +72,19 @@ export class Hotels implements OnDestroy {
     if (found) { this.fMinPrice.set(found.min); this.fMaxPrice.set(found.max); }
   }
 
+  onAmenityChange(val: string): void {
+    const amenityId = val ? +val : null;
+    this.fAmenityId.set(amenityId);
+    
+    // Update fAmenity for display purposes
+    if (amenityId) {
+      const amenity = this.amenities().find(a => a.amenityId === amenityId);
+      this.fAmenity.set(amenity?.name || '');
+    } else {
+      this.fAmenity.set('');
+    }
+  }
+
   readonly amenityChips = [
     { icon: '🏊', label: 'Pool' },
     { icon: '💆', label: 'Spa' },
@@ -89,6 +103,7 @@ export class Hotels implements OnDestroy {
   });
 
   private sub: Subscription;
+  private hasShownAmenityWarning = false;
 
   constructor() {
 
@@ -111,10 +126,23 @@ export class Hotels implements OnDestroy {
       this.loadHotels();
     });
 
-    // ✅ LOAD AMENITIES
+    // ✅ LOAD AMENITIES - Only if authenticated
+    this.loadAmenities();
+  }
+
+  // ✅ LOAD AMENITIES - Try to load for all users, fallback gracefully
+  loadAmenities(): void {
+    // Try to load amenities for the dropdown filter
     this.apiService.apiGetAmenities().subscribe({
-      next: a => this.amenities.set(a),
-      error: () => {}
+      next: a => {
+        console.log('Loaded amenities for dropdown:', a);
+        this.amenities.set(a);
+      },
+      error: (err) => {
+        console.log('Amenities unavailable (likely requires authentication):', err);
+        this.amenities.set([]);
+        // This is expected for unauthenticated users - the dropdown will be empty but hotels will still show their amenities
+      }
     });
   }
 
@@ -129,7 +157,9 @@ export class Hotels implements OnDestroy {
     this.loading.set(true);
 
     const req = { pageNumber: 1, pageSize: 10000 };
+    const amenityId = this.fAmenityId();
 
+    // Build filter without amenityId (since backend might not support it properly)
     const f: HotelFilter = {
       location:  this.fLocation()  || undefined,
       minRating: this.fMinRating() ? +this.fMinRating() : undefined,
@@ -137,59 +167,92 @@ export class Hotels implements OnDestroy {
       maxPrice:  this.fMaxPrice()  ? +this.fMaxPrice()  : undefined
     };
 
-    const hasFilter = f.location || f.minRating || f.minPrice || f.maxPrice;
+    const hasBasicFilter = f.location || f.minRating || f.minPrice || f.maxPrice;
 
-    const obs = hasFilter
+    const obs = hasBasicFilter
       ? this.apiService.apiFilterHotels(f, req)
       : this.apiService.apiGetHotelsPaged(req);
 
     obs.subscribe({
       next: res => {
         this.paged.set(res);
-        let hotels = [...res.data];
+        let hotels = [...(res.data || [])];
 
-        // Load amenity map first, then apply amenity filter
-        const amenityId = this.fAmenityId();
+        // Filter by amenity using individual hotel amenity calls (public endpoint)
         if (amenityId) {
-          // Load all hotel amenities to filter, then set hotels
-          this.apiService.apiGetAllHotelAmenities().subscribe({
-            next: allHA => {
-              const matchingHotelIds = new Set(
-                allHA.filter(ha => ha.amenityId === amenityId).map(ha => ha.hotelId)
-              );
-              hotels = hotels.filter(h => matchingHotelIds.has(h.hotelId));
-              const sorted = this.sortHotels(hotels);
-              this.hotels.set(sorted);
-              this.loading.set(false);
-              sorted.forEach(h => {
-                this.apiService.apiGetHotelAmenitiesByHotel(h.hotelId).subscribe({
-                  next: a => this.hotelAmenityMap.update(m => ({ ...m, [h.hotelId]: a ?? [] })),
-                  error: () => {}
-                });
-              });
-            },
-            error: () => {
-              const sorted = this.sortHotels(hotels);
-              this.hotels.set(sorted);
-              this.loading.set(false);
-            }
-          });
+          this.filterHotelsByAmenityFallback(hotels, amenityId);
         } else {
           const sorted = this.sortHotels(hotels);
           this.hotels.set(sorted);
           this.loading.set(false);
-          sorted.forEach(h => {
-            this.apiService.apiGetHotelAmenitiesByHotel(h.hotelId).subscribe({
-              next: a => this.hotelAmenityMap.update(m => ({ ...m, [h.hotelId]: a ?? [] })),
-              error: () => {}
-            });
-          });
+          this.loadHotelAmenities(sorted);
         }
       },
       error: () => {
         this.loading.set(false);
         this.toastr.error('Failed to load hotels.');
       }
+    });
+  }
+
+  private loadHotelAmenities(hotels: HotelModel[]): void {
+    console.log(`Loading amenities for ${hotels.length} hotels`);
+    hotels.forEach(h => {
+      this.apiService.apiGetHotelAmenitiesByHotel(h.hotelId).subscribe({
+        next: a => {
+          console.log(`Hotel ${h.hotelId} (${h.hotelName}) has ${a?.length || 0} amenities:`, a);
+          this.hotelAmenityMap.update(m => ({ ...m, [h.hotelId]: a ?? [] }));
+        },
+        error: (err) => {
+          console.error(`Failed to load amenities for hotel ${h.hotelId} (${h.hotelName}):`, err);
+          this.hotelAmenityMap.update(m => ({ ...m, [h.hotelId]: [] }));
+        }
+      });
+    });
+  }
+
+  private filterHotelsByAmenityFallback(hotels: HotelModel[], amenityId: number): void {
+    console.log('Using fallback amenity filtering method');
+    let processedCount = 0;
+    const matchingHotels: HotelModel[] = [];
+    
+    if (hotels.length === 0) {
+      this.hotels.set([]);
+      this.loading.set(false);
+      return;
+    }
+
+    hotels.forEach(hotel => {
+      this.apiService.apiGetHotelAmenitiesByHotel(hotel.hotelId).subscribe({
+        next: amenities => {
+          processedCount++;
+          const hasAmenity = amenities.some(a => a.amenityId === amenityId);
+          if (hasAmenity) {
+            matchingHotels.push(hotel);
+          }
+          
+          // Update hotel amenity map
+          this.hotelAmenityMap.update(m => ({ ...m, [hotel.hotelId]: amenities ?? [] }));
+          
+          // If all hotels processed, update the display
+          if (processedCount === hotels.length) {
+            console.log(`Fallback filter: Found ${matchingHotels.length} hotels with amenity ID ${amenityId}`);
+            const sorted = this.sortHotels(matchingHotels);
+            this.hotels.set(sorted);
+            this.loading.set(false);
+          }
+        },
+        error: () => {
+          processedCount++;
+          // If all hotels processed, update the display
+          if (processedCount === hotels.length) {
+            console.log(`Fallback filter completed with errors: Found ${matchingHotels.length} hotels`);
+            const sorted = this.sortHotels(matchingHotels);
+            this.hotels.set(sorted);
+            this.loading.set(false);
+          }
+        }
+      });
     });
   }
 

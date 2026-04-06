@@ -91,13 +91,100 @@
             </select>
           </div>
 
+          <!-- ✅ AMENITY SELECTION -->
+          <div class="mb-4">
+            <label class="form-label fw-600">Select Complimentary Hotel Amenities</label>
+            @if (availableAmenities().length > 0) {
+              <div class="amenity-selection p-3 rounded-3 border">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <p class="text-muted small mb-0">Choose from these complimentary amenities included with your stay:</p>
+                  <div class="bulk-controls">
+                    @if (availableAmenities().length > 1) {
+                      <button type="button" class="btn btn-sm btn-outline-primary me-2" 
+                              [disabled]="isAllSelected" 
+                              (click)="selectAllAmenities()">
+                        <i class="bi bi-check-all me-1"></i>Select All
+                      </button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary" 
+                              [disabled]="selectedAmenities().length === 0" 
+                              (click)="deselectAllAmenities()">
+                        <i class="bi bi-x-circle me-1"></i>Clear All
+                      </button>
+                    }
+                  </div>
+                </div>
+                
+                <div class="row g-2">
+                  @for (amenity of availableAmenities(); track amenity.hotelAmenityId) {
+                    <div class="col-md-6 col-lg-4">
+                      <div class="form-check amenity-option p-2 rounded-2 border" 
+                           [class.selected]="isAmenitySelected(amenity.hotelAmenityId)">
+                        <input 
+                          class="form-check-input" 
+                          type="checkbox" 
+                          [id]="'amenity-' + amenity.hotelAmenityId"
+                          [checked]="isAmenitySelected(amenity.hotelAmenityId)"
+                          (change)="toggleAmenity(amenity.hotelAmenityId)">
+                        <label class="form-check-label w-100" [for]="'amenity-' + amenity.hotelAmenityId">
+                          <div class="d-flex align-items-center">
+                            <span class="me-2 fs-5">{{ amenity.amenityIcon || '✨' }}</span>
+                            <div class="flex-grow-1">
+                              <div class="fw-600">{{ amenity.amenityName }}</div>
+                              @if (amenity.amenityDescription) {
+                                <div class="small text-muted">{{ amenity.amenityDescription }}</div>
+                              }
+                              <div class="small text-success">✓ Complimentary</div>
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  }
+                </div>
+                
+                @if (selectedAmenities().length > 0) {
+                  <div class="selected-amenities mt-3 p-3 bg-light rounded-2">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <div class="small fw-600 text-primary">Selected Amenities ({{ selectedAmenities().length }} of {{ availableAmenities().length }}):</div>
+                      <div class="small text-success fw-600">
+                        <i class="bi bi-check-circle-fill me-1"></i>All Included - No Extra Cost
+                      </div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-1">
+                      @for (amenity of selectedAmenitiesDetails; track amenity.hotelAmenityId) {
+                        <span class="badge bg-success d-flex align-items-center">
+                          {{ amenity.amenityIcon || '✨' }} {{ amenity.amenityName }}
+                          <button type="button" class="btn-close btn-close-white ms-2" 
+                                  style="font-size: 0.6em;" 
+                                  (click)="toggleAmenity(amenity.hotelAmenityId)"
+                                  [attr.aria-label]="'Remove ' + amenity.amenityName"></button>
+                        </span>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="text-center text-muted py-3 border rounded-3">
+                <i class="bi bi-info-circle me-2"></i>
+                No additional amenities available for this hotel.
+              </div>
+            }
+          </div>
+
           @if (nights > 0 && room()) {
             <div class="price-breakdown p-3 rounded-3 mb-4">
               <div class="fw-700 text-primary mb-3">Price Breakdown</div>
               <div class="d-flex justify-content-between small mb-2">
                 <span>₹{{ room()!.pricePerNight.toLocaleString('en-IN') }} × {{ nights }} nights × {{ numRooms() }} rooms</span>
-                <span class="fw-600">₹{{ totalAmount.toLocaleString('en-IN') }}</span>
+                <span class="fw-600">₹{{ ((room()!.pricePerNight * nights * numRooms()) | number:'1.0-0') }}</span>
               </div>
+              @if (selectedAmenities().length > 0) {
+                <div class="d-flex justify-content-between small mb-2 text-success">
+                  <span>Selected Amenities ({{ selectedAmenities().length }} items)</span>
+                  <span class="fw-600">Complimentary ✓</span>
+                </div>
+              }
               <hr class="my-2">
               <div class="d-flex justify-content-between fw-700 text-primary">
                 <span>Total Amount</span>

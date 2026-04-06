@@ -18,8 +18,9 @@ namespace HotelBookingApp.Migrations
                     AmenityId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Icon = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    Icon = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true)
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -70,7 +71,8 @@ namespace HotelBookingApp.Migrations
                     HotelAmenityId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     HotelId = table.Column<int>(type: "int", nullable: false),
-                    AmenityId = table.Column<int>(type: "int", nullable: false)
+                    AmenityId = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -111,7 +113,7 @@ namespace HotelBookingApp.Migrations
                         column: x => x.HotelId,
                         principalTable: "Hotels",
                         principalColumn: "HotelId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -204,41 +206,13 @@ namespace HotelBookingApp.Migrations
                         column: x => x.HotelId,
                         principalTable: "Hotels",
                         principalColumn: "HotelId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Reviews_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "UserId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "UserAmenityPreferences",
-                columns: table => new
-                {
-                    PreferenceId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    AmenityId = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false, defaultValue: "Pending")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserAmenityPreferences", x => x.PreferenceId);
-                    table.ForeignKey(
-                        name: "FK_UserAmenityPreferences_Amenities_AmenityId",
-                        column: x => x.AmenityId,
-                        principalTable: "Amenities",
-                        principalColumn: "AmenityId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_UserAmenityPreferences_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -419,17 +393,6 @@ namespace HotelBookingApp.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserAmenityPreferences_AmenityId",
-                table: "UserAmenityPreferences",
-                column: "AmenityId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserAmenityPreferences_UserId_AmenityId",
-                table: "UserAmenityPreferences",
-                columns: new[] { "UserId", "AmenityId" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Users_Email",
                 table: "Users",
                 column: "Email",
@@ -471,16 +434,13 @@ namespace HotelBookingApp.Migrations
                 name: "Reviews");
 
             migrationBuilder.DropTable(
-                name: "UserAmenityPreferences");
-
-            migrationBuilder.DropTable(
                 name: "Wishlists");
 
             migrationBuilder.DropTable(
-                name: "Bookings");
+                name: "Amenities");
 
             migrationBuilder.DropTable(
-                name: "Amenities");
+                name: "Bookings");
 
             migrationBuilder.DropTable(
                 name: "Rooms");

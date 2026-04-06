@@ -23,20 +23,6 @@ import { AuditLogModel, CreateAuditLogModel } from '../models/audit-log.model';
 
 const API = environment.apiUrl;
 
-  const r = raw as Record<string, unknown>;
-  if (!r || typeof r !== 'object') {
-  }
-  m.preferenceId = Number(r['preferenceId'] ?? r['PreferenceId'] ?? 0);
-  m.userId = Number(r['userId'] ?? r['UserId'] ?? 0);
-  m.userName = String(r['userName'] ?? r['UserName'] ?? '');
-  m.amenityId = Number(r['amenityId'] ?? r['AmenityId'] ?? 0);
-  m.amenityName = String(r['amenityName'] ?? r['AmenityName'] ?? '');
-  m.amenityIcon = (r['amenityIcon'] ?? r['AmenityIcon']) as string | undefined;
-  m.createdAt = String(r['createdAt'] ?? r['CreatedAt'] ?? '');
-  m.status = String(r['status'] ?? r['Status'] ?? 'Pending');
-  return m;
-}
-
 @Injectable({ providedIn: 'root' })
 export class APIService {
   private http = inject(HttpClient);
