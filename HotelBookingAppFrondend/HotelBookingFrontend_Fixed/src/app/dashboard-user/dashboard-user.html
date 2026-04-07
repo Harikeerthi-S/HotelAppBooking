@@ -127,7 +127,7 @@
                   @if (b.status === 'Pending') {
                     <!-- Always show Pay Now — user holds a valid reservation.
                          Backend will reject if truly unavailable. -->
-                    <a [routerLink]="['/payment', b.bookingId]" class="btn btn-sm btn-success rounded-pill">
+                    <a [routerLink]="['/payment', b.bookingId]" class="btn btn-sm btn-pay-now rounded-pill">
                       <i class="bi bi-credit-card me-1"></i>Pay Now
                     </a>
                     <button class="btn btn-sm btn-outline-danger rounded-pill" (click)="cancelBookingDirect(b)">Cancel</button>
@@ -183,24 +183,41 @@
             <p class="text-muted small">Payments will appear here after you book and pay.</p>
           </div>
         } @else {
-          <div class="table-responsive">
-            <table class="table table-hover align-middle small">
-              <thead class="table-light">
-                <tr><th>Payment ID</th><th>Booking</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr>
-              </thead>
-              <tbody>
-                @for (p of pagedPayments(); track p.paymentId) {
-                  <tr>
-                    <td>#{{ p.paymentId }}</td>
-                    <td>#{{ p.bookingId }}</td>
-                    <td class="fw-700 text-primary">₹{{ p.amount.toLocaleString('en-IN') }}</td>
-                    <td>{{ p.paymentMethod }}</td>
-                    <td><span class="status-badge" [ngClass]="payStatusClass(p.paymentStatus)">{{ p.paymentStatus }}</span></td>
-                    <td class="text-muted">{{ p.createdAt | date:'mediumDate' }}</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
+          <div class="d-flex flex-column gap-3">
+            @for (p of pagedPayments(); track p.paymentId) {
+              <div class="pay-record-card d-flex align-items-center gap-3 flex-wrap">
+                <!-- Method icon -->
+                <div class="pay-method-icon">
+                  @if (p.paymentMethod === 'CreditCard') { 💳 }
+                  @else if (p.paymentMethod === 'DebitCard') { 🏦 }
+                  @else { 🌐 }
+                </div>
+                <!-- Details -->
+                <div class="flex-grow-1">
+                  <div class="fw-600 small">
+                    {{ p.paymentMethod === 'CreditCard' ? 'Credit Card' :
+                       p.paymentMethod === 'DebitCard'  ? 'Debit Card'  : 'Net Banking' }}
+                    <span class="text-muted fw-400 ms-1">· Booking #{{ p.bookingId }}</span>
+                  </div>
+                  <div class="text-muted" style="font-size:.75rem">
+                    <i class="bi bi-clock me-1"></i>{{ p.createdAt | date:'mediumDate' }}
+                    &nbsp;·&nbsp; Payment #{{ p.paymentId }}
+                  </div>
+                </div>
+                <!-- Amount + status -->
+                <div class="text-end">
+                  <div class="fw-700 text-primary" style="font-size:1.1rem">
+                    ₹{{ p.amount.toLocaleString('en-IN') }}
+                  </div>
+                  <span class="status-badge mt-1 d-inline-block" [ngClass]="payStatusClass(p.paymentStatus)">
+                    @if (p.paymentStatus === 'Completed') { ✓ }
+                    @else if (p.paymentStatus === 'Failed') { ✗ }
+                    @else if (p.paymentStatus === 'Refunded') { ↩ }
+                    {{ p.paymentStatus }}
+                  </span>
+                </div>
+              </div>
+            }
           </div>
           <nav class="dash-pager" aria-label="Payments pagination">
             <button type="button" class="dash-pager__btn" [disabled]="paymentsPage() <= 1" (click)="paymentsPage.set(paymentsPage() - 1)" title="Previous page">

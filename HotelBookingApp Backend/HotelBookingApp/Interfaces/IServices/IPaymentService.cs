@@ -15,4 +15,6 @@ public interface IPaymentService
     Task<PagedResponseDto<PaymentResponseDto>> GetPagedByUserAsync(int userId, PagedRequestDto request);
 
     Task<PaymentResponseDto?> UpdateStatusAsync(int paymentId, string newStatus);
+
+    Task<RevenueResponseDto> GetRevenueAsync(int? hotelId = null);
 }

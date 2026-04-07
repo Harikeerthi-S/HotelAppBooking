@@ -1,4 +1,8 @@
 import {
+  DomSanitizer
+} from "./chunk-R7T4ORX7.js";
+import "./chunk-C4UBNDEF.js";
+import {
   animate,
   sequence,
   state,
@@ -6,10 +10,6 @@ import {
   transition,
   trigger
 } from "./chunk-NSACEK3Y.js";
-import {
-  DomSanitizer
-} from "./chunk-R7T4ORX7.js";
-import "./chunk-C4UBNDEF.js";
 import "./chunk-BQ7CWFDX.js";
 import {
   NgIf
@@ -68,8 +68,8 @@ import {
   ɵɵtext,
   ɵɵtextInterpolate1
 } from "./chunk-SFEG4ATT.js";
-import "./chunk-JRFR6BLO.js";
 import "./chunk-HWYXSU2G.js";
+import "./chunk-JRFR6BLO.js";
 import {
   Subject
 } from "./chunk-MARUHEWW.js";

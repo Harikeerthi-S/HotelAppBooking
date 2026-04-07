@@ -147,7 +147,7 @@ namespace HotelBookingApp.Services
                 return (HandleCancellationPolicy(lower), "cancellation");
 
             // ── PAYMENT ───────────────────────────────────────────────────
-            if (ContainsAny(lower, "pay", "payment", "price", "cost", "charge", "fee", "amount", "upi", "credit card", "debit card"))
+            if (ContainsAny(lower, "pay", "payment", "price", "cost", "charge", "fee", "amount", "credit card", "debit card"))
                 return (HandlePaymentQuery(lower), "payment");
 
             // ── HOTEL ─────────────────────────────────────────────────────
@@ -291,13 +291,13 @@ namespace HotelBookingApp.Services
             if (ContainsAny(lower, "method", "how to pay", "payment option"))
                 return
                     "💳 **Accepted Payment Methods:**\n\n" +
-                    "• Credit Card\n• Debit Card\n• UPI\n• Net Banking\n• Wallet\n• PayPal\n\n" +
+                    "• Credit Card\n• Debit Card\n• Net Banking\n\n" +
                     "All payments are processed securely. No hidden charges.";
 
             if (ContainsAny(lower, "fail", "failed", "not working", "error"))
                 return
                     "⚠️ **Payment Failed?**\n\n" +
-                    "1. Check your card/UPI details\n" +
+                    "1. Check your card details\n" +
                     "2. Ensure sufficient balance\n" +
                     "3. Try a different payment method\n" +
                     "4. If the issue persists, contact support@stayease.com\n\n" +
@@ -308,7 +308,7 @@ namespace HotelBookingApp.Services
                 "• Prices are shown per night per room\n" +
                 "• Total = Price × Nights × Rooms\n" +
                 "• Payment is required to confirm a booking\n" +
-                "• Accepted: Credit/Debit Card, UPI, Net Banking, Wallet, PayPal\n\n" +
+                "• Accepted: Credit/Debit Card, Net Banking\n\n" +
                 "No hidden fees — what you see is what you pay.";
         }
 

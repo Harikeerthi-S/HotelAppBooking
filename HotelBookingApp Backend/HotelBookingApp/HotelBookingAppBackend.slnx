@@ -1,4 +1,4 @@
 <Solution>
-  <Project Path="../HotelbookingTesting/HotelbookingTesting.csproj" Id="c499db82-f60a-423d-8cc3-d40f76016d0e" />
   <Project Path="HotelBookingApp.csproj" />
+  <Project Path="HotelBookingApp.Tests/HotelBookingApp.Tests.csproj" />
 </Solution>

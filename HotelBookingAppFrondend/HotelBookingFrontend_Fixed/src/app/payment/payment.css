@@ -9,5 +9,38 @@
 .fw-600 { font-weight:600; }
 .fw-700 { font-weight:700; }
 
-.modal-backdrop-custom { position:fixed; inset:0; background:rgba(0,0,0,.55); display:flex; align-items:center; justify-content:center; z-index:1050; padding:16px; }
-.modal-card { width:100%; max-width:440px; border-radius:16px !important; }
+/* ── Card Preview ── */
+.card-preview {
+  background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+  border-radius: 16px;
+  padding: 24px 20px 20px;
+  color: #fff;
+  position: relative;
+  min-height: 140px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.25);
+}
+.card-preview-chip {
+  width: 36px; height: 28px;
+  background: linear-gradient(135deg, #f0c040, #d4a017);
+  border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .9rem; margin-bottom: 16px;
+}
+.card-preview-number {
+  font-size: 1.15rem;
+  letter-spacing: 3px;
+  font-family: 'Courier New', monospace;
+  margin-bottom: 8px;
+}
+.card-preview-label { font-size: .65rem; opacity: .7; text-transform: uppercase; letter-spacing: 1px; }
+.card-preview-value { font-size: .85rem; font-weight: 600; letter-spacing: 1px; }
+
+/* ── Confirm rows ── */
+.confirm-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border, #eee);
+}
+.confirm-row:last-of-type { border-bottom: none; }

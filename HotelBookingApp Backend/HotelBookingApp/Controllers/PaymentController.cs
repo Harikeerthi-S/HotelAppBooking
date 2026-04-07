@@ -233,6 +233,30 @@ namespace HotelBookingApp.Controllers
             }
         }
 
+        // ─────────────────────────────────────────────
+        // GET REVENUE SUMMARY
+        // ─────────────────────────────────────────────
+        [HttpGet("revenue")]
+        [Authorize(Roles = "admin,hotelmanager")]
+        public async Task<IActionResult> GetRevenue([FromQuery] int? hotelId = null)
+        {
+            try
+            {
+                var result = await _paymentService.GetRevenueAsync(hotelId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching revenue");
+                return StatusCode(500, new ErrorResponseDto
+                {
+                    StatusCode = 500,
+                    Message    = "Error retrieving revenue data.",
+                    Timestamp  = DateTime.UtcNow
+                });
+            }
+        }
+
         // ?????????????????????????????????????????????
         // ? UPDATE PAYMENT STATUS
         // ?????????????????????????????????????????????

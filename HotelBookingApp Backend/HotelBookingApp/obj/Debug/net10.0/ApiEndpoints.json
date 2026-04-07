@@ -1027,6 +1027,22 @@
   },
   {
     "ContainingType": "HotelBookingApp.Controllers.PaymentController",
+    "Method": "GetRevenue",
+    "RelativePath": "api/payment/revenue",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "hotelId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.PaymentController",
     "Method": "GetPagedByUser",
     "RelativePath": "api/payment/user/{userId}/paged",
     "HttpMethod": "POST",

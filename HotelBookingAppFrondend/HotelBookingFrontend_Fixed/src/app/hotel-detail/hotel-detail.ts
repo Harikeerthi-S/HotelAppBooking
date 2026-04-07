@@ -30,9 +30,10 @@ export class HotelDetail implements OnInit, OnDestroy {
   rooms        = signal<RoomModel[]>([]);
   reviews      = signal<ReviewModel[]>([]);
   hotelAmenities = signal<HotelAmenityModel[]>([]);
-  selectedRoom = signal<RoomModel | null>(null);
-  loading      = signal(true);
-  wishlisted   = signal(false);
+  selectedRoom      = signal<RoomModel | null>(null);
+  loading           = signal(true);
+  wishlisted        = signal(false);
+  roomJustSelected  = signal(false); // triggers animation
 
   checkIn    = signal('');
   checkOut   = signal('');
@@ -166,6 +167,10 @@ export class HotelDetail implements OnInit, OnDestroy {
     this.selectedRoom.set(room);
     this.dateAvailability.set(null);
     this.checkDateAvailability();
+    // trigger sidebar animation
+    this.roomJustSelected.set(false);
+    setTimeout(() => this.roomJustSelected.set(true), 10);
+    setTimeout(() => this.roomJustSelected.set(false), 900);
   }
 
   checkDateAvailability(): void {

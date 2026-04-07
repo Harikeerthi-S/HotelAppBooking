@@ -53,7 +53,7 @@ namespace HotelBookingApp.Delegates
                 if (amount < bookingAmount) return "Failed";
                 return method switch
                 {
-                    "CreditCard" or "DebitCard" or "UPI" or "Wallet" or "PayPal" or "NetBanking" => "Completed",
+                    "CreditCard" or "DebitCard" or "NetBanking" => "Completed",
                     _ => "Failed"
                 };
             };

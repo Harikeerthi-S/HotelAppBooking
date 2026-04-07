@@ -9,6 +9,14 @@
     <AssemblyName>HotelBookingApp</AssemblyName>
   </PropertyGroup>
 
+  <!-- Exclude the nested test project from this project's compilation -->
+  <ItemGroup>
+    <Compile Remove="HotelBookingApp.Tests\**" />
+    <Content Remove="HotelBookingApp.Tests\**" />
+    <EmbeddedResource Remove="HotelBookingApp.Tests\**" />
+    <None Remove="HotelBookingApp.Tests\**" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer"       Version="10.0.3" />

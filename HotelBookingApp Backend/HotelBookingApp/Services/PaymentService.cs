@@ -288,6 +288,71 @@ namespace HotelBookingApp.Services
         }
 
         // ─────────────────────────────────────────────
+        // ✅ GET REVENUE SUMMARY
+        // ─────────────────────────────────────────────
+        public async Task<RevenueResponseDto> GetRevenueAsync(int? hotelId = null)
+        {
+            var allPayments = await _paymentRepo.GetAllAsync();
+
+            // Filter by hotel if requested
+            if (hotelId.HasValue)
+            {
+                var allBookings = await _bookingRepo.GetAllAsync();
+                var hotelBookingIds = allBookings
+                    .Where(b => b.HotelId == hotelId.Value)
+                    .Select(b => b.BookingId)
+                    .ToHashSet();
+                allPayments = allPayments.Where(p => hotelBookingIds.Contains(p.BookingId));
+            }
+
+            var payments = allPayments.ToList();
+
+            var completed = payments.Where(p => p.PaymentStatus == "Completed").ToList();
+            var refunded  = payments.Where(p => p.PaymentStatus == "Refunded").ToList();
+
+            var totalRevenue = completed.Sum(p => p.Amount);
+            var totalRefunds = refunded.Sum(p => p.Amount);
+
+            var byMethod = completed
+                .GroupBy(p => p.PaymentMethod)
+                .Select(g => new RevenueByMethodDto
+                {
+                    PaymentMethod = g.Key,
+                    Amount        = g.Sum(p => p.Amount),
+                    Count         = g.Count()
+                })
+                .OrderByDescending(x => x.Amount)
+                .ToList();
+
+            var byMonth = completed
+                .GroupBy(p => new { p.CreatedAt.Year, p.CreatedAt.Month })
+                .Select(g => new RevenueByMonthDto
+                {
+                    Year      = g.Key.Year,
+                    Month     = g.Key.Month,
+                    MonthName = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM yyyy"),
+                    Amount    = g.Sum(p => p.Amount),
+                    Count     = g.Count()
+                })
+                .OrderBy(x => x.Year).ThenBy(x => x.Month)
+                .ToList();
+
+            return new RevenueResponseDto
+            {
+                TotalRevenue       = totalRevenue,
+                TotalRefunds       = totalRefunds,
+                NetRevenue         = totalRevenue - totalRefunds,
+                TotalPayments      = payments.Count,
+                CompletedPayments  = completed.Count,
+                PendingPayments    = payments.Count(p => p.PaymentStatus == "Pending"),
+                FailedPayments     = payments.Count(p => p.PaymentStatus == "Failed"),
+                RefundedPayments   = refunded.Count,
+                ByMethod           = byMethod,
+                ByMonth            = byMonth
+            };
+        }
+
+        // ─────────────────────────────────────────────
         // ✅ MAPPER
         // ─────────────────────────────────────────────
         private static PaymentResponseDto MapToDto(Payment p) => new()

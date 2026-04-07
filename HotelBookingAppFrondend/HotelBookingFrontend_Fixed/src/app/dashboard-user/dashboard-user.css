@@ -70,3 +70,36 @@
 .badge-completed { background:#e3f2fd; color:#0277bd; }
 .badge-cancelled { background:#fce4ec; color:#c62828; }
 .badge-refunded  { background:#f3e5f5; color:#7b1fa2; }
+
+/* ── Payment record card ── */
+.pay-record-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: var(--card-bg);
+  transition: box-shadow .2s;
+}
+.pay-record-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+
+.pay-method-icon {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  background: var(--primary-light, #fce4ec);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+/* ── Pay Now button ── */
+@keyframes payPulse {
+  0%, 100% { box-shadow: 0 4px 14px rgba(46,125,50,.3); }
+  50%       { box-shadow: 0 4px 22px rgba(46,125,50,.6), 0 0 0 5px rgba(46,125,50,.12); }
+}
+.btn-pay-now {
+  background: linear-gradient(135deg, #43a047, #2e7d32);
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  animation: payPulse 2s ease-in-out infinite;
+}
+.btn-pay-now:hover { color: #fff; transform: translateY(-1px); }

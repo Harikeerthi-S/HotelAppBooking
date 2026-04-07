@@ -16,7 +16,7 @@ namespace HotelBookingApp.Models
         [Required, Column(TypeName = "decimal(18,2)"), Range(0.01, 10000000)]
         public decimal Amount { get; set; }
 
-        /// <summary>CreditCard | DebitCard | UPI | Wallet | PayPal | NetBanking</summary>
+        /// <summary>CreditCard | DebitCard | NetBanking</summary>
         [Required, MaxLength(50)]
         public string PaymentMethod { get; set; } = string.Empty;
 
