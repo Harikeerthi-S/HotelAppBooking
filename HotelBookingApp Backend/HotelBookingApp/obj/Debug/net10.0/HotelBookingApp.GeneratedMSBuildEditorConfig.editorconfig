@@ -19,13 +19,21 @@ build_property.TargetFrameworkIdentifier = .NETCoreApp
 build_property.TargetFrameworkVersion = v10.0
 build_property.RootNamespace = HotelBookingApp
 build_property.RootNamespace = HotelBookingApp
+<<<<<<< HEAD
 build_property.ProjectDir = C:\hotel\HotelBookingApp\HotelBookingApp Backend\HotelBookingApp\
+=======
+build_property.ProjectDir = C:\Users\Harini.K\OneDrive - New American Funding\Desktop\keerthi\HotelAppBooking\HotelBookingApp Backend\HotelBookingApp\
+>>>>>>> fdfe48bb46da1cc938838ee2b434db231494bfd8
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 9.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+<<<<<<< HEAD
 build_property.MSBuildProjectDirectory = C:\hotel\HotelBookingApp\HotelBookingApp Backend\HotelBookingApp
+=======
+build_property.MSBuildProjectDirectory = C:\Users\Harini.K\OneDrive - New American Funding\Desktop\keerthi\HotelAppBooking\HotelBookingApp Backend\HotelBookingApp
+>>>>>>> fdfe48bb46da1cc938838ee2b434db231494bfd8
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 10.0
 build_property.EnableCodeStyleSeverity = 
