@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Harikeerthi.S\\Downloads\\HotelAppBooking-main (2) (2)\\HotelAppBooking-main\\HotelAppBooking-main\\HotelBookingApp Backend\\HotelBookingApp\\HotelBookingApp.csproj": {}
+    "C:\\Users\\Harini.K\\OneDrive - New American Funding\\Desktop\\keerthi\\HotelAppBooking\\HotelBookingApp Backend\\HotelBookingApp\\HotelBookingApp.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Harikeerthi.S\\Downloads\\HotelAppBooking-main (2) (2)\\HotelAppBooking-main\\HotelAppBooking-main\\HotelBookingApp Backend\\HotelBookingApp\\HotelBookingApp.csproj": {
+    "C:\\Users\\Harini.K\\OneDrive - New American Funding\\Desktop\\keerthi\\HotelAppBooking\\HotelBookingApp Backend\\HotelBookingApp\\HotelBookingApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelAppBooking-main (2) (2)\\HotelAppBooking-main\\HotelAppBooking-main\\HotelBookingApp Backend\\HotelBookingApp\\HotelBookingApp.csproj",
+        "projectUniqueName": "C:\\Users\\Harini.K\\OneDrive - New American Funding\\Desktop\\keerthi\\HotelAppBooking\\HotelBookingApp Backend\\HotelBookingApp\\HotelBookingApp.csproj",
         "projectName": "HotelBookingApp",
-        "projectPath": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelAppBooking-main (2) (2)\\HotelAppBooking-main\\HotelAppBooking-main\\HotelBookingApp Backend\\HotelBookingApp\\HotelBookingApp.csproj",
-        "packagesPath": "C:\\Users\\Harikeerthi.S\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Harikeerthi.S\\Downloads\\HotelAppBooking-main (2) (2)\\HotelAppBooking-main\\HotelAppBooking-main\\HotelBookingApp Backend\\HotelBookingApp\\obj\\",
+        "projectPath": "C:\\Users\\Harini.K\\OneDrive - New American Funding\\Desktop\\keerthi\\HotelAppBooking\\HotelBookingApp Backend\\HotelBookingApp\\HotelBookingApp.csproj",
+        "packagesPath": "C:\\Users\\Harini.K\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Harini.K\\OneDrive - New American Funding\\Desktop\\keerthi\\HotelAppBooking\\HotelBookingApp Backend\\HotelBookingApp\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Harikeerthi.S\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Harini.K\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -44,7 +44,7 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.100"
+        "SdkAnalysisLevel": "10.0.200"
       },
       "frameworks": {
         "net10.0": {
@@ -88,7 +88,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.200/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.AspNetCore": "(,10.0.32767]",
             "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
