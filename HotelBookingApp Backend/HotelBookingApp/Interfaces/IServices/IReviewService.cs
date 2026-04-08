@@ -8,5 +8,6 @@ namespace HotelBookingApp.Interfaces.IServices
         Task<ReviewResponseDto?> GetByIdAsync(int reviewId);
         Task<PagedResponseDto<ReviewResponseDto>> GetPagedAsync(ReviewFilterDto filter, PagedRequestDto request);
         Task<bool> DeleteAsync(int reviewId);
+        Task<ReviewResponseDto> UploadPhotoAsync(int reviewId, IFormFile photo, IWebHostEnvironment env);
     }
 }

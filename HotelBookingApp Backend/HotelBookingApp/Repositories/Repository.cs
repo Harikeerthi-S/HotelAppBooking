@@ -27,7 +27,12 @@ namespace HotelBookingApp.Repositories
 
         // ── GET BY ID ─────────────────────────────────────────────────────
         public async Task<TEntity?> GetByIdAsync(TKey id)
-            => await _dbSet.FindAsync(id);
+        {
+            var entity = await _dbSet.FindAsync(id);
+            if (entity != null)
+                _context.Entry(entity).State = EntityState.Detached;
+            return entity;
+        }
 
         // ── GET ALL WITH INCLUDES ─────────────────────────────────────────
         public async Task<IEnumerable<TEntity>> GetAllIncludingAsync(
@@ -62,6 +67,7 @@ namespace HotelBookingApp.Repositories
 
             _context.Entry(existing).CurrentValues.SetValues(entity);
             await _context.SaveChangesAsync();
+            _context.Entry(existing).State = EntityState.Detached;
             return existing;
         }
 

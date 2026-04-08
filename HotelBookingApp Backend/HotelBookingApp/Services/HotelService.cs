@@ -23,11 +23,11 @@ namespace HotelBookingApp.Services
             _logger    = logger    ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        private void Log(string action, int? entityId, string? changes = null)
-            => _ = _audit.CreateAsync(new CreateAuditLogDto
-            {
-                Action = action, EntityName = "Hotel", EntityId = entityId, Changes = changes
-            });
+        private async Task LogAsync(string action, int? entityId, string? changes = null)
+        {
+            try { await _audit.CreateAsync(new CreateAuditLogDto { Action = action, EntityName = "Hotel", EntityId = entityId, Changes = changes }); }
+            catch (Exception ex) { _logger.LogWarning(ex, "Audit log failed: {Action}", action); }
+        }
 
         // ── CREATE ────────────────────────────────────────────────────────
         public async Task<HotelResponseDto> CreateAsync(CreateHotelDto dto)
@@ -57,7 +57,7 @@ namespace HotelBookingApp.Services
 
             var created = await _hotelRepo.AddAsync(hotel);
             _logger.LogInformation("Hotel created: {HotelId}", created.HotelId);
-            Log("HotelCreated", created.HotelId, $"Name:{created.HotelName} Location:{created.Location}");
+            await LogAsync("HotelCreated", created.HotelId, $"Name:{created.HotelName} Location:{created.Location}");
             return MapToDto(created);
         }
 
@@ -163,7 +163,7 @@ namespace HotelBookingApp.Services
             hotel.ImagePath     = dto.ImagePath?.Trim();
 
             var updated = await _hotelRepo.UpdateAsync(hotelId, hotel);
-            Log("HotelUpdated", hotelId, $"Name:{hotel.HotelName}");
+            await LogAsync("HotelUpdated", hotelId, $"Name:{hotel.HotelName}");
             return updated is null ? null : MapToDto(updated);
         }
 
@@ -178,7 +178,7 @@ namespace HotelBookingApp.Services
 
             hotel.IsActive = false;
             await _hotelRepo.UpdateAsync(hotelId, hotel);
-            Log("HotelDeactivated", hotelId);
+            await LogAsync("HotelDeactivated", hotelId);
             return true;
         }
 

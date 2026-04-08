@@ -362,6 +362,10 @@ namespace HotelBookingApp.Migrations
                     b.Property<int>("HotelId")
                         .HasColumnType("int");
 
+                    b.Property<string>("PhotoUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<int>("Rating")
                         .HasColumnType("int");
 
@@ -457,6 +461,72 @@ namespace HotelBookingApp.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("HotelBookingApp.Models.Wallet", b =>
+                {
+                    b.Property<int>("WalletId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("WalletId"));
+
+                    b.Property<decimal>("Balance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("WalletId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Wallets");
+                });
+
+            modelBuilder.Entity("HotelBookingApp.Models.WalletTransaction", b =>
+                {
+                    b.Property<int>("TransactionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TransactionId"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("ReferenceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("WalletId")
+                        .HasColumnType("int");
+
+                    b.HasKey("TransactionId");
+
+                    b.HasIndex("WalletId");
+
+                    b.ToTable("WalletTransactions");
                 });
 
             modelBuilder.Entity("HotelBookingApp.Models.Wishlist", b =>
@@ -614,6 +684,28 @@ namespace HotelBookingApp.Migrations
                     b.Navigation("Hotel");
                 });
 
+            modelBuilder.Entity("HotelBookingApp.Models.Wallet", b =>
+                {
+                    b.HasOne("HotelBookingApp.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("HotelBookingApp.Models.WalletTransaction", b =>
+                {
+                    b.HasOne("HotelBookingApp.Models.Wallet", "Wallet")
+                        .WithMany("Transactions")
+                        .HasForeignKey("WalletId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Wallet");
+                });
+
             modelBuilder.Entity("HotelBookingApp.Models.Wishlist", b =>
                 {
                     b.HasOne("HotelBookingApp.Models.Hotel", "Hotel")
@@ -672,6 +764,11 @@ namespace HotelBookingApp.Migrations
                     b.Navigation("Reviews");
 
                     b.Navigation("Wishlists");
+                });
+
+            modelBuilder.Entity("HotelBookingApp.Models.Wallet", b =>
+                {
+                    b.Navigation("Transactions");
                 });
 #pragma warning restore 612, 618
         }

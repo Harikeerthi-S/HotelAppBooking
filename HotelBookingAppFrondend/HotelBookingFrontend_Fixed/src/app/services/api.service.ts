@@ -20,6 +20,7 @@ import { PagedRequest, PagedResponse } from '../models/paged.model';
 import { HotelFilter, RoomFilter, ReviewFilter, AuditLogFilter } from '../models/filter.model';
 import { HotelAmenityModel, CreateHotelAmenityModel } from '../models/hotel-amenity.model';
 import { AuditLogModel, CreateAuditLogModel } from '../models/audit-log.model';
+import { WalletModel, WalletTransactionModel } from '../models/wallet.model';
 
 const API = environment.apiUrl;
 
@@ -177,6 +178,11 @@ export class APIService {
   apiCreateReview(hotelId: number, userId: number, rating: number, comment: string) {
     return this.http.post<ReviewModel>(`${API}/review`, { hotelId, userId, rating, comment });
   }
+  apiUploadReviewPhoto(reviewId: number, file: File) {
+    const form = new FormData();
+    form.append('photo', file);
+    return this.http.post<ReviewModel>(`${API}/review/upload-photo/${reviewId}`, form);
+  }
   apiGetReviewById(reviewId: number) {
     return this.http.get<ReviewModel>(`${API}/review/${reviewId}`);
   }
@@ -320,4 +326,15 @@ export class APIService {
 
   /* ── User Amenity Preferences ── */
   /** POST empty JSON — matches ASP.NET Core [HttpPost("…/approve")] */
+
+  /* ── Wallet ── */
+  apiGetWalletBalance(userId: number) {
+    return this.http.get<WalletModel>(`${API}/wallet/${userId}`);
+  }
+  apiGetWalletTransactions(userId: number, req: PagedRequest) {
+    return this.http.post<PagedResponse<WalletTransactionModel>>(`${API}/wallet/${userId}/transactions`, req);
+  }
+  apiProcessPendingRefunds(userId: number) {
+    return this.http.post<{ processed: number; message: string }>(`${API}/wallet/${userId}/process-pending-refunds`, {});
+  }
 }

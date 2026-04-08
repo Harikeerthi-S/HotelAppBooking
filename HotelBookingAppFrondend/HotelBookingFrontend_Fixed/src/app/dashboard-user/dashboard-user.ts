@@ -12,6 +12,7 @@ import { NotificationModel } from '../models/notification.model';
 import { PaymentModel } from '../models/payment.model';
 import { ReviewModel } from '../models/review.model';
 import { PagedResponse } from '../models/paged.model';
+import { WalletModel, WalletTransactionModel } from '../models/wallet.model';
 import { $userStatus, UserState } from '../dynamicCommunication/userObservable';
 type DashTab = 'bookings' | 'payments' | 'cancellations' | 'notifications' | 'reviews' | 'support';
 
@@ -61,6 +62,9 @@ export class DashboardUser implements OnInit, OnDestroy, AfterViewChecked {
   pagedCancels = computed(() => this._clientSlice(this.cancellations(), this.cancelsPage(), this.CANCEL_PS));
   cancelsTotalPages = computed(() => Math.ceil(this.cancellations().length / this.CANCEL_PS) || 1);
 
+  wallet = signal<WalletModel | null>(null);
+  walletTransactions = signal<WalletTransactionModel[]>([]);
+
   eligibleBookings = signal<BookingModel[]>([]);
   formBookingId    = signal(0);
   formReason       = signal('');
@@ -82,6 +86,20 @@ export class DashboardUser implements OnInit, OnDestroy, AfterViewChecked {
   readonly REVIEW_PS = 5;
   pagedReviews = computed(() => this._clientSlice(this.reviews(), this.reviewsPage(), this.REVIEW_PS));
   reviewsTotalPages = computed(() => Math.ceil(this.reviews().length / this.REVIEW_PS) || 1);
+
+  // ── Write review form (inline in dashboard) ────────────────────────────
+  reviewHotels      = signal<any[]>([]);
+  reviewHotelId     = signal(0);
+  reviewRating      = signal(0);
+  reviewHoverStar   = signal(0);
+  reviewComment     = signal('');
+  reviewPhoto       = signal<File | null>(null);
+  reviewPhotoPreview = signal<string | null>(null);
+  reviewSubmitting  = signal(false);
+  reviewLightbox    = signal<string | null>(null);
+  showWriteReview   = signal(false);
+  readonly starsArr = [1, 2, 3, 4, 5];
+  readonly apiBase  = 'http://localhost:5000';
 
   private _clientSlice<T>(arr: T[], page: number, size: number): T[] {
     return arr.slice((page - 1) * size, page * size);
@@ -111,7 +129,7 @@ export class DashboardUser implements OnInit, OnDestroy, AfterViewChecked {
   totalSpent        = computed(() => this.bookingStats()?.spent ?? this.bookings().reduce((s, b) => s + (b.totalAmount ?? 0), 0));
 
   unreadCount = this.unreadNotifCount;
-  totalRefund       = computed(() => this.cancellationRefundTotal() ?? 0);
+  totalRefund = computed(() => this.wallet()?.balance ?? this.cancellationRefundTotal() ?? 0);
 
   constructor() {
     this.sub = $userStatus.subscribe(u => {
@@ -121,6 +139,7 @@ export class DashboardUser implements OnInit, OnDestroy, AfterViewChecked {
         this.loadNotifications();
         this.loadCancellations();
         this.loadPayments();
+        this.loadWallet();
       }
     });
     this.chatMessages.set([{
@@ -171,6 +190,12 @@ export class DashboardUser implements OnInit, OnDestroy, AfterViewChecked {
   switchTab(tab: string): void {
     this.activeTab.set(tab as DashTab);
     if (tab === 'reviews' && !this.reviewLoaded()) this.loadReviews();
+    if (tab === 'reviews' && !this.reviewHotels().length) {
+      this.api.apiGetHotelsPaged({ pageNumber: 1, pageSize: 100 }).subscribe({
+        next: res => this.reviewHotels.set(res.data ?? []),
+        error: () => {}
+      });
+    }
   }
 
   loadBookings(page: number = 1): void {
@@ -245,12 +270,21 @@ export class DashboardUser implements OnInit, OnDestroy, AfterViewChecked {
         this.cancellations.set(rows);
         this.cancelsPage.set(1);
         const sum = rows
-          .filter(c => c.status === 'Approved')
+          .filter(c => c.status === 'Approved' || c.status === 'Refunded')
           .reduce((s, c) => s + (c.refundAmount ?? 0), 0);
         this.cancellationRefundTotal.set(sum);
         this.cancelLoading.set(false);
       },
       error: () => this.cancelLoading.set(false)
+    });
+  }
+
+  loadWallet(): void {
+    const uid = this._uid;
+    if (!uid) return;
+    this.api.apiGetWalletBalance(uid).subscribe({
+      next: w => this.wallet.set(w),
+      error: () => {}
     });
   }
 
@@ -284,13 +318,14 @@ export class DashboardUser implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   cancelBookingDirect(b: BookingModel): void {
-    if (!confirm('Cancel this booking?')) return;
+    if (!confirm('Cancel this booking? No refund applies for direct cancellation of pending bookings.')) return;
     this.api.apiCancelBooking(b.bookingId).subscribe({
       next: () => {
         this.bookings.update(l => l.map(x =>
           x.bookingId === b.bookingId ? { ...x, status: 'Cancelled' } : x
         ));
-        this.toast.success('Booking cancelled.');
+        this.toast.info('Pending booking cancelled. No refund applicable.', 'Booking Cancelled');
+        this.loadWallet();
       },
       error: e => this.toast.error(e?.error?.message || 'Failed to cancel booking.', 'Error')
     });
@@ -308,12 +343,27 @@ export class DashboardUser implements OnInit, OnDestroy, AfterViewChecked {
     if (this.formReason().trim().length < 5) { this.toast.warning('Reason must be at least 5 characters.'); return; }
     this.cancelSubmitting.set(true);
     this.api.apiCreateCancellation(this.formBookingId(), this.formReason().trim()).subscribe({
-      next: () => {
+      next: (result: any) => {
         this.cancelSubmitting.set(false);
         this.showCancelForm.set(false);
-        this.toast.success('Cancellation requested successfully.');
+
+        const refund = result?.refundAmount ?? 0;
+        if (refund > 0) {
+          this.toast.success(
+            `₹${refund.toLocaleString('en-IN')} has been credited to your Wallet!`,
+            '💰 Refund Processed'
+          );
+        } else {
+          this.toast.info(
+            'Booking cancelled. No refund applicable as per cancellation policy.',
+            'Booking Cancelled'
+          );
+        }
+
         this.loadCancellations();
         this.loadBookings(1);
+        this.loadWallet();
+        this.loadNotifications();
       },
       error: e => {
         this.cancelSubmitting.set(false);
@@ -396,7 +446,7 @@ export class DashboardUser implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   cancelStatusClass(s: string): string {
-    return ({ Pending: 'cs-pending', Approved: 'cs-approved', Rejected: 'cs-rejected' } as Record<string, string>)[s] ?? 'cs-pending';
+    return ({ Pending: 'cs-pending', Approved: 'cs-approved', Rejected: 'cs-rejected', Refunded: 'cs-approved' } as Record<string, string>)[s] ?? 'cs-pending';
   }
 
   payStatusClass(s: string): string {
@@ -413,4 +463,64 @@ export class DashboardUser implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   stars(n: number): boolean[] { return [1, 2, 3, 4, 5].map(s => s <= n); }
+
+  // ── Inline review form helpers ─────────────────────────────────────────
+  isReviewStarFilled(s: number): boolean { return s <= (this.reviewHoverStar() || this.reviewRating()); }
+  setReviewRating(s: number): void { this.reviewRating.set(s); }
+  reviewRatingLabel(r: number): string { return ['','Poor','Fair','Good','Very Good','Excellent'][r] ?? ''; }
+
+  onReviewPhotoSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { this.toast.warning('Photo must be under 5 MB.'); return; }
+    this.reviewPhoto.set(file);
+    const reader = new FileReader();
+    reader.onload = e => this.reviewPhotoPreview.set(e.target?.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  removeReviewPhoto(): void { this.reviewPhoto.set(null); this.reviewPhotoPreview.set(null); }
+
+  reviewPhotoUrl(url: string | null): string {
+    if (!url) return '';
+    return url.startsWith('http') ? url : `${this.apiBase}${url}`;
+  }
+
+  submitDashboardReview(): void {
+    if (!this.reviewHotelId())              { this.toast.warning('Please select a hotel.'); return; }
+    if (!this.reviewRating())               { this.toast.warning('Please select a star rating.'); return; }
+    if (this.reviewComment().trim().length < 5) { this.toast.warning('Comment must be at least 5 characters.'); return; }
+
+    this.reviewSubmitting.set(true);
+    this.api.apiCreateReview(this.reviewHotelId(), this._uid, this.reviewRating(), this.reviewComment().trim()).subscribe({
+      next: (r: any) => {
+        const photo = this.reviewPhoto();
+        const finish = (updated: any) => {
+          this.reviews.update(list => [updated, ...list]);
+          this.reviewHotelId.set(0); this.reviewRating.set(0);
+          this.reviewComment.set(''); this.reviewPhoto.set(null);
+          this.reviewPhotoPreview.set(null); this.reviewHoverStar.set(0);
+          this.showWriteReview.set(false); this.reviewSubmitting.set(false);
+          this.toast.success('Review submitted!', '⭐ Review');
+        };
+        if (photo) {
+          this.api.apiUploadReviewPhoto(r.reviewId, photo).subscribe({
+            next: (u: any) => {
+              finish(u);
+              if (u.coinsEarned > 0) {
+                this.toast.success(`🎉 ${u.coinsEarned} coins credited to your Wallet for uploading a photo!`, '💰 Coins Earned');
+                this.loadWallet();
+              }
+            },
+            error: () => { finish(r); this.toast.warning('Review saved but photo upload failed.'); }
+          });
+        } else { finish(r); }
+      },
+      error: (e: any) => {
+        this.reviewSubmitting.set(false);
+        if (e.status === 409) this.toast.warning('You already reviewed this hotel.', 'Already Reviewed');
+        else this.toast.error(e?.error?.message || 'Failed to submit review.', 'Error');
+      }
+    });
+  }
 }

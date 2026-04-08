@@ -38,7 +38,7 @@
     <div class="col-6 col-md-3">
       <div class="stat-card" style="border-left-color:#2e7d32">
         <div class="stat-number" style="color:#2e7d32; font-size:1.3rem">₹{{ totalRefund().toLocaleString('en-IN') }}</div>
-        <div class="stat-label">Refunds Approved</div>
+        <div class="stat-label">💳 Wallet Balance</div>
       </div>
     </div>
   </div>
@@ -247,9 +247,9 @@
                     <span class="cancel-badge" [ngClass]="cancelStatusClass(c.status)">{{ c.status }}</span>
                     <div class="text-muted small mt-1">Booking #{{ c.bookingId }} · {{ c.cancellationDate | date:'mediumDate' }}</div>
                   </div>
-                  @if (c.status === 'Approved' && c.refundAmount > 0) {
+                  @if ((c.status === 'Approved' || c.status === 'Refunded') && c.refundAmount > 0) {
                     <div class="refund-chip">
-                      💰 Refund: <strong>₹{{ c.refundAmount.toLocaleString('en-IN') }}</strong>
+                      💰 Refunded to Wallet: <strong>₹{{ c.refundAmount.toLocaleString('en-IN') }}</strong>
                     </div>
                   }
                 </div>
@@ -353,10 +353,74 @@
               <p class="text-muted small mb-0">{{ reviews().length }} review(s)</p>
             }
           </div>
-          <a routerLink="/reviews" class="btn btn-sm btn-outline-primary rounded-pill">
-            <i class="bi bi-plus me-1"></i>Write Review
-          </a>
+          <button class="btn btn-sm btn-outline-primary rounded-pill" (click)="showWriteReview.set(!showWriteReview())">
+            <i class="bi bi-plus me-1"></i>{{ showWriteReview() ? 'Cancel' : 'Write Review' }}
+          </button>
         </div>
+
+        <!-- INLINE WRITE REVIEW FORM -->
+        @if (showWriteReview()) {
+          <div class="p-3 rounded-3 mb-4" style="background:#f8f9fc;border:1px solid #e8e8e8">
+            <h6 class="fw-700 mb-3"><i class="bi bi-pencil-square text-primary me-2"></i>Write a Review</h6>
+            <div class="row g-3">
+              <div class="col-md-5">
+                <label class="form-label small fw-600">Hotel <span class="text-danger">*</span></label>
+                <select class="form-select form-select-sm" [value]="reviewHotelId()" (change)="reviewHotelId.set(+$any($event.target).value)">
+                  <option value="0">— Select a hotel —</option>
+                  @for (h of reviewHotels(); track h.hotelId) {
+                    <option [value]="h.hotelId">{{ h.hotelName }}</option>
+                  }
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-600">Rating <span class="text-danger">*</span></label>
+                <div class="d-flex align-items-center gap-2 mt-1">
+                  @for (s of starsArr; track s) {
+                    <button type="button" class="btn p-0 border-0" style="font-size:1.4rem;color:#f57f17;background:none"
+                            (click)="setReviewRating(s)"
+                            (mouseenter)="reviewHoverStar.set(s)"
+                            (mouseleave)="reviewHoverStar.set(0)">
+                      <i class="bi" [class.bi-star-fill]="isReviewStarFilled(s)" [class.bi-star]="!isReviewStarFilled(s)"></i>
+                    </button>
+                  }
+                  @if (reviewRating()) {
+                    <span class="badge bg-warning text-dark rounded-pill small">{{ reviewRatingLabel(reviewRating()) }}</span>
+                  }
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-600">Comment <span class="text-danger">*</span></label>
+                <textarea class="form-control form-control-sm" rows="3" maxlength="2000"
+                          [value]="reviewComment()"
+                          (input)="reviewComment.set($any($event.target).value)"
+                          placeholder="Share your experience…"></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-600">Photo <span class="text-muted fw-400">(optional, max 5 MB)</span></label>
+                @if (!reviewPhotoPreview()) {
+                  <label class="d-flex align-items-center gap-2 p-3 rounded-3 border" style="cursor:pointer;background:#fff;border-style:dashed!important">
+                    <i class="bi bi-camera fs-5 text-muted"></i>
+                    <span class="text-muted small">Click to add a photo</span>
+                    <input type="file" accept="image/jpeg,image/png,image/webp" class="d-none" (change)="onReviewPhotoSelected($event)">
+                  </label>
+                } @else {
+                  <div class="position-relative d-inline-block">
+                    <img [src]="reviewPhotoPreview()!" alt="Preview" class="rounded-3" style="max-height:140px;max-width:100%;object-fit:cover;border:2px solid #e84393">
+                    <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle p-0" style="width:22px;height:22px;line-height:1" (click)="removeReviewPhoto()">
+                      <i class="bi bi-x" style="font-size:.7rem"></i>
+                    </button>
+                  </div>
+                }
+              </div>
+              <div class="col-12">
+                <button class="btn btn-sm btn-primary-custom rounded-pill px-4" [disabled]="reviewSubmitting()" (click)="submitDashboardReview()">
+                  @if (reviewSubmitting()) { <span class="spinner-border spinner-border-sm me-2"></span>Submitting… }
+                  @else { <i class="bi bi-send me-2"></i>Submit Review }
+                </button>
+              </div>
+            </div>
+          </div>
+        }
 
         @if (reviewLoading()) {
           <div class="spinner-wrap"><div class="spinner-ring"></div></div>
@@ -364,7 +428,7 @@
           <div class="empty-state">
             <i class="bi bi-star empty-icon"></i>
             <h6 class="fw-600">No reviews yet</h6>
-            <a routerLink="/reviews" class="btn btn-sm btn-primary-custom rounded-pill mt-2">Write a Review</a>
+            <button class="btn btn-sm btn-primary-custom rounded-pill mt-2" (click)="showWriteReview.set(true)">Write a Review</button>
           </div>
         } @else {
           <div class="d-flex flex-column gap-3">
@@ -379,7 +443,12 @@
                   <span class="badge bg-primary rounded-pill">{{ r.rating }}/5</span>
                   <span class="text-muted small ms-auto">{{ r.createdAt | date:'mediumDate' }}</span>
                 </div>
-                <p class="small text-secondary mb-0">{{ r.comment }}</p>
+                <p class="small text-secondary mb-2">{{ r.comment }}</p>
+                @if (r.photoUrl) {
+                  <img [src]="reviewPhotoUrl(r.photoUrl)" alt="Review photo" class="rounded-3"
+                       style="max-height:180px;max-width:100%;object-fit:cover;cursor:pointer;border:1px solid #eee"
+                       (click)="reviewLightbox.set(reviewPhotoUrl(r.photoUrl))">
+                }
               </div>
             }
           </div>
@@ -396,6 +465,14 @@
         }
       </div>
     </div>
+
+    @if (reviewLightbox()) {
+      <div class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+           style="background:rgba(0,0,0,.85);z-index:9999;cursor:zoom-out"
+           (click)="reviewLightbox.set(null)">
+        <img [src]="reviewLightbox()!" alt="Full photo" style="max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px">
+      </div>
+    }
   }
 
   <!-- ══════════════════ SUPPORT TAB ══════════════════ -->

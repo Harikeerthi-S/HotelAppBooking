@@ -3,6 +3,7 @@ using HotelBookingApp.Interfaces.IRepositories;
 using HotelBookingApp.Interfaces.IServices;
 using HotelBookingApp.Models;
 using HotelBookingApp.Models.Dtos;
+using Microsoft.AspNetCore.Hosting;
 
 namespace HotelBookingApp.Services
 {
@@ -12,6 +13,7 @@ namespace HotelBookingApp.Services
         private readonly IRepository<int, Review> _reviewRepo;
         private readonly IRepository<int, Hotel>  _hotelRepo;
         private readonly IRepository<int, User>   _userRepo;
+        private readonly IWalletService           _walletService;
         private readonly IAuditLogService         _audit;
         private readonly ILogger<ReviewService>   _logger;
 
@@ -19,22 +21,23 @@ namespace HotelBookingApp.Services
             IRepository<int, Review> reviewRepo,
             IRepository<int, Hotel>  hotelRepo,
             IRepository<int, User>   userRepo,
+            IWalletService           walletService,
             IAuditLogService         audit,
             ILogger<ReviewService>   logger)
         {
-            _reviewRepo = reviewRepo;
-            _hotelRepo  = hotelRepo;
-            _userRepo   = userRepo;
-            _audit      = audit;
-            _logger     = logger;
+            _reviewRepo    = reviewRepo;
+            _hotelRepo     = hotelRepo;
+            _userRepo      = userRepo;
+            _walletService = walletService;
+            _audit         = audit;
+            _logger        = logger;
         }
 
-        private void Log(string action, int? entityId, int? userId = null, string? changes = null)
-            => _ = _audit.CreateAsync(new CreateAuditLogDto
-            {
-                UserId = userId, Action = action, EntityName = "Review",
-                EntityId = entityId, Changes = changes
-            });
+        private async Task LogAsync(string action, int? entityId, int? userId = null, string? changes = null)
+        {
+            try { await _audit.CreateAsync(new CreateAuditLogDto { UserId = userId, Action = action, EntityName = "Review", EntityId = entityId, Changes = changes }); }
+            catch (Exception ex) { _logger.LogWarning(ex, "Audit log failed: {Action}", action); }
+        }
 
         // ── CREATE ────────────────────────────────────────────────────────
         public async Task<ReviewResponseDto> CreateAsync(CreateReviewDto dto)
@@ -69,7 +72,7 @@ namespace HotelBookingApp.Services
 
             var created = await _reviewRepo.AddAsync(review);
             _logger.LogInformation("Review created: {ReviewId}", created.ReviewId);
-            Log("ReviewCreated", created.ReviewId, dto.UserId,
+            await LogAsync("ReviewCreated", created.ReviewId, dto.UserId,
                 $"Hotel:{dto.HotelId} Rating:{dto.Rating}/5");
             return MapToDto(created);
         }
@@ -117,13 +120,68 @@ namespace HotelBookingApp.Services
             };
         }
 
+        // ── UPLOAD PHOTO ──────────────────────────────────────────────────
+        public async Task<ReviewResponseDto> UploadPhotoAsync(int reviewId, IFormFile photo, IWebHostEnvironment env)
+        {
+            var review = await _reviewRepo.GetByIdAsync(reviewId)
+                         ?? throw new NotFoundException("Review", reviewId);
+
+            var allowed = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+            var ext = Path.GetExtension(photo.FileName).ToLowerInvariant();
+            if (!allowed.Contains(ext))
+                throw new BadRequestException("Only JPG, PNG, or WEBP images are allowed.");
+
+            if (photo.Length > 5 * 1024 * 1024)
+                throw new BadRequestException("Photo must be under 5 MB.");
+
+            var uploadDir = Path.Combine(env.WebRootPath ?? "wwwroot", "uploads", "reviews");
+            Directory.CreateDirectory(uploadDir);
+
+            var fileName = $"review_{reviewId}_{Guid.NewGuid():N}{ext}";
+            var filePath = Path.Combine(uploadDir, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+                await photo.CopyToAsync(stream);
+
+            // Delete old photo if exists
+            if (!string.IsNullOrEmpty(review.PhotoUrl))
+            {
+                var oldPath = Path.Combine(env.WebRootPath ?? "wwwroot", review.PhotoUrl.TrimStart('/'));
+                if (File.Exists(oldPath)) File.Delete(oldPath);
+            }
+
+            review.PhotoUrl = $"/uploads/reviews/{fileName}";
+            await _reviewRepo.UpdateAsync(reviewId, review);
+
+            // Credit 100 coins to the user's wallet for uploading a photo
+            const decimal photoRewardCoins = 100m;
+            try
+            {
+                await _walletService.CreditAsync(
+                    review.UserId,
+                    photoRewardCoins,
+                    $"🎉 Photo review reward for Review #{reviewId}",
+                    reviewId);
+                _logger.LogInformation("100 coins credited to User:{UserId} for photo review", review.UserId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to credit photo reward for Review:{ReviewId}", reviewId);
+            }
+
+            _logger.LogInformation("Photo uploaded for Review:{ReviewId} → {PhotoUrl}", reviewId, review.PhotoUrl);
+            var dto = MapToDto(review);
+            dto.CoinsEarned = (int)photoRewardCoins;
+            return dto;
+        }
+
         // ── DELETE ────────────────────────────────────────────────────────
         public async Task<bool> DeleteAsync(int reviewId)
         {
             _logger.LogInformation("Deleting review {ReviewId}", reviewId);
             var deleted = await _reviewRepo.DeleteAsync(reviewId);
             if (deleted is null) throw new NotFoundException("Review", reviewId);
-            Log("ReviewDeleted", reviewId);
+            await LogAsync("ReviewDeleted", reviewId);
             return true;
         }
 
@@ -135,6 +193,7 @@ namespace HotelBookingApp.Services
             UserId    = r.UserId,
             Rating    = r.Rating,
             Comment   = r.Comment,
+            PhotoUrl  = r.PhotoUrl,
             CreatedAt = r.CreatedAt
         };
     }

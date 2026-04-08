@@ -38,6 +38,10 @@ export class Review implements OnDestroy {
   newRating       = signal(0);
   newComment      = signal('');
   hoveredStar     = signal(0);
+  selectedPhoto   = signal<File | null>(null);
+  photoPreview    = signal<string | null>(null);
+  lightboxUrl     = signal<string | null>(null);
+  apiBase         = environment.apiUrl.replace('/api', '');
 
   // ── Filters ───────────────────────────────────────────────────────────────
   filterRating  = signal(0);
@@ -139,14 +143,36 @@ export class Review implements OnDestroy {
       this.selectedHotelId(), userId, this.newRating(), this.newComment().trim()
     ).subscribe({
       next: (r) => {
-        const hotelName = this.hotels().find(h => h.hotelId === r.hotelId)?.hotelName ?? `Hotel #${r.hotelId}`;
-        this.reviews.update(list => [{ ...r, hotelName }, ...list]);
-        this.selectedHotelId.set(0);
-        this.newRating.set(0);
-        this.newComment.set('');
-        this.hoveredStar.set(0);
-        this.submitting.set(false);
-        this.toast.success('Review submitted successfully!', 'Review Submitted');
+        const photo = this.selectedPhoto();
+        if (photo) {
+          // Upload photo then update the review in the list
+          this.api.apiUploadReviewPhoto(r.reviewId, photo).subscribe({
+            next: (updated) => {
+              const hotelName = this.hotels().find(h => h.hotelId === updated.hotelId)?.hotelName ?? `Hotel #${updated.hotelId}`;
+              this.reviews.update(list => [{ ...updated, hotelName }, ...list]);
+              this.resetForm();
+              this.submitting.set(false);
+              this.toast.success('Review with photo submitted!', 'Review Submitted');
+              if (updated.coinsEarned > 0) {
+                this.toast.success(`🎉 ${updated.coinsEarned} coins credited to your Wallet!`, '💰 Coins Earned');
+              }
+            },
+            error: () => {
+              // Review created but photo failed — still show it
+              const hotelName = this.hotels().find(h => h.hotelId === r.hotelId)?.hotelName ?? `Hotel #${r.hotelId}`;
+              this.reviews.update(list => [{ ...r, hotelName }, ...list]);
+              this.resetForm();
+              this.submitting.set(false);
+              this.toast.warning('Review submitted but photo upload failed.', 'Partial Success');
+            }
+          });
+        } else {
+          const hotelName = this.hotels().find(h => h.hotelId === r.hotelId)?.hotelName ?? `Hotel #${r.hotelId}`;
+          this.reviews.update(list => [{ ...r, hotelName }, ...list]);
+          this.resetForm();
+          this.submitting.set(false);
+          this.toast.success('Review submitted successfully!', 'Review Submitted');
+        }
       },
       error: (e) => {
         this.submitting.set(false);
@@ -156,6 +182,36 @@ export class Review implements OnDestroy {
           this.toast.error(e?.error?.message || 'Failed to submit review.', 'Error');
       }
     });
+  }
+
+  onPhotoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { this.toast.warning('Photo must be under 5 MB.'); return; }
+    this.selectedPhoto.set(file);
+    const reader = new FileReader();
+    reader.onload = (e) => this.photoPreview.set(e.target?.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  removePhoto(): void {
+    this.selectedPhoto.set(null);
+    this.photoPreview.set(null);
+  }
+
+  private resetForm(): void {
+    this.selectedHotelId.set(0);
+    this.newRating.set(0);
+    this.newComment.set('');
+    this.hoveredStar.set(0);
+    this.selectedPhoto.set(null);
+    this.photoPreview.set(null);
+  }
+
+  photoUrl(url: string | null): string {
+    if (!url) return '';
+    return url.startsWith('http') ? url : `${this.apiBase}${url}`;
   }
 
   // ── Delete review (admin / hotelmanager) ──────────────────────────────────

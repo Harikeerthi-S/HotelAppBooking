@@ -29,15 +29,11 @@ namespace HotelBookingApp.Services
             _logger      = logger;
         }
 
-        private void Log(string action, string entity, int? entityId, int? userId, string? changes = null)
-            => _ = _audit.CreateAsync(new CreateAuditLogDto
-            {
-                UserId     = userId,
-                Action     = action,
-                EntityName = entity,
-                EntityId   = entityId,
-                Changes    = changes
-            });
+        private async Task LogAsync(string action, string entity, int? entityId, int? userId, string? changes = null)
+        {
+            try { await _audit.CreateAsync(new CreateAuditLogDto { UserId = userId, Action = action, EntityName = entity, EntityId = entityId, Changes = changes }); }
+            catch (Exception ex) { _logger.LogWarning(ex, "Audit log failed: {Action}", action); }
+        }
 
         // ── CREATE ─────────────────────────────
         public async Task<BookingResponseDto> CreateAsync(CreateBookingDto dto)
@@ -121,7 +117,7 @@ namespace HotelBookingApp.Services
             var created = await _bookingRepo.AddAsync(booking);
 
             _logger.LogInformation("Booking created: {BookingId}", created.BookingId);
-            Log("BookingCreated", "Booking", created.BookingId, dto.UserId,
+            await LogAsync("BookingCreated", "Booking", created.BookingId, dto.UserId,
                 $"Hotel:{dto.HotelId} Room:{dto.RoomId} {dto.CheckIn:dd-MMM-yyyy}→{dto.CheckOut:dd-MMM-yyyy} ₹{totalAmount}");
             return MapToDto(created, hotel.HotelName);
         }
@@ -285,7 +281,7 @@ namespace HotelBookingApp.Services
             };
 
             await _bookingRepo.UpdateAsync(bookingId, bookingCopy);
-            Log("BookingCancelled", "Booking", bookingId, booking.UserId, $"Status→Cancelled");
+            await LogAsync("BookingCancelled", "Booking", bookingId, booking.UserId, $"Status→Cancelled");
             return true;
         }
 
@@ -313,7 +309,7 @@ namespace HotelBookingApp.Services
             };
 
             await _bookingRepo.UpdateAsync(bookingId, bookingCopy);
-            Log($"Booking{newStatus}", "Booking", bookingId, booking.UserId, $"Status→{newStatus}");
+            await LogAsync($"Booking{newStatus}", "Booking", bookingId, booking.UserId, $"Status→{newStatus}");
             var hotel = await _hotelRepo.GetByIdAsync(booking.HotelId);
 
             return MapToDto(bookingCopy, hotel?.HotelName ?? string.Empty);

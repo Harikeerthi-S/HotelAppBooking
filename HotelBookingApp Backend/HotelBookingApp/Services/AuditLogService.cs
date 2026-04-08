@@ -1,4 +1,4 @@
-﻿using HotelBookingApp.Exceptions;
+using HotelBookingApp.Exceptions;
 using HotelBookingApp.Interfaces.IRepositories;
 using HotelBookingApp.Interfaces.IServices;
 using HotelBookingApp.Models;
@@ -19,7 +19,7 @@ namespace HotelBookingApp.Services
             _logger    = logger;
         }
 
-        // ── CREATE ─────────────────────────────
+        // -- CREATE -----------------------------
         public async Task<AuditLogResponseDto> CreateAsync(CreateAuditLogDto dto)
         {
             _logger.LogInformation("Creating audit log: {Action}", dto.Action);
@@ -39,7 +39,7 @@ namespace HotelBookingApp.Services
             return MapToDto(created, null);
         }
 
-        // ── GET BY ID ──────────────────────────
+        // -- GET BY ID --------------------------
         public async Task<AuditLogResponseDto?> GetByIdAsync(int auditLogId)
         {
             var logs = await _auditRepo.GetAllIncludingAsync(a => a.User!);
@@ -48,13 +48,13 @@ namespace HotelBookingApp.Services
             return MapToDto(log, log.User?.UserName);
         }
 
-        // ── GET ALL (PAGED) ────────────────────
+        // -- GET ALL (PAGED) --------------------
         public async Task<PagedResponseDto<AuditLogResponseDto>> GetAllAsync(PagedRequestDto request)
         {
             request.PageNumber = Math.Max(1, request.PageNumber);
             request.PageSize   = Math.Clamp(request.PageSize, 1, 10);
 
-            // Eager-load User in one query — no N+1
+            // Eager-load User in one query � no N+1
             var all     = await _auditRepo.GetAllIncludingAsync(a => a.User!);
             var ordered = all.OrderByDescending(a => a.CreatedAt).ToList();
             var total   = ordered.Count;
@@ -75,7 +75,7 @@ namespace HotelBookingApp.Services
             };
         }
 
-        // ── FILTER (NEW) ───────────────────────
+        // -- FILTER (NEW) -----------------------
         public async Task<List<AuditLogResponseDto>> FilterAsync(AuditLogFilterDto filter)
         {
             var logs = await _auditRepo.GetAllAsync();
@@ -88,7 +88,7 @@ namespace HotelBookingApp.Services
                 .ToList();
         }
 
-        // ── FILTER PAGED (NEW) ─────────────────
+        // -- FILTER PAGED (NEW) -----------------
         public async Task<PagedResponseDto<AuditLogResponseDto>> FilterPagedAsync(
             AuditLogFilterDto filter,
             PagedRequestDto request)
@@ -120,7 +120,7 @@ namespace HotelBookingApp.Services
             };
         }
 
-        // ── GET BY ENTITY ──────────────────────
+        // -- GET BY ENTITY ----------------------
         public async Task<List<AuditLogResponseDto>> GetByEntityAsync(string entityName, int entityId)
         {
             var logs = await _auditRepo.FindAllAsync(
@@ -134,7 +134,7 @@ namespace HotelBookingApp.Services
                 .ToList();
         }
 
-        // ── GET BY USER ────────────────────────
+        // -- GET BY USER ------------------------
         public async Task<List<AuditLogResponseDto>> GetByUserAsync(int userId)
         {
             var logs = await _auditRepo.FindAllAsync(a => a.UserId == userId);
@@ -145,7 +145,7 @@ namespace HotelBookingApp.Services
                 .ToList();
         }
 
-        // ── DELETE ─────────────────────────────
+        // -- DELETE -----------------------------
         public async Task<bool> DeleteAsync(int auditLogId)
         {
             _logger.LogInformation("Deleting audit log {AuditLogId}", auditLogId);
@@ -158,7 +158,7 @@ namespace HotelBookingApp.Services
             return true;
         }
 
-        // ── FILTER LOGIC ───────────────────────
+        // -- FILTER LOGIC -----------------------
         private static IQueryable<AuditLog> ApplyFilter(IQueryable<AuditLog> query, AuditLogFilterDto filter)
         {
             if (filter.UserId.HasValue)
@@ -184,7 +184,7 @@ namespace HotelBookingApp.Services
             return query;
         }
 
-        // ── MAPPER ────────────────────────────
+        // -- MAPPER ----------------------------
         private static AuditLogResponseDto MapToDto(AuditLog a, string? userName) => new()
         {
             AuditLogId = a.AuditLogId,

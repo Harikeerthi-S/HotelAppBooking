@@ -28,11 +28,11 @@ namespace HotelBookingApp.Services
             _logger      = logger;
         }
 
-        private void Log(string action, int? entityId, string? changes = null)
-            => _ = _audit.CreateAsync(new CreateAuditLogDto
-            {
-                Action = action, EntityName = "Room", EntityId = entityId, Changes = changes
-            });
+        private async Task LogAsync(string action, int? entityId, string? changes = null)
+        {
+            try { await _audit.CreateAsync(new CreateAuditLogDto { Action = action, EntityName = "Room", EntityId = entityId, Changes = changes }); }
+            catch (Exception ex) { _logger.LogWarning(ex, "Audit log failed: {Action}", action); }
+        }
 
         // ── CREATE ─────────────────────────────
         public async Task<RoomResponseDto> CreateAsync(CreateRoomDto dto)
@@ -59,7 +59,7 @@ namespace HotelBookingApp.Services
             };
 
             var created = await _roomRepo.AddAsync(room);
-            Log("RoomCreated", created.RoomId, $"Hotel:{dto.HotelId} #{dto.RoomNumber} {dto.RoomType} ₹{dto.PricePerNight}");
+            await LogAsync("RoomCreated", created.RoomId, $"Hotel:{dto.HotelId} #{dto.RoomNumber} {dto.RoomType} ₹{dto.PricePerNight}");
             return MapToDto(created);
         }
 
@@ -123,7 +123,7 @@ namespace HotelBookingApp.Services
             room.ImageUrl      = dto.ImageUrl?.Trim();
 
             var updated = await _roomRepo.UpdateAsync(roomId, room);
-            Log("RoomUpdated", roomId, $"#{dto.RoomNumber} {dto.RoomType} ₹{dto.PricePerNight}");
+            await LogAsync("RoomUpdated", roomId, $"#{dto.RoomNumber} {dto.RoomType} ₹{dto.PricePerNight}");
             return updated is null ? null : MapToDto(updated);
         }
 
@@ -138,7 +138,7 @@ namespace HotelBookingApp.Services
 
             room.IsAvailable = false;
             await _roomRepo.UpdateAsync(roomId, room);
-            Log("RoomDeactivated", roomId);
+            await LogAsync("RoomDeactivated", roomId);
             return true;
         }
 

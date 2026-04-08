@@ -13,11 +13,13 @@ namespace HotelBookingApp.Controllers
     {
         private readonly IReviewService           _reviewService;
         private readonly ILogger<ReviewController> _logger;
+        private readonly IWebHostEnvironment       _env;
 
-        public ReviewController(IReviewService reviewService, ILogger<ReviewController> logger)
+        public ReviewController(IReviewService reviewService, ILogger<ReviewController> logger, IWebHostEnvironment env)
         {
             _reviewService = reviewService;
             _logger        = logger;
+            _env           = env;
         }
 
         /// <summary>Create a hotel review. User only. One review per hotel per user.</summary>
@@ -94,6 +96,18 @@ namespace HotelBookingApp.Controllers
                 _logger.LogError(ex, "Error fetching paged reviews");
                 return StatusCode(500, new ErrorResponseDto { StatusCode = 500, Message = "An error occurred while retrieving reviews.", Timestamp = DateTime.UtcNow });
             }
+        }
+
+        /// <summary>Upload a photo for a review. User only.</summary>
+        [HttpPost("upload-photo/{reviewId:int}")]
+        [Authorize(Roles = "user")]
+        public async Task<IActionResult> UploadPhoto(int reviewId, IFormFile photo)
+        {
+            if (photo == null || photo.Length == 0)
+                return BadRequest(new ErrorResponseDto { StatusCode = 400, Message = "No file provided.", Timestamp = DateTime.UtcNow });
+
+            var result = await _reviewService.UploadPhotoAsync(reviewId, photo, _env);
+            return Ok(result);
         }
 
         /// <summary>Delete a review. Admin and HotelManager only.</summary>

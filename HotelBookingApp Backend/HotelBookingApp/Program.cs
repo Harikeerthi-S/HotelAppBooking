@@ -186,6 +186,7 @@ builder.Services.AddScoped<IWishlistService,              WishlistService>();
 builder.Services.AddScoped<INotificationService,          NotificationService>();
 builder.Services.AddScoped<IAuditLogService,              AuditLogService>();
 builder.Services.AddScoped<IChatService,                  ChatService>();
+builder.Services.AddScoped<IWalletService,                WalletService>();
 builder.Services.AddScoped<JwtTokenHelper>();
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -213,6 +214,9 @@ app.UseSwaggerUI(c =>
     c.EnableFilter();
     c.EnableTryItOutByDefault();
 });
+
+// ── Static Files (review photos, etc.) ───────────────────────────────────
+app.UseStaticFiles();
 
 // ── CORS ──────────────────────────────────────────────────────────────────
 app.UseCors();

@@ -232,59 +232,67 @@ namespace HotelBookingApp.Services
         }
 
         private static string HandleCancellationPolicy(string lower)
-        {
-            // ── REFUND CALCULATOR ─────────────────────────────────────────
-            // Uses the same logic as AppDelegateFactory.StandardRefundPolicy:
-            //   hoursUntilCheckIn >= 24  →  80% refund
-            //   hoursUntilCheckIn <  24  →  No refund
-            if (ContainsAny(lower, "calculate refund", "how much refund", "refund amount", "refund calculator", "refund if i cancel"))
-                return
-                    "🧮 **Refund Calculator:**\n\n" +
-                    "Your refund is calculated automatically when you request a cancellation:\n\n" +
-                    "| Time Before Check-in | Refund |\n" +
-                    "|---|---|\n" +
-                    "| **24+ hours** | **80% of booking amount** |\n" +
-                    "| **Less than 24 hours** | **No refund (₹0)** |\n\n" +
-                    "**Example:**\n" +
-                    "• Booking amount: ₹5,000\n" +
-                    "• Cancel 2 days before → ₹4,000 refund (80%)\n" +
-                    "• Cancel same day → ₹0 refund\n\n" +
-                    "💡 The refund amount is shown when you request cancellation in **My Dashboard → Bookings**.";
+                {
+                    // ── REFUND CALCULATOR ─────────────────────────────────────────
+                    // Uses the same logic as AppDelegateFactory.StandardRefundPolicy:
+                    //   ≥ 5 days → 100% full refund
+                    //   3–5 days → 50% refund
+                    //   1–3 days → 25% refund
+                    //   ≤ 1 day  → 100% full refund
+                    if (ContainsAny(lower, "calculate refund", "how much refund", "refund amount", "refund calculator", "refund if i cancel"))
+                        return
+                            "🧮 **Refund Calculator:**\n\n" +
+                            "Your refund is calculated automatically when you request a cancellation:\n\n" +
+                            "| Time Before Check-in | Refund |\n" +
+                            "|---|---|\n" +
+                            "| **5 days or more** | **100% full refund** |\n" +
+                            "| **3 to 5 days** | **50% of booking amount** |\n" +
+                            "| **1 to 3 days** | **25% of booking amount** |\n" +
+                            "| **Within 1 day** | **100% full refund** |\n\n" +
+                            "**Example (₹5,000 booking):**\n" +
+                            "• Cancel 6 days before → ₹5,000 refund (100%)\n" +
+                            "• Cancel 4 days before → ₹2,500 refund (50%)\n" +
+                            "• Cancel 2 days before → ₹1,250 refund (25%)\n" +
+                            "• Cancel same day → ₹5,000 refund (100%)\n\n" +
+                            "💡 Refund is credited instantly to your **Wallet Balance**.";
 
-            if (ContainsAny(lower, "refund", "money", "get back", "money back"))
-                return
-                    "💰 **Refund Policy:**\n\n" +
-                    "StayEase uses an automatic refund calculator based on how early you cancel:\n\n" +
-                    "• **24+ hours before check-in** → **80% refund** of total booking amount\n" +
-                    "• **Less than 24 hours before check-in** → **No refund**\n\n" +
-                    "**How it works:**\n" +
-                    "The system calculates your refund automatically using our refund policy delegate " +
-                    "when you submit a cancellation request.\n\n" +
-                    "Refunds are processed within **5–7 business days** after admin approval.\n\n" +
-                    "Type **calculate refund** to see examples.";
+                    if (ContainsAny(lower, "refund", "money", "get back", "money back"))
+                        return
+                            "💰 **Refund Policy:**\n\n" +
+                            "StayEase uses an automatic refund calculator based on how close to check-in you cancel:\n\n" +
+                            "• **5 days or more before check-in** → **100% full refund**\n" +
+                            "• **3 to 5 days before check-in** → **50% refund**\n" +
+                            "• **1 to 3 days before check-in** → **25% refund**\n" +
+                            "• **Within 1 day of check-in** → **100% full refund**\n\n" +
+                            "Refunds are credited **instantly** to your Wallet Balance.\n\n" +
+                            "Type **calculate refund** to see examples.";
 
-            if (ContainsAny(lower, "how to cancel", "cancel my", "request cancel", "steps to cancel"))
-                return
-                    "❌ **How to Cancel a Booking:**\n\n" +
-                    "1. Go to **My Dashboard → Bookings**\n" +
-                    "2. Find your booking and click **Request Cancellation**\n" +
-                    "3. Enter a reason and submit\n" +
-                    "4. The system auto-calculates your refund:\n" +
-                    "   • Cancel **24h+ before** check-in → **80% refund**\n" +
-                    "   • Cancel **within 24h** → **No refund**\n" +
-                    "5. Admin reviews and approves/rejects within 24 hours\n\n" +
-                    "💡 **Pending** bookings can be cancelled directly without a request.";
+                    if (ContainsAny(lower, "how to cancel", "cancel my", "request cancel", "steps to cancel"))
+                        return
+                            "❌ **How to Cancel a Booking:**\n\n" +
+                            "1. Go to **My Dashboard → Bookings**\n" +
+                            "2. Find your booking and click **Request Cancellation**\n" +
+                            "3. Enter a reason and submit\n" +
+                            "4. The system auto-calculates your refund:\n" +
+                            "   • Cancel **5+ days before** → **100% full refund**\n" +
+                            "   • Cancel **3–5 days before** → **50% refund**\n" +
+                            "   • Cancel **1–3 days before** → **25% refund**\n" +
+                            "   • Cancel **within 1 day** → **100% full refund**\n" +
+                            "5. Refund is credited instantly to your **Wallet Balance**\n\n" +
+                            "💡 **Pending** bookings can be cancelled directly without a request.";
 
-            // Default cancellation policy summary
-            return
-                "📋 **Cancellation Policy:**\n\n" +
-                "Our refund policy is calculated automatically:\n\n" +
-                "• Cancel **24+ hours** before check-in → **80% refund**\n" +
-                "• Cancel **less than 24 hours** before check-in → **No refund**\n\n" +
-                "The refund amount is computed by our system at the time of cancellation request.\n\n" +
-                "To cancel, visit **My Dashboard → Bookings** and click **Request Cancellation**.\n\n" +
-                "Ask me:\n• **How to cancel** — step-by-step guide\n• **Calculate refund** — see refund examples";
-        }
+                    // Default cancellation policy summary
+                    return
+                        "📋 **Cancellation Policy:**\n\n" +
+                        "Our refund policy is calculated automatically:\n\n" +
+                        "• Cancel **5 days or more** before check-in → **100% full refund**\n" +
+                        "• Cancel **3 to 5 days** before check-in → **50% refund**\n" +
+                        "• Cancel **1 to 3 days** before check-in → **25% refund**\n" +
+                        "• Cancel **within 1 day** of check-in → **100% full refund**\n\n" +
+                        "Refunds are credited instantly to your **Wallet Balance**.\n\n" +
+                        "Ask me:\n• **How to cancel** — step-by-step guide\n• **Calculate refund** — see refund examples";
+                }
+
 
         private static string HandlePaymentQuery(string lower)
         {

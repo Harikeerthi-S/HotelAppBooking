@@ -22,6 +22,8 @@ namespace HotelBookingApp.Context
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<Wallet> Wallets { get; set; }
+        public DbSet<WalletTransaction> WalletTransactions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -182,6 +184,29 @@ namespace HotelBookingApp.Context
                  .WithMany()
                  .HasForeignKey(c => c.UserId)
                  .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // ── WALLET ───────────────────────────────────────────────────
+            modelBuilder.Entity<Wallet>(e =>
+            {
+                e.Property(w => w.Balance).HasPrecision(18, 2);
+
+                e.HasIndex(w => w.UserId).IsUnique(); // one wallet per user
+
+                e.HasOne(w => w.User)
+                 .WithMany()
+                 .HasForeignKey(w => w.UserId)
+                 .OnDelete(DeleteBehavior.Cascade);
+
+                e.HasMany(w => w.Transactions)
+                 .WithOne(t => t.Wallet)
+                 .HasForeignKey(t => t.WalletId)
+                 .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<WalletTransaction>(e =>
+            {
+                e.Property(t => t.Amount).HasPrecision(18, 2);
             });
 
         }

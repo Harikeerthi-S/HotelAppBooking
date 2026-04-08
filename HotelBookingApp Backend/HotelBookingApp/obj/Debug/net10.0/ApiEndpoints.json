@@ -1121,6 +1121,27 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "HotelBookingApp.Controllers.ReviewController",
+    "Method": "UploadPhoto",
+    "RelativePath": "api/review/upload-photo/{reviewId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "reviewId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "photo",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "HotelBookingApp.Controllers.RoomController",
     "Method": "Create",
     "RelativePath": "api/room",
@@ -1321,6 +1342,85 @@
       {
         "Name": "request",
         "Type": "HotelBookingApp.Models.Dtos.RegisterRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.WalletController",
+    "Method": "GetWallet",
+    "RelativePath": "api/wallet/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.WalletController",
+    "Method": "Debit",
+    "RelativePath": "api/wallet/{userId}/debit",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "amount",
+        "Type": "System.Decimal",
+        "IsRequired": false
+      },
+      {
+        "Name": "description",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.WalletController",
+    "Method": "ProcessPendingRefunds",
+    "RelativePath": "api/wallet/{userId}/process-pending-refunds",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "HotelBookingApp.Controllers.WalletController",
+    "Method": "GetTransactions",
+    "RelativePath": "api/wallet/{userId}/transactions",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "HotelBookingApp.Models.Dtos.PagedRequestDto",
         "IsRequired": true
       }
     ],

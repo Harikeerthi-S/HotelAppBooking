@@ -972,3 +972,5 @@ C:\Users\Harini.K\OneDrive - New American Funding\Desktop\keerthi\HotelAppBookin
 C:\Users\Harini.K\OneDrive - New American Funding\Desktop\keerthi\HotelAppBooking\HotelBookingApp Backend\HotelBookingApp\obj\Debug\net10.0\HotelBookingApp.pdb
 C:\Users\Harini.K\OneDrive - New American Funding\Desktop\keerthi\HotelAppBooking\HotelBookingApp Backend\HotelBookingApp\obj\Debug\net10.0\HotelBookingApp.genruntimeconfig.cache
 C:\Users\Harini.K\OneDrive - New American Funding\Desktop\keerthi\HotelAppBooking\HotelBookingApp Backend\HotelBookingApp\obj\Debug\net10.0\ref\HotelBookingApp.dll
+C:\Users\Harini.K\OneDrive - New American Funding\Desktop\keerthi\HotelAppBooking\HotelBookingApp Backend\HotelBookingApp\bin\Debug\net10.0\HotelBookingApp.staticwebassets.runtime.json
+C:\Users\Harini.K\OneDrive - New American Funding\Desktop\keerthi\HotelAppBooking\HotelBookingApp Backend\HotelBookingApp\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt

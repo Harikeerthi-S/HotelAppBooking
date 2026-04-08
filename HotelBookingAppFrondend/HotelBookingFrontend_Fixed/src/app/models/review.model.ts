@@ -4,5 +4,7 @@ export class ReviewModel {
   userId: number = 0;
   rating: number = 0;
   comment: string = '';
+  photoUrl: string | null = null;
+  coinsEarned: number = 0;
   createdAt: string = '';
 }

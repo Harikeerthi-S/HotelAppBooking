@@ -35,12 +35,11 @@ namespace HotelBookingApp.Services
             _logger      = logger;
         }
 
-        private void Log(string action, int? entityId, int? userId = null, string? changes = null)
-            => _ = _audit.CreateAsync(new CreateAuditLogDto
-            {
-                UserId = userId, Action = action, EntityName = "Payment",
-                EntityId = entityId, Changes = changes
-            });
+        private async Task LogAsync(string action, int? entityId, int? userId = null, string? changes = null)
+        {
+            try { await _audit.CreateAsync(new CreateAuditLogDto { UserId = userId, Action = action, EntityName = "Payment", EntityId = entityId, Changes = changes }); }
+            catch (Exception ex) { _logger.LogWarning(ex, "Audit log failed: {Action}", action); }
+        }
 
         // ─────────────────────────────────────────────
         // ✅ MAKE PAYMENT
@@ -110,7 +109,7 @@ namespace HotelBookingApp.Services
 
             _logger.LogInformation("Payment created: {PaymentId} Status={Status}",
                 created.PaymentId, created.PaymentStatus);
-            Log("PaymentCreated", created.PaymentId, booking.UserId,
+            await LogAsync("PaymentCreated", created.PaymentId, booking.UserId,
                 $"Booking:{dto.BookingId} ₹{dto.Amount} {dto.PaymentMethod} Status:{status}");
             return MapToDto(created);
         }
@@ -245,7 +244,7 @@ namespace HotelBookingApp.Services
             };
 
             await _paymentRepo.UpdateAsync(paymentId, updated);
-            Log("PaymentStatusUpdated", paymentId, null, $"Status→{status}");
+            await LogAsync("PaymentStatusUpdated", paymentId, null, $"Status→{status}");
 
             // Sync booking status
             try

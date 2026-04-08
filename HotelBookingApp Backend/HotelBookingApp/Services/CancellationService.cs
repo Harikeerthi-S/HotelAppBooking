@@ -11,6 +11,9 @@ namespace HotelBookingApp.Services
     {
         private readonly IRepository<int, Cancellation> _cancellationRepo;
         private readonly IRepository<int, Booking>      _bookingRepo;
+        private readonly IRepository<int, User>         _userRepo;
+        private readonly INotificationService           _notificationService;
+        private readonly IWalletService                 _walletService;
         private readonly IAuditLogService               _audit;
         private readonly ILogger<CancellationService>   _logger;
 
@@ -22,21 +25,36 @@ namespace HotelBookingApp.Services
         public CancellationService(
             IRepository<int, Cancellation> cancellationRepo,
             IRepository<int, Booking>      bookingRepo,
+            IRepository<int, User>         userRepo,
+            INotificationService           notificationService,
+            IWalletService                 walletService,
             IAuditLogService               audit,
             ILogger<CancellationService>   logger)
         {
-            _cancellationRepo = cancellationRepo;
-            _bookingRepo      = bookingRepo;
-            _audit            = audit;
-            _logger           = logger;
+            _cancellationRepo    = cancellationRepo;
+            _bookingRepo         = bookingRepo;
+            _userRepo            = userRepo;
+            _notificationService = notificationService;
+            _walletService       = walletService;
+            _audit               = audit;
+            _logger              = logger;
         }
 
-        private void Log(string action, int? entityId, int? userId = null, string? changes = null)
-            => _ = _audit.CreateAsync(new CreateAuditLogDto
+        private async Task LogAsync(string action, int? entityId, int? userId = null, string? changes = null)
+        {
+            try
             {
-                UserId = userId, Action = action, EntityName = "Cancellation",
-                EntityId = entityId, Changes = changes
-            });
+                await _audit.CreateAsync(new CreateAuditLogDto
+                {
+                    UserId = userId, Action = action, EntityName = "Cancellation",
+                    EntityId = entityId, Changes = changes
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Audit log failed for action {Action}", action);
+            }
+        }
 
         // ── CREATE ─────────────────────────────
         public async Task<CancellationResponseDto> CreateAsync(CreateCancellationDto dto)
@@ -62,8 +80,60 @@ namespace HotelBookingApp.Services
             await _cancellationRepo.AddAsync(cancellation);
             booking.Status = "Cancelled";
             await _bookingRepo.UpdateAsync(booking.BookingId, booking);
-            Log("CancellationRequested", cancellation.CancellationId, booking.UserId,
+            await LogAsync("CancellationRequested", cancellation.CancellationId, booking.UserId,
                 $"Booking:{dto.BookingId} Refund:₹{refundAmount}");
+
+            // Auto-credit wallet if refund applies
+            if (refundAmount > 0)
+            {
+                await _walletService.CreditAsync(
+                    booking.UserId,
+                    refundAmount,
+                    $"Refund for Booking #{booking.BookingId} cancellation",
+                    cancellation.CancellationId);
+
+                cancellation.Status = "Refunded";
+                await _cancellationRepo.UpdateAsync(cancellation.CancellationId, cancellation);
+                booking.Status = "Refunded";
+                await _bookingRepo.UpdateAsync(booking.BookingId, booking);
+
+                await LogAsync("AutoRefundCredited", cancellation.CancellationId, booking.UserId,
+                    $"₹{refundAmount} credited to wallet of User:{booking.UserId}");
+
+                // Notify the user about their refund
+                try
+                {
+                    await _notificationService.CreateAsync(new CreateNotificationDto
+                    {
+                        UserId  = booking.UserId,
+                        Message = $"✅ Refund Processed: ₹{refundAmount:N2} has been credited to your Wallet for cancellation of Booking #{booking.BookingId}. Check your Wallet Balance in the dashboard."
+                    });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to send refund notification to User:{UserId}", booking.UserId);
+                }
+            }
+            else
+            {
+                // Notify user that no refund applies
+                try
+                {
+                    await _notificationService.CreateAsync(new CreateNotificationDto
+                    {
+                        UserId  = booking.UserId,
+                        Message = $"❌ Booking #{booking.BookingId} has been cancelled. No refund is applicable as per our cancellation policy (cancellation more than 5 days before check-in)."
+                    });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to send cancellation notification to User:{UserId}", booking.UserId);
+                }
+            }
+
+            // Notify all hotel managers automatically
+            await NotifyHotelManagersAsync(booking, cancellation, refundAmount);
+
             return MapToDto(cancellation);
         }
 
@@ -154,7 +224,7 @@ namespace HotelBookingApp.Services
                 cancellation.RefundAmount = refundAmount;
 
             await _cancellationRepo.UpdateAsync(cancellationId, cancellation);
-            Log("CancellationStatusUpdated", cancellationId, null, $"Status→{status} Refund:₹{cancellation.RefundAmount}");
+            await LogAsync("CancellationStatusUpdated", cancellationId, null, $"Status→{status} Refund:₹{cancellation.RefundAmount}");
 
             if (status == "Refunded")
             {
@@ -167,6 +237,34 @@ namespace HotelBookingApp.Services
             }
 
             return MapToDto(cancellation);
+        }
+
+        // ── NOTIFY HOTEL MANAGERS ───────────────
+        private async Task NotifyHotelManagersAsync(Booking booking, Cancellation cancellation, decimal refundAmount)
+        {
+            var managers = await _userRepo.FindAllAsync(u => u.Role == "hotelmanager");
+            var refundNote = refundAmount > 0
+                ? $"Refund: ₹{refundAmount:N2}"
+                : "No refund applicable";
+
+            var message = $"Cancellation Alert: Booking #{booking.BookingId} has been cancelled. " +
+                          $"Hotel #{booking.HotelId} | Room #{booking.RoomId} | {refundNote}.";
+
+            foreach (var manager in managers)
+            {
+                try
+                {
+                    await _notificationService.CreateAsync(new CreateNotificationDto
+                    {
+                        UserId  = manager.UserId,
+                        Message = message
+                    });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to notify hotel manager {ManagerId}", manager.UserId);
+                }
+            }
         }
 
         // ── HELPER ─────────────────────────────

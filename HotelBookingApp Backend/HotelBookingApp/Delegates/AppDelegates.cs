@@ -24,13 +24,21 @@ namespace HotelBookingApp.Delegates
     public static class AppDelegateFactory
     {
         /// <summary>
-        /// Standard refund policy:
-        ///   >= 24 hours before check-in → 80% refund
-        ///   <  24 hours before check-in → 0% refund
+        /// Standard refund policy based on days before check-in:
+        ///   ≥ 5 days → 100% full refund
+        ///   3–5 days → 50% refund
+        ///   1–3 days → 25% refund
+        ///   ≤ 1 day  → 100% full refund
         /// </summary>
         public static readonly RefundCalculatorDelegate StandardRefundPolicy =
             (totalAmount, hoursUntilCheckIn) =>
-                hoursUntilCheckIn >= 24 ? Math.Round(totalAmount * 0.8m, 2) : 0m;
+            {
+                var days = hoursUntilCheckIn / 24.0;
+                if (days >= 5) return Math.Round(totalAmount * 1.00m, 2); // 5+ days  → 100%
+                if (days > 3)  return Math.Round(totalAmount * 0.50m, 2); // 3–5 days → 50%
+                if (days > 1)  return Math.Round(totalAmount * 0.25m, 2); // 1–3 days → 25%
+                return Math.Round(totalAmount * 1.00m, 2);                // ≤ 1 day  → 100%
+            };
 
         /// <summary>
         /// Returns a human-readable refund breakdown string for a given amount and hours.
@@ -38,12 +46,24 @@ namespace HotelBookingApp.Delegates
         /// </summary>
         public static string DescribeRefund(decimal totalAmount, double hoursUntilCheckIn)
         {
-            if (hoursUntilCheckIn >= 24)
+            var days = hoursUntilCheckIn / 24.0;
+            if (days >= 5)
             {
-                var refund = Math.Round(totalAmount * 0.8m, 2);
-                return $"80% refund = ₹{refund:N2} (cancelled {hoursUntilCheckIn:F0}h before check-in)";
+                var refund = Math.Round(totalAmount * 1.00m, 2);
+                return $"100% refund = ₹{refund:N2} (cancelled 5 or more days before check-in)";
             }
-            return $"No refund (cancelled less than 24h before check-in)";
+            if (days > 3)
+            {
+                var refund = Math.Round(totalAmount * 0.50m, 2);
+                return $"50% refund = ₹{refund:N2} (cancelled 3–5 days before check-in)";
+            }
+            if (days > 1)
+            {
+                var refund = Math.Round(totalAmount * 0.25m, 2);
+                return $"25% refund = ₹{refund:N2} (cancelled 1–3 days before check-in)";
+            }
+            var full = Math.Round(totalAmount * 1.00m, 2);
+            return $"100% refund = ₹{full:N2} (cancelled within 1 day of check-in)";
         }
 
         /// <summary>Resolves payment status based on method and amounts.</summary>

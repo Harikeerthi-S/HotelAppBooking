@@ -21,6 +21,10 @@ namespace HotelBookingApp.Models
         [Required, MaxLength(2000)]
         public string Comment { get; set; } = string.Empty;
 
+        /// <summary>Optional photo uploaded with the review.</summary>
+        [MaxLength(500)]
+        public string? PhotoUrl { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [ForeignKey(nameof(HotelId))] public Hotel? Hotel { get; set; }
