@@ -1,0 +1,66 @@
+/* ── Page header ── */
+.page-header { background: linear-gradient(135deg, #f57f17, #e65100); color: #fff; padding: 32px 0 24px; margin-bottom: 28px; }
+.page-header h1 { font-size: 1.8rem; font-weight: 700; margin: 0; }
+.page-header p  { margin: 4px 0 0; opacity: .85; font-size: .9rem; }
+
+/* ── Hero balance card ── */
+.wallet-hero-card {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  border-radius: 20px;
+  padding: 32px 36px;
+  color: #fff;
+  box-shadow: 0 12px 40px rgba(0,0,0,.25);
+}
+.wallet-coin-big { font-size: 3.5rem; line-height: 1; }
+.wallet-balance-label { font-size: .8rem; text-transform: uppercase; letter-spacing: 1.5px; opacity: .7; margin-bottom: 4px; }
+.wallet-balance-amount { font-size: 3rem; font-weight: 800; line-height: 1; color: #ffd54f; }
+.wallet-balance-unit { font-size: 1rem; font-weight: 400; opacity: .8; margin-left: 6px; }
+.wallet-updated { font-size: .75rem; }
+
+/* ── Summary chips ── */
+.wallet-chip { padding: 6px 14px; border-radius: 20px; font-size: .78rem; display: inline-flex; align-items: center; gap: 4px; }
+.wallet-chip-credit { background: rgba(105,240,174,.15); color: #69f0ae; border: 1px solid rgba(105,240,174,.3); }
+.wallet-chip-debit  { background: rgba(255,82,82,.15);  color: #ff5252;  border: 1px solid rgba(255,82,82,.3); }
+.wallet-chip-count  { background: rgba(255,255,255,.1); color: #fff;     border: 1px solid rgba(255,255,255,.2); }
+
+/* ── Earn tiles ── */
+.earn-tile { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; height: 100%; transition: box-shadow .2s; color: var(--text); }
+.earn-tile:hover { box-shadow: 0 4px 16px rgba(245,127,23,.15); }
+.earn-icon { font-size: 1.8rem; margin-bottom: 6px; }
+.earn-amount { font-size: .85rem; font-weight: 700; color: #f57f17; margin: 4px 0; }
+.refund-policy-tile { text-align: left; }
+
+/* ── Filter tabs ── */
+.filter-tab { border: 1px solid var(--border); background: var(--card-bg); color: var(--text-muted); font-size: .78rem; font-weight: 600; transition: all .2s; }
+.filter-tab.active { background: linear-gradient(135deg, #f57f17, #e65100); color: #fff; border-color: transparent; box-shadow: 0 4px 12px rgba(245,127,23,.3); }
+.filter-tab:not(.active):hover { border-color: #f57f17; color: #f57f17; }
+
+/* ── Transaction card ── */
+.tx-card { border-bottom: 1px solid var(--border); padding: 12px 0; }
+.tx-card:last-child { border-bottom: none; }
+
+.tx-icon-wrap { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 700; flex-shrink: 0; }
+.tx-credit { background: #e8f5e9; color: #2e7d32; }
+.tx-debit  { background: #fce4ec; color: #c62828; }
+.tx-arrow  { font-size: 1.2rem; font-weight: 800; }
+
+.tx-amount { font-size: 1rem; font-weight: 700; white-space: nowrap; }
+.tx-amount-credit { color: #2e7d32; }
+.tx-amount-debit  { color: #c62828; }
+
+/* ── Pager ── */
+.dash-pager { display: flex; align-items: center; justify-content: center; gap: .65rem; flex-wrap: wrap; }
+.dash-pager__btn { width: 2.5rem; height: 2.5rem; border-radius: 50%; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-muted); display: inline-flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; transition: border-color .15s, color .15s; }
+.dash-pager__btn:not(:disabled):hover { border-color: #f57f17; color: #f57f17; }
+.dash-pager__btn:disabled { opacity: .45; cursor: not-allowed; }
+.dash-pager__current { width: 2.5rem; height: 2.5rem; border-radius: 50%; background: linear-gradient(145deg, #f57f17, #e65100); color: #fff; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(245,127,23,.45); }
+.dash-pager__meta { padding: .35rem .9rem; border-radius: 999px; background: linear-gradient(145deg, #f57f17, #e65100); color: #fff; font-size: .82rem; font-weight: 600; }
+
+/* ── Misc ── */
+.fw-600 { font-weight: 600; }
+.fw-700 { font-weight: 700; }
+.spinner-wrap { display: flex; justify-content: center; align-items: center; min-height: 200px; }
+.spinner-ring  { width: 44px; height: 44px; border: 4px solid #fce4ec; border-top-color: #f57f17; border-radius: 50%; animation: spin .75s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+.empty-icon  { font-size: 3rem; display: block; margin-bottom: 10px; opacity: .35; }

@@ -1,0 +1,18 @@
+.profile-avatar { width:88px; height:88px; border-radius:50%; background:linear-gradient(135deg,#e84393,#c2185b); color:#fff; font-size:2.2rem; font-weight:700; display:flex; align-items:center; justify-content:center; }
+
+.role-badge { display:inline-block; padding:5px 16px; border-radius:50px; font-size:.82rem; font-weight:600; }
+.badge-admin   { background:#fce4ec; color:#c62828; }
+.badge-manager { background:#e8f5e9; color:#2e7d32; }
+.badge-user    { background:#e3f2fd; color:#0277bd; }
+
+.info-field { padding:12px 0; border-bottom:1px solid var(--border); }
+.info-field:last-child { border-bottom:none; }
+.info-label { font-size:.78rem; color:var(--text-muted); margin-bottom:4px; }
+.info-value { font-weight:600; font-size:.95rem; color:var(--text); }
+
+.nav-link-item { display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--text); padding:12px 14px; border-radius:10px; border:1px solid var(--border); transition:all .2s; background:var(--card-bg); }
+.nav-link-item:hover { background:var(--bg); border-color:#e84393; }
+.nav-link-item i:first-child { font-size:1.1rem; width:22px; text-align:center; }
+
+.fw-700 { font-weight:700; }
+.fw-600 { font-weight:600; }

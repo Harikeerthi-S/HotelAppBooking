@@ -1,0 +1,46 @@
+.price-tag { font-size:1.4rem; font-weight:700; color:var(--primary); }
+.pay-method { border:2px solid var(--border); border-radius:10px; padding:14px 8px; cursor:pointer; transition:all .2s; text-align:center; background:var(--card-bg); color:var(--text); }
+.pay-method:hover { border-color:#e84393; background:var(--primary-light); }
+.pay-method.selected { border-color:#e84393; background:var(--primary-light); }
+.pay-icon { font-size:1.8rem; }
+.btn-primary-custom { background:linear-gradient(135deg,#e84393,#c2185b); border:none; color:#fff; box-shadow:0 4px 14px rgba(232,67,147,.3); transition:all .2s; }
+.btn-primary-custom:hover { transform:translateY(-1px); color:#fff; }
+.btn-primary-custom:disabled { opacity:.65; pointer-events:none; }
+.fw-600 { font-weight:600; }
+.fw-700 { font-weight:700; }
+
+/* ── Card Preview ── */
+.card-preview {
+  background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+  border-radius: 16px;
+  padding: 24px 20px 20px;
+  color: #fff;
+  position: relative;
+  min-height: 140px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.25);
+}
+.card-preview-chip {
+  width: 36px; height: 28px;
+  background: linear-gradient(135deg, #f0c040, #d4a017);
+  border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .9rem; margin-bottom: 16px;
+}
+.card-preview-number {
+  font-size: 1.15rem;
+  letter-spacing: 3px;
+  font-family: 'Courier New', monospace;
+  margin-bottom: 8px;
+}
+.card-preview-label { font-size: .65rem; opacity: .7; text-transform: uppercase; letter-spacing: 1px; }
+.card-preview-value { font-size: .85rem; font-weight: 600; letter-spacing: 1px; }
+
+/* ── Confirm rows ── */
+.confirm-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border, #eee);
+}
+.confirm-row:last-of-type { border-bottom: none; }

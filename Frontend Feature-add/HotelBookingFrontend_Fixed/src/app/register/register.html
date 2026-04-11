@@ -1,0 +1,81 @@
+<div class="register-page d-flex align-items-center justify-content-center min-vh-100 py-4">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6 col-xl-5">
+        <div class="card border-0 shadow-lg" style="border-radius:20px">
+          <div class="card-body p-4 p-lg-5">
+
+            <div class="text-center mb-4">
+              <div style="font-size:2.8rem">🏨</div>
+              <h4 class="fw-bold mt-2 mb-1">Create Account</h4>
+              <p class="text-muted small">Join StayEase and start booking today</p>
+            </div>
+
+            <form [formGroup]="registerForm" (ngSubmit)="register()">
+
+              <div class="mb-3">
+                <label class="form-label" for="regName">Full Name</label>
+                <input class="form-control" id="regName" type="text"
+                       formControlName="userName" placeholder="John Doe">
+                @if (userName!.touched && userName!.invalid) {
+                  <div class="text-danger small mt-1">Name must be at least 2 characters.</div>
+                }
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label" for="regEmail">Email Address</label>
+                <input class="form-control" id="regEmail" type="email"
+                       formControlName="email" placeholder="you@example.com">
+                @if (email!.touched && email!.invalid) {
+                  <div class="text-danger small mt-1">Please enter a valid email address.</div>
+                }
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label" for="regPhone">Phone (optional)</label>
+                <input class="form-control" id="regPhone" type="tel"
+                       formControlName="phone" placeholder="+91 9876543210">
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label" for="regPassword">Password</label>
+                <div class="input-group">
+                  <input class="form-control" id="regPassword"
+                         [type]="showPass() ? 'text' : 'password'"
+                         formControlName="password"
+                         placeholder="Min 8 chars, 1 uppercase, 1 number">
+                  <button class="btn btn-outline-secondary" type="button"
+                          (click)="showPass.update(v => !v)">
+                    <i class="bi"
+                       [class.bi-eye]="!showPass()"
+                       [class.bi-eye-slash]="showPass()"></i>
+                  </button>
+                </div>
+                @if (password!.touched && password!.invalid) {
+                  <div class="text-danger small mt-1">
+                    Password needs 8+ characters, one uppercase letter and one number.
+                  </div>
+                }
+              </div>
+
+              <button class="btn btn-primary-custom w-100 py-2 fw-600 rounded-pill"
+                      type="submit" [disabled]="loading()">
+                @if (loading()) {
+                  <span class="spinner-border spinner-border-sm me-2"></span>Creating account…
+                } @else {
+                  <i class="bi bi-person-plus me-2"></i>Create Account
+                }
+              </button>
+
+            </form>
+
+            <p class="text-center text-muted small mt-3 mb-0">
+              Already have an account?
+              <a routerLink="/login" class="text-primary fw-600">Sign In</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

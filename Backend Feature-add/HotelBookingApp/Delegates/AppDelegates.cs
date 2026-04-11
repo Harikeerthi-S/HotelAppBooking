@@ -1,0 +1,108 @@
+namespace HotelBookingApp.Delegates
+{
+    // ── Validation Delegates ──────────────────────────────────────────────
+    /// <summary>Validates any single string value — returns error message or null if valid.</summary>
+    //public delegate string? StringValidatorDelegate(string value);
+
+    /// <summary>Validates a decimal value — returns error message or null if valid.</summary>
+    public delegate string? DecimalValidatorDelegate(decimal value);
+
+    /// <summary>Validates a date range — returns error message or null if valid.</summary>
+    public delegate string? DateRangeValidatorDelegate(DateTime checkIn, DateTime checkOut);
+
+    // ── Mapping / Transform Delegates ────────────────────────────────────
+    /// <summary>Computes refund amount given total booking amount and hours until check-in.</summary>
+    public delegate decimal RefundCalculatorDelegate(decimal totalAmount, double hoursUntilCheckIn);
+
+    /// <summary>Determines payment status string from method and amount.</summary>
+    public delegate string PaymentStatusResolverDelegate(string paymentMethod, decimal amount, decimal bookingAmount);
+
+    /// <summary>Formats a log message string given level and details.</summary>
+    public delegate string LogFormatterDelegate(string level, string context, string message);
+
+    // ── Pre-built delegate factory methods ────────────────────────────────
+    public static class AppDelegateFactory
+    {
+        /// <summary>
+        /// Tiered refund policy based on days until check-in:
+        ///   ≥ 5 days  → 100% refund
+        ///   3–5 days  →  50% refund
+        ///   1–3 days  →  25% refund
+        ///   ≤ 1 day   →   0% refund (no refund)
+        /// </summary>
+        public static readonly RefundCalculatorDelegate StandardRefundPolicy =
+            (totalAmount, hoursUntilCheckIn) =>
+            {
+                decimal pct = hoursUntilCheckIn switch
+                {
+                    >= 120 => 1.00m,   // ≥ 5 days
+                    >= 72  => 0.50m,   // 3–5 days
+                    >= 24  => 0.25m,   // 1–3 days
+                    _      => 0.00m    // ≤ 1 day
+                };
+                return Math.Round(totalAmount * pct, 2);
+            };
+
+        /// <summary>Returns the refund percentage (0–100) for a given hours-until-check-in.</summary>
+        public static int RefundPercent(double hoursUntilCheckIn) =>
+            hoursUntilCheckIn switch
+            {
+                >= 120 => 100,
+                >= 72  => 50,
+                >= 24  => 25,
+                _      => 0
+            };
+
+        public static string RefundTierLabel(double hoursUntilCheckIn) =>
+            hoursUntilCheckIn switch
+            {
+                >= 120 => "≥ 5 days — 100% refund",
+                >= 72  => "3–5 days — 50% refund",
+                >= 24  => "1–3 days — 25% refund",
+                _      => "≤ 1 day — No refund"
+            };
+
+        /// <summary>
+        /// Returns a human-readable refund breakdown string for a given amount and hours.
+        /// Used by ChatService to explain refund to users.
+        /// </summary>
+        public static string DescribeRefund(decimal totalAmount, double hoursUntilCheckIn)
+        {
+            var pct    = RefundPercent(hoursUntilCheckIn);
+            var refund = Math.Round(totalAmount * pct / 100m, 2);
+            var label  = RefundTierLabel(hoursUntilCheckIn);
+            return pct > 0
+                ? $"{label} = ₹{refund:N2}"
+                : $"{label} (₹0)";
+        }
+
+        /// <summary>Resolves payment status based on method and amounts.</summary>
+        public static readonly PaymentStatusResolverDelegate DefaultPaymentStatusResolver =
+            (method, amount, bookingAmount) =>
+            {
+                if (amount < bookingAmount) return "Failed";
+                return method switch
+                {
+                    "CreditCard" or "DebitCard" or "NetBanking" => "Completed",
+                    _ => "Failed"
+                };
+            };
+
+        /// <summary>Validates that a check-out date is after check-in and check-in is not in the past.</summary>
+        public static readonly DateRangeValidatorDelegate StrictDateRangeValidator =
+            (checkIn, checkOut) =>
+            {
+                if (checkIn < DateTime.UtcNow.Date)
+                    return "Check-in date cannot be in the past.";
+                if (checkOut <= checkIn)
+                    return "Check-out date must be after check-in date.";
+                return null;
+            };
+
+        /// <summary>Credits awarded for uploading a photo with a review.</summary>
+        public const decimal PhotoReviewCredits = 100m;
+        public static readonly LogFormatterDelegate StandardLogFormatter =
+            (level, context, message) =>
+                $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] [{level.ToUpper()}] [{context}] {message}";
+    }
+}

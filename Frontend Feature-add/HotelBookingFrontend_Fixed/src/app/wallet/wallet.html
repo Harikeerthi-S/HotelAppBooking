@@ -1,0 +1,189 @@
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div>
+        <h1>🪙 My Wallet</h1>
+        <p>Refunds and reward coins</p>
+      </div>
+      <div class="d-flex gap-2">
+        <a routerLink="/dashboard-user" class="btn btn-sm btn-outline-light rounded-pill">
+          <i class="bi bi-arrow-left me-1"></i>Dashboard
+        </a>
+        <button class="btn btn-sm btn-outline-light rounded-pill" (click)="refresh()">
+          <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+
+  @if (loading()) {
+    <div class="spinner-wrap"><div class="spinner-ring"></div></div>
+  } @else if (!wallet()) {
+    <div class="empty-state card border-0 shadow-sm py-5">
+      <i class="bi bi-wallet2 empty-icon"></i>
+      <h5 class="fw-600 mt-2">Wallet not found</h5>
+      <p class="text-muted small">Your wallet will be created automatically when you receive a refund or earn coins.</p>
+    </div>
+  } @else {
+
+    <!-- BALANCE CARD -->
+    <div class="wallet-hero-card mb-4">
+      <div class="d-flex align-items-center gap-4 flex-wrap">
+        <div class="wallet-coin-big">🪙</div>
+        <div>
+          <div class="wallet-balance-label">Available Balance</div>
+          <div class="wallet-balance-amount">
+            {{ wallet()!.balance.toLocaleString('en-IN') }}
+            <span class="wallet-balance-unit">Coins</span>
+          </div>
+          <div class="wallet-updated text-white-50 small mt-1">
+            Last updated: {{ wallet()!.updatedAt | date:'medium' }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary chips -->
+      <div class="d-flex gap-3 mt-4 flex-wrap">
+        <div class="wallet-chip wallet-chip-credit">
+          <i class="bi bi-arrow-up-circle-fill me-1"></i>
+          Total Credits: <strong>{{ totalCredits().toLocaleString('en-IN') }} 🪙</strong>
+        </div>
+        <div class="wallet-chip wallet-chip-debit">
+          <i class="bi bi-arrow-down-circle-fill me-1"></i>
+          Total Debits: <strong>{{ totalDebits().toLocaleString('en-IN') }} 🪙</strong>
+        </div>
+        <div class="wallet-chip wallet-chip-count">
+          <i class="bi bi-list-ul me-1"></i>
+          Transactions: <strong>{{ wallet()!.transactions.length }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOW TO EARN -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body p-4">
+        <h6 class="fw-700 mb-3"><i class="bi bi-lightbulb text-warning me-2"></i>How to Earn Coins</h6>
+        <div class="row g-3">
+          <div class="col-sm-6 col-md-3">
+            <div class="earn-tile">
+              <div class="earn-icon">📸</div>
+              <div class="fw-600 small">Photo Review</div>
+              <div class="earn-amount">+100 coins</div>
+              <div class="text-muted" style="font-size:.72rem">Upload a photo with your review</div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-md-3">
+            <div class="earn-tile">
+              <div class="earn-icon">❌</div>
+              <div class="fw-600 small">Cancellation Refund</div>
+              <div class="earn-amount">Auto-credited</div>
+              <div class="text-muted" style="font-size:.72rem">Based on cancellation policy</div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-md-3">
+            <div class="earn-tile refund-policy-tile">
+              <div class="earn-icon">📋</div>
+              <div class="fw-600 small">Refund Policy</div>
+              <div style="font-size:.72rem;line-height:1.6">
+                ≥ 5 days → <strong>100%</strong><br>
+                3–5 days → <strong>50%</strong><br>
+                1–3 days → <strong>25%</strong><br>
+                ≤ 1 day → <strong>0%</strong>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-md-3">
+            <div class="earn-tile">
+              <div class="earn-icon">⚡</div>
+              <div class="fw-600 small">Instant Credit</div>
+              <div class="earn-amount">On approval</div>
+              <div class="text-muted" style="font-size:.72rem">Refunds credited immediately on admin approval</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRANSACTIONS -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+          <h5 class="fw-700 mb-0">
+            <i class="bi bi-clock-history me-2 text-primary"></i>Transaction History
+          </h5>
+
+          <!-- Filter tabs -->
+          <div class="d-flex gap-2">
+            @for (f of filterOptions; track f) {
+              <button class="btn btn-sm rounded-pill filter-tab"
+                      [class.active]="filterType() === f"
+                      (click)="setFilter(f)">
+                @if (f === 'Credit') { <i class="bi bi-arrow-up-circle me-1 text-success"></i> }
+                @if (f === 'Debit')  { <i class="bi bi-arrow-down-circle me-1 text-danger"></i> }
+                {{ f }}
+              </button>
+            }
+          </div>
+        </div>
+
+        @if (filtered().length === 0) {
+          <div class="empty-state py-4">
+            <i class="bi bi-inbox empty-icon"></i>
+            <h6 class="fw-600">No transactions yet</h6>
+            <p class="text-muted small">
+              @if (filterType() === 'All') { Submit a photo review or get a refund to earn coins. }
+              @else { No {{ filterType() | lowercase }} transactions found. }
+            </p>
+          </div>
+        } @else {
+          <div class="d-flex flex-column gap-2">
+            @for (tx of paged(); track tx.transactionId) {
+              <div class="tx-card d-flex align-items-center gap-3">
+
+                <!-- Icon -->
+                <div class="tx-icon-wrap" [class.tx-credit]="tx.type === 'Credit'" [class.tx-debit]="tx.type === 'Debit'">
+                  <span class="tx-arrow">{{ txIcon(tx.type) }}</span>
+                </div>
+
+                <!-- Details -->
+                <div class="flex-grow-1">
+                  <div class="fw-600 small">{{ txDesc(tx) }}</div>
+                  <div class="text-muted" style="font-size:.72rem">
+                    <i class="bi bi-clock me-1"></i>{{ tx.createdAt | date:'medium' }}
+                    @if (tx.referenceId) {
+                      &nbsp;·&nbsp; Ref #{{ tx.referenceId }}
+                    }
+                  </div>
+                </div>
+
+                <!-- Amount -->
+                <div class="tx-amount" [class.tx-amount-credit]="tx.type === 'Credit'" [class.tx-amount-debit]="tx.type === 'Debit'">
+                  {{ tx.type === 'Credit' ? '+' : '-' }}{{ tx.amount.toLocaleString('en-IN') }} 🪙
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Pagination -->
+          @if (totalPages() > 1) {
+            <nav class="dash-pager mt-4" aria-label="Transactions pagination">
+              <button type="button" class="dash-pager__btn" [disabled]="page() <= 1" (click)="page.set(page() - 1)">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+              <span class="dash-pager__current">{{ page() }}</span>
+              <button type="button" class="dash-pager__btn" [disabled]="page() >= totalPages()" (click)="page.set(page() + 1)">
+                <i class="bi bi-chevron-right"></i>
+              </button>
+              <span class="dash-pager__meta">{{ page() }} / {{ totalPages() }}</span>
+            </nav>
+          }
+        }
+      </div>
+    </div>
+
+  }
+</div>

@@ -1,0 +1,192 @@
+<div class="page-header audit-header">
+  <div class="container">
+    <h1>📋 Audit Logs</h1>
+    <p>Track every action performed across the system</p>
+  </div>
+</div>
+
+<div class="container pb-5">
+
+  <!-- STATS -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-4">
+      <div class="stat-card" style="border-left-color:#1a237e">
+        <div class="stat-number" style="color:#1a237e">{{ totalLogs() }}</div>
+        <div class="stat-label">Total Logs</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4">
+      <div class="stat-card" style="border-left-color:#2e7d32">
+        <div class="stat-number" style="color:#2e7d32">{{ uniqueUsers() }}</div>
+        <div class="stat-label">Unique Users</div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="stat-card" style="border-left-color:#f57f17">
+        <div class="stat-number" style="color:#f57f17">{{ logs().length }}</div>
+        <div class="stat-label">Shown</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTER PANEL -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-700 mb-0">🔍 Filter Logs</h6>
+        @if (isFiltered()) {
+          <button class="btn btn-sm btn-outline-secondary rounded-pill" (click)="clearFilter()">
+            <i class="bi bi-x-circle me-1"></i>Clear Filters
+          </button>
+        }
+      </div>
+      <div class="row g-2">
+        <div class="col-md-2 col-6">
+          <label class="form-label small fw-600">User ID</label>
+          <input type="number" class="form-control form-control-sm" placeholder="e.g. 5"
+            [value]="filter().userId ?? ''"
+            (input)="setFilterNum('userId', $any($event.target).value)">
+        </div>
+        <div class="col-md-2 col-6">
+          <label class="form-label small fw-600">Action</label>
+          <select class="form-select form-select-sm"
+            [value]="filter().action ?? ''"
+            (change)="setFilterField('action', $any($event.target).value)">
+            <option value="">All</option>
+            @for (a of actionOptions; track a) {
+              <option [value]="a">{{ a }}</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-2 col-6">
+          <label class="form-label small fw-600">Entity</label>
+          <select class="form-select form-select-sm"
+            [value]="filter().entityName ?? ''"
+            (change)="setFilterField('entityName', $any($event.target).value)">
+            <option value="">All</option>
+            @for (e of entityOptions; track e) {
+              <option [value]="e">{{ e }}</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-2 col-6">
+          <label class="form-label small fw-600">Entity ID</label>
+          <input type="number" class="form-control form-control-sm" placeholder="e.g. 12"
+            [value]="filter().entityId ?? ''"
+            (input)="setFilterNum('entityId', $any($event.target).value)">
+        </div>
+        <div class="col-md-2 col-6">
+          <label class="form-label small fw-600">From Date</label>
+          <input type="date" class="form-control form-control-sm"
+            [value]="filter().fromDate ?? ''"
+            (change)="setFilterField('fromDate', $any($event.target).value)">
+        </div>
+        <div class="col-md-2 col-6">
+          <label class="form-label small fw-600">To Date</label>
+          <input type="date" class="form-control form-control-sm"
+            [value]="filter().toDate ?? ''"
+            (change)="setFilterField('toDate', $any($event.target).value)">
+        </div>
+      </div>
+      <div class="mt-3">
+        <button class="btn btn-sm btn-primary-custom rounded-pill px-4" (click)="applyFilter()" [disabled]="loading()">
+          @if (loading()) { <span class="spinner-border spinner-border-sm me-1"></span> }
+          Apply Filter
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOG TABLE -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-700 mb-0">
+          Logs
+          @if (isFiltered()) { <span class="badge bg-warning text-dark ms-2 rounded-pill" style="font-size:.7rem">Filtered</span> }
+          ({{ totalLogs() }})
+        </h6>
+        <div class="d-flex align-items-center gap-2">
+          @if (loading()) { <span class="spinner-border spinner-border-sm"></span> }
+          <button class="btn btn-sm btn-outline-secondary rounded-pill" (click)="load()" [disabled]="loading()">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+        </div>
+      </div>
+
+      @if (logs().length === 0 && !loading()) {
+        <div class="empty-state">
+          <i class="bi bi-journal-x empty-icon"></i>
+          <p>No audit logs found.</p>
+          @if (isFiltered()) {
+            <button class="btn btn-sm btn-outline-secondary rounded-pill" (click)="clearFilter()">Clear filters</button>
+          }
+        </div>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-hover align-middle small">
+            <thead class="table-light">
+              <tr>
+                <th>#ID</th>
+                <th>Action</th>
+                <th>Entity</th>
+                <th>Entity ID</th>
+                <th>User</th>
+                <th>Changes</th>
+                <th>Date</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (log of logs(); track log.auditLogId) {
+                <tr>
+                  <td class="text-muted">#{{ log.auditLogId }}</td>
+                  <td>
+                    <span class="action-badge" [ngClass]="actionClass(log.action)">{{ log.action }}</span>
+                  </td>
+                  <td>
+                    <span class="entity-badge" [ngClass]="entityClass(log.entityName)">{{ log.entityName }}</span>
+                  </td>
+                  <td class="text-muted">{{ log.entityId ?? '—' }}</td>
+                  <td>
+                    @if (log.userName) {
+                      <span class="fw-600">{{ log.userName }}</span>
+                    } @else if (log.userId) {
+                      <span class="text-muted">User #{{ log.userId }}</span>
+                    } @else {
+                      <span class="text-muted">System</span>
+                    }
+                  </td>
+                  <td>
+                    @if (log.changes) {
+                      <span class="changes-text" [title]="log.changes">{{ log.changes | slice:0:60 }}{{ log.changes.length > 60 ? '…' : '' }}</span>
+                    } @else {
+                      <span class="text-muted">—</span>
+                    }
+                  </td>
+                  <td class="text-muted text-nowrap">{{ log.createdAt | date:'dd MMM y, HH:mm' }}</td>
+                  <td>
+                    <button class="btn btn-xs btn-outline-danger" (click)="delete(log)" title="Delete log">
+                      <i class="bi bi-trash3"></i>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <nav class="dash-pager" aria-label="Audit logs pagination">
+          <button type="button" class="dash-pager__btn" [disabled]="page() <= 1" (click)="load(page() - 1)" title="Previous">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+          <span class="dash-pager__current">{{ page() }}</span>
+          <button type="button" class="dash-pager__btn" [disabled]="page() >= (pageMeta()?.totalPages ?? 1)" (click)="load(page() + 1)" title="Next">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+          <span class="dash-pager__meta">{{ page() }} / {{ pageMeta()?.totalPages ?? 1 }}</span>
+        </nav>
+      }
+    </div>
+  </div>
+
+</div>

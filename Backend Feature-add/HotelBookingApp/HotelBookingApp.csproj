@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>HotelBookingApp</RootNamespace>
+    <AssemblyName>HotelBookingApp</AssemblyName>
+  </PropertyGroup>
+
+  <!-- Exclude the nested test project from this project's compilation -->
+  <ItemGroup>
+    <Compile Remove="HotelBookingApp.Tests\**" />
+    <Content Remove="HotelBookingApp.Tests\**" />
+    <EmbeddedResource Remove="HotelBookingApp.Tests\**" />
+    <None Remove="HotelBookingApp.Tests\**" />
+  </ItemGroup>
+
+  <!-- Exclude test project from EF design-time build -->
+  <PropertyGroup>
+    <DefaultItemExcludes>$(DefaultItemExcludes);HotelBookingApp.Tests\**</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer"       Version="10.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools"           Version="10.0.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.1" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,219 @@
+<div class="page-header">
+  <div class="container">
+    <h1><i class="bi bi-calendar-check me-2"></i>Confirm Booking</h1>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+
+          @if (hotel() && room()) {
+            <div class="hotel-summary p-3 rounded-3 mb-4">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <div class="fw-700 fs-5">{{ hotel()!.hotelName }}</div>
+                  <div class="text-muted small">
+                    <i class="bi bi-geo-alt me-1"></i>{{ hotel()!.location }}
+                  </div>
+                  <div class="text-muted small mt-1">
+                    {{ room()!.roomType }} Room &nbsp;·&nbsp;
+                    Room #{{ room()!.roomNumber }} &nbsp;·&nbsp;
+                    {{ room()!.capacity }} guests max
+                  </div>
+                </div>
+                <div class="text-end">
+                  <div class="price-tag">₹{{ room()!.pricePerNight.toLocaleString('en-IN') }}</div>
+                  <div class="per-night">per night</div>
+                </div>
+              </div>
+
+              <!-- Availability indicator -->
+              <div class="mt-3 pt-3 border-top">
+                <span class="small fw-600 me-2">Availability:</span>
+                @if (!room()!.isAvailable) {
+                  <span class="avail-badge avail-none"><i class="bi bi-x-circle-fill me-1"></i>Room Deactivated</span>
+                } @else if (!checkIn() || !checkOut()) {
+                  <span class="avail-badge" style="background:#f0f0f0;color:#666"><i class="bi bi-calendar me-1"></i>Select dates to check</span>
+                } @else if (dateChecking()) {
+                  <span class="avail-badge" style="background:#e3f2fd;color:#0277bd"><span class="spinner-border spinner-border-sm me-1"></span>Checking…</span>
+                } @else if (dateAvailability() === true) {
+                  <span class="avail-badge avail-ok"><i class="bi bi-check-circle-fill me-1"></i>Available for these dates</span>
+                } @else if (dateAvailability() === false) {
+                  <span class="avail-badge avail-none"><i class="bi bi-x-circle-fill me-1"></i>Already booked for these dates</span>
+                }
+              </div>
+            </div>
+
+            <!-- Booked-for-dates warning -->
+            @if (dateAvailability() === false) {
+              <div class="alert alert-danger rounded-3 d-flex align-items-center gap-2 mb-4">
+                <i class="bi bi-x-octagon-fill fs-5"></i>
+                <div>
+                  <div class="fw-600">Room not available for selected dates</div>
+                  <div class="small">Try different check-in / check-out dates.</div>
+                </div>
+              </div>
+            }
+          }
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Check-in Date</label>
+              <input class="form-control" type="date"
+                     [value]="checkIn()"
+                     (input)="checkIn.set($any($event.target).value); checkDateAvailability()"
+                     [min]="today">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Check-out Date</label>
+              <input class="form-control" type="date"
+                     [value]="checkOut()"
+                     (input)="checkOut.set($any($event.target).value); checkDateAvailability()"
+                     [min]="checkIn() || today">
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label">Number of Rooms</label>
+            <select class="form-select"
+                    [value]="numRooms()"
+                    [disabled]="!room() || !room()!.isAvailable"
+                    (change)="numRooms.set(+$any($event.target).value)">
+              @for (n of availableOptions(); track n) {
+                <option [value]="n">{{ n }} Room{{ n > 1 ? 's' : '' }}</option>
+              }
+              @if (!room() || !room()!.isAvailable) {
+                <option value="0" disabled>No rooms available</option>
+              }
+            </select>
+          </div>
+
+          <!-- ✅ AMENITY SELECTION -->
+          <div class="mb-4">
+            <label class="form-label fw-600">Select Complimentary Hotel Amenities</label>
+            @if (availableAmenities().length > 0) {
+              <div class="amenity-selection p-3 rounded-3 border">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <p class="text-muted small mb-0">Choose from these complimentary amenities included with your stay:</p>
+                  <div class="bulk-controls">
+                    @if (availableAmenities().length > 1) {
+                      <button type="button" class="btn btn-sm btn-outline-primary me-2" 
+                              [disabled]="isAllSelected" 
+                              (click)="selectAllAmenities()">
+                        <i class="bi bi-check-all me-1"></i>Select All
+                      </button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary" 
+                              [disabled]="selectedAmenities().length === 0" 
+                              (click)="deselectAllAmenities()">
+                        <i class="bi bi-x-circle me-1"></i>Clear All
+                      </button>
+                    }
+                  </div>
+                </div>
+                
+                <div class="row g-2">
+                  @for (amenity of availableAmenities(); track amenity.hotelAmenityId) {
+                    <div class="col-md-6 col-lg-4">
+                      <div class="form-check amenity-option p-2 rounded-2 border" 
+                           [class.selected]="isAmenitySelected(amenity.hotelAmenityId)">
+                        <input 
+                          class="form-check-input" 
+                          type="checkbox" 
+                          [id]="'amenity-' + amenity.hotelAmenityId"
+                          [checked]="isAmenitySelected(amenity.hotelAmenityId)"
+                          (change)="toggleAmenity(amenity.hotelAmenityId)">
+                        <label class="form-check-label w-100" [for]="'amenity-' + amenity.hotelAmenityId">
+                          <div class="d-flex align-items-center">
+                            <span class="me-2 fs-5">{{ amenity.amenityIcon || '✨' }}</span>
+                            <div class="flex-grow-1">
+                              <div class="fw-600">{{ amenity.amenityName }}</div>
+                              @if (amenity.amenityDescription) {
+                                <div class="small text-muted">{{ amenity.amenityDescription }}</div>
+                              }
+                              <div class="small text-success">✓ Complimentary</div>
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  }
+                </div>
+                
+                @if (selectedAmenities().length > 0) {
+                  <div class="selected-amenities mt-3 p-3 bg-light rounded-2">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <div class="small fw-600 text-primary">Selected Amenities ({{ selectedAmenities().length }} of {{ availableAmenities().length }}):</div>
+                      <div class="small text-success fw-600">
+                        <i class="bi bi-check-circle-fill me-1"></i>All Included - No Extra Cost
+                      </div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-1">
+                      @for (amenity of selectedAmenitiesDetails; track amenity.hotelAmenityId) {
+                        <span class="badge bg-success d-flex align-items-center">
+                          {{ amenity.amenityIcon || '✨' }} {{ amenity.amenityName }}
+                          <button type="button" class="btn-close btn-close-white ms-2" 
+                                  style="font-size: 0.6em;" 
+                                  (click)="toggleAmenity(amenity.hotelAmenityId)"
+                                  [attr.aria-label]="'Remove ' + amenity.amenityName"></button>
+                        </span>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="text-center text-muted py-3 border rounded-3">
+                <i class="bi bi-info-circle me-2"></i>
+                No additional amenities available for this hotel.
+              </div>
+            }
+          </div>
+
+          @if (nights > 0 && room()) {
+            <div class="price-breakdown p-3 rounded-3 mb-4">
+              <div class="fw-700 text-primary mb-3">Price Breakdown</div>
+              <div class="d-flex justify-content-between small mb-2">
+                <span>₹{{ room()!.pricePerNight.toLocaleString('en-IN') }} × {{ nights }} nights × {{ numRooms() }} rooms</span>
+                <span class="fw-600">₹{{ ((room()!.pricePerNight * nights * numRooms()) | number:'1.0-0') }}</span>
+              </div>
+              @if (selectedAmenities().length > 0) {
+                <div class="d-flex justify-content-between small mb-2 text-success">
+                  <span>Selected Amenities ({{ selectedAmenities().length }} items)</span>
+                  <span class="fw-600">Complimentary ✓</span>
+                </div>
+              }
+              <hr class="my-2">
+              <div class="d-flex justify-content-between fw-700 text-primary">
+                <span>Total Amount</span>
+                <span class="fs-5">₹{{ totalAmount.toLocaleString('en-IN') }}</span>
+              </div>
+            </div>
+          }
+
+          <button class="btn btn-primary-custom w-100 py-2 rounded-pill fw-600"
+                  [disabled]="loading() || dateChecking() || !checkIn() || !checkOut() || !room() || !room()!.isAvailable || dateAvailability() === false"
+                  (click)="confirmBooking()">
+            @if (loading()) {
+              <span class="spinner-border spinner-border-sm me-2"></span>Creating booking…
+            } @else if (dateChecking()) {
+              <span class="spinner-border spinner-border-sm me-2"></span>Checking availability…
+            } @else if (dateAvailability() === false) {
+              <i class="bi bi-x-circle me-2"></i>Dates Not Available
+            } @else {
+              <i class="bi bi-calendar-check me-2"></i>Confirm Booking
+            }
+          </button>
+
+          <div class="text-center mt-3">
+            <a [routerLink]="['/hotels', hotel()?.hotelId]" class="text-muted small">
+              <i class="bi bi-arrow-left me-1"></i>Back to hotel
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

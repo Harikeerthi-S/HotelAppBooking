@@ -1,0 +1,540 @@
+
+<div class="page-header admin-header">
+  <div class="container">
+    <h1> 🏨 Hotel Manager Dashboard </h1>
+  </div>
+</div>
+
+<div class="container pb-5">
+
+  <!-- STATS -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-2"><div class="stat-card" style="border-left-color:#e84393"><div class="stat-number" style="color:#e84393">{{ statHotelsCount() }}</div><div class="stat-label">Hotels</div></div></div>
+    <div class="col-6 col-md-2"><div class="stat-card" style="border-left-color:#0277bd"><div class="stat-number" style="color:#0277bd">{{ statUsersCount() }}</div><div class="stat-label">Users</div></div></div>
+    <div class="col-6 col-md-2"><div class="stat-card" style="border-left-color:#ff6f00"><div class="stat-number" style="color:#ff6f00">{{ statBookingsCount() }}</div><div class="stat-label">Bookings</div></div></div>
+    <div class="col-6 col-md-2"><div class="stat-card" style="border-left-color:#2e7d32"><div class="stat-number" style="color:#2e7d32">{{ statRoomsCount() }}</div><div class="stat-label">Rooms</div></div></div>
+    <div class="col-6 col-md-2"><div class="stat-card" style="border-left-color:#2e7d32"><div class="stat-number" style="color:#2e7d32;font-size:1.1rem">₹{{ totalRevenue().toLocaleString('en-IN') }}</div><div class="stat-label">Revenue</div></div></div>
+    <div class="col-6 col-md-2"><div class="stat-card" style="border-left-color:#c62828"><div class="stat-number" style="color:#c62828;font-size:1.1rem">₹{{ totalRefunds().toLocaleString('en-IN') }}</div><div class="stat-label">Refunds</div></div></div>
+  </div>
+
+  <!-- TAB BUTTONS -->
+  <div class="d-flex gap-2 mb-4 flex-wrap">
+    @for (t of tabs; track t) {
+      <button class="btn btn-sm rounded-pill tab-btn"
+              [class.active]="activeTab() === t"
+              (click)="switchTab(t)">{{ t }}</button>
+    }
+  </div>
+
+  <!-- ═══ HOTELS ═══ -->
+  @if (activeTab() === 'Hotels') {
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-4">
+            <h6 class="fw-700 mb-3">{{ editHotelId() ? '✏️ Edit Hotel' : '➕ Add Hotel' }}</h6>
+            <div class="mb-2"><label class="form-label small fw-600">Name *</label><input class="form-control form-control-sm" [value]="hf().hotelName" (input)="hf.update(f=>({...f,hotelName:$any($event.target).value}))"></div>
+            <div class="mb-2"><label class="form-label small fw-600">Location *</label><input class="form-control form-control-sm" [value]="hf().location" (input)="hf.update(f=>({...f,location:$any($event.target).value}))"></div>
+            <div class="mb-2"><label class="form-label small fw-600">Address</label><input class="form-control form-control-sm" [value]="hf().address" (input)="hf.update(f=>({...f,address:$any($event.target).value}))"></div>
+            <div class="row g-2 mb-2">
+              <div class="col-6"><label class="form-label small fw-600">Stars</label><select class="form-select form-select-sm" [value]="hf().starRating" (change)="hf.update(f=>({...f,starRating:+$any($event.target).value}))"><option [value]="1">1★</option><option [value]="2">2★</option><option [value]="3">3★</option><option [value]="4">4★</option><option [value]="5">5★</option></select></div>
+              <div class="col-6"><label class="form-label small fw-600">Rooms</label><input type="number" class="form-control form-control-sm" [value]="hf().totalRooms" (input)="hf.update(f=>({...f,totalRooms:+$any($event.target).value}))"></div>
+            </div>
+            <div class="mb-2"><label class="form-label small fw-600">Contact</label><input class="form-control form-control-sm" [value]="hf().contactNumber" (input)="hf.update(f=>({...f,contactNumber:$any($event.target).value}))"></div>
+            <div class="mb-3"><label class="form-label small fw-600">Image URL</label><input class="form-control form-control-sm" [value]="hf().imagePath" (input)="hf.update(f=>({...f,imagePath:$any($event.target).value}))"></div>
+            <button class="btn btn-sm btn-primary-custom w-100 rounded-pill mb-2" (click)="saveHotel()" [disabled]="saving()">{{ saving() ? 'Saving…' : (editHotelId() ? 'Update' : 'Create Hotel') }}</button>
+            @if (editHotelId()) { <button class="btn btn-sm btn-outline-secondary w-100 rounded-pill" (click)="resetHotel()">Cancel</button> }
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+              <div>
+                <h6 class="fw-700 mb-0">Hotels ({{ hotelsTotalRecords() }})</h6>
+              </div>
+              @if (hotelsLoading()) { <span class="spinner-border spinner-border-sm"></span> }
+            </div>
+
+            <!-- Filter bar -->
+            <div class="row g-2 mb-3 align-items-end">
+              <div class="col-sm-4">
+                <label class="form-label small fw-600 mb-1">Destination</label>
+                <select class="form-select form-select-sm" [value]="hfLocation()" (change)="hfLocation.set($any($event.target).value)">
+                  <option value="">All Cities</option>
+                  @for (c of cityOptions; track c) { <option [value]="c">{{ c }}</option> }
+                </select>
+              </div>
+              <div class="col-sm-3">
+                <label class="form-label small fw-600 mb-1">Min Stars</label>
+                <select class="form-select form-select-sm" [value]="hfMinRating()" (change)="hfMinRating.set($any($event.target).value)">
+                  <option value="">Any</option>
+                  <option value="1">1★+</option><option value="2">2★+</option>
+                  <option value="3">3★+</option><option value="4">4★+</option><option value="5">5★</option>
+                </select>
+              </div>
+              <div class="col-sm-5">
+                <label class="form-label small fw-600 mb-1">Price Range (₹/night)</label>
+                <select class="form-select form-select-sm mb-1" [value]="hfPriceRange()" (change)="onHotelPriceRange($any($event.target).value)">
+                  <option value="">Any Price</option>
+                  @for (r of priceRanges; track r.label) { <option [value]="r.min+'-'+r.max">{{ r.label }}</option> }
+                </select>
+                <div class="d-flex gap-1">
+                  <input class="form-control form-control-sm" type="number" min="0" placeholder="Min ₹" [value]="hfMinPrice()" (input)="hfMinPrice.set($any($event.target).value);hfPriceRange.set('')">
+                  <input class="form-control form-control-sm" type="number" min="0" placeholder="Max ₹" [value]="hfMaxPrice()" (input)="hfMaxPrice.set($any($event.target).value);hfPriceRange.set('')">
+                </div>
+              </div>
+              <div class="col-12 d-flex gap-2">
+                <button class="btn btn-sm btn-primary-custom rounded-pill px-3" (click)="loadHotels(1)">Apply</button>
+                <button class="btn btn-sm btn-outline-secondary rounded-pill" (click)="clearHotelFilter()">Clear</button>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle small">
+                <thead class="table-light"><tr><th>Name</th><th>Location</th><th>Stars</th><th>Rooms</th><th>Actions</th></tr></thead>
+                <tbody>
+                  @for (h of hotels(); track h.hotelId) {
+                    <tr><td class="fw-600">{{ h.hotelName }}</td><td>{{ h.location }}</td><td>{{ h.starRating }}★</td><td>{{ h.totalRooms }}</td>
+                    <td><button class="btn btn-xs btn-outline-primary me-1" title="Edit Hotel" (click)="editHotel(h)"><i class="bi bi-pencil-fill"></i></button><button class="btn btn-xs btn-outline-danger" title="Delete Hotel" (click)="deleteHotel(h)"><i class="bi bi-trash3-fill"></i></button></td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <nav class="dash-pager" aria-label="Hotels pagination">
+              <button type="button" class="dash-pager__btn" [disabled]="hotelsPage() <= 1" (click)="loadHotels(hotelsPage() - 1)" title="Previous page">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+              <span class="dash-pager__current">{{ hotelsPage() }}</span>
+              <button type="button" class="dash-pager__btn" [disabled]="hotelsPage() >= hotelsTotalPages()" (click)="loadHotels(hotelsPage() + 1)" title="Next page">
+                <i class="bi bi-chevron-right"></i>
+              </button>
+              <span class="dash-pager__meta">{{ hotelsPage() }} / {{ hotelsTotalPages() }}</span>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ═══ ROOMS ═══ -->
+  @if (activeTab() === 'Rooms') {
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-4">
+            <h6 class="fw-700 mb-3">{{ editRoomId() ? '✏️ Edit Room' : '➕ Add Room' }}</h6>
+            <div class="mb-2"><label class="form-label small fw-600">Hotel *</label><select class="form-select form-select-sm" [value]="rf().hotelId" (change)="rf.update(f=>({...f,hotelId:+$any($event.target).value}))"><option [value]="0">Select…</option>@for(h of hotelsForRoomForm();track h.hotelId){<option [value]="h.hotelId">{{ h.hotelName }}</option>}</select></div>
+            <div class="row g-2 mb-2">
+              <div class="col-6"><label class="form-label small fw-600">Room #</label><input type="number" class="form-control form-control-sm" [value]="rf().roomNumber" (input)="rf.update(f=>({...f,roomNumber:+$any($event.target).value}))"></div>
+              <div class="col-6"><label class="form-label small fw-600">Type</label><select class="form-select form-select-sm" [value]="rf().roomType" (change)="rf.update(f=>({...f,roomType:$any($event.target).value}))"><option>Standard</option><option>Deluxe</option><option>Suite</option><option>Single</option><option>Double</option></select></div>
+            </div>
+            <div class="row g-2 mb-2">
+              <div class="col-6"><label class="form-label small fw-600">Price/Night (₹)</label><input type="number" class="form-control form-control-sm" [value]="rf().pricePerNight" (input)="rf.update(f=>({...f,pricePerNight:+$any($event.target).value}))"></div>
+              <div class="col-6"><label class="form-label small fw-600">Capacity</label><input type="number" class="form-control form-control-sm" [value]="rf().capacity" (input)="rf.update(f=>({...f,capacity:+$any($event.target).value}))"></div>
+            </div>
+            <div class="mb-3"><label class="form-label small fw-600">Image URL</label><input class="form-control form-control-sm" placeholder="https://…" [value]="rf().imageUrl" (input)="rf.update(f=>({...f,imageUrl:$any($event.target).value}))"></div>
+            <button class="btn btn-sm btn-primary-custom w-100 rounded-pill mb-2" (click)="saveRoom()" [disabled]="saving()">{{ saving() ? 'Saving…' : (editRoomId() ? 'Update' : 'Add Room') }}</button>
+            @if (editRoomId()) { <button class="btn btn-sm btn-outline-secondary w-100 rounded-pill" (click)="resetRoom()">Cancel</button> }
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+              <div>
+                <h6 class="fw-700 mb-0">Rooms ({{ roomsTotalRecords() }})
+                  @if (roomIsFiltered()) { <span class="badge bg-warning text-dark ms-1 rounded-pill" style="font-size:.7rem">Filtered</span> }
+                </h6>
+              </div>
+              <a routerLink="/rooms" class="btn btn-sm btn-primary-custom rounded-pill"><i class="bi bi-door-open me-1"></i>Full Manager</a>
+            </div>
+            <!-- Room filter bar -->
+            <div class="row g-2 mb-3 align-items-end">
+              <div class="col-sm-3">
+                <label class="form-label small fw-600 mb-1">Room Type</label>
+                <select class="form-select form-select-sm" [value]="roomFilter().roomType"
+                  (change)="roomFilter.update(f=>({...f,roomType:$any($event.target).value}))">
+                  <option value="">All Types</option>
+                  @for (t of roomTypeOptions; track t) { <option [value]="t">{{ t }}</option> }
+                </select>
+              </div>
+              <div class="col-sm-3">
+                <label class="form-label small fw-600 mb-1">Hotel ID</label>
+                <input type="number" class="form-control form-control-sm" placeholder="e.g. 1"
+                  [value]="roomFilter().hotelId"
+                  (input)="roomFilter.update(f=>({...f,hotelId:$any($event.target).value}))">
+              </div>
+              <div class="col-sm-3 d-flex align-items-end">
+                <div class="form-check mb-0">
+                  <input class="form-check-input" type="checkbox" id="mgrOnlyAvail"
+                    [checked]="roomFilter().onlyAvailable"
+                    (change)="roomFilter.update(f=>({...f,onlyAvailable:$any($event.target).checked}))">
+                  <label class="form-check-label small" for="mgrOnlyAvail">Available only</label>
+                </div>
+              </div>
+              <div class="col-sm-3 d-flex gap-1 align-items-end">
+                <button class="btn btn-sm btn-primary-custom rounded-pill flex-fill" (click)="applyRoomFilter()">Apply</button>
+                @if (roomIsFiltered()) {
+                  <button class="btn btn-sm btn-outline-secondary rounded-pill" (click)="clearRoomFilter()" title="Clear"><i class="bi bi-x-lg"></i></button>
+                }
+              </div>
+            </div>
+            @if (roomsLoading()) { <div class="text-center py-3"><span class="spinner-border spinner-border-sm"></span></div> }
+            <div class="table-responsive">
+              <table class="table table-hover align-middle small">
+                <thead class="table-light"><tr><th>#</th><th>Type</th><th>Price</th><th>Cap</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody>
+                  @for (r of rooms(); track r.roomId) {
+                    <tr><td>{{ r.roomNumber }}</td><td>{{ r.roomType }}</td><td class="fw-600 text-primary">₹{{ r.pricePerNight.toLocaleString('en-IN') }}</td><td>{{ r.capacity }}</td>
+                    <td><span class="status-badge" [class.badge-confirmed]="r.isAvailable" [class.badge-cancelled]="!r.isAvailable">{{ r.isAvailable ? 'Available' : 'Inactive' }}</span></td>
+                    <td><button class="btn btn-xs btn-outline-primary me-1" title="Edit Room" (click)="editRoom(r)"><i class="bi bi-pencil-fill"></i></button>@if(r.isAvailable){<button class="btn btn-xs btn-outline-danger" title="Deactivate Room" (click)="deleteRoom(r)"><i class="bi bi-slash-circle-fill"></i></button>}</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <nav class="dash-pager" aria-label="Rooms pagination">
+              <button type="button" class="dash-pager__btn" [disabled]="roomsPage() <= 1" (click)="loadRooms(roomsPage() - 1)" title="Previous page">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+              <span class="dash-pager__current">{{ roomsPage() }}</span>
+              <button type="button" class="dash-pager__btn" [disabled]="roomsPage() >= roomsTotalPages()" (click)="loadRooms(roomsPage() + 1)" title="Next page">
+                <i class="bi bi-chevron-right"></i>
+              </button>
+              <span class="dash-pager__meta">{{ roomsPage() }} / {{ roomsTotalPages() }}</span>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ═══ USERS ═══ -->
+  @if (activeTab() === 'Users') {
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <div class="mb-3">
+          <h6 class="fw-700 mb-0">Users ({{ users().length }})</h6>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle small">
+            <thead class="table-light"><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+            <tbody>
+              @for (u of pagedUsers(); track u.userId) {
+                <tr><td>{{ u.userId }}</td><td class="fw-600">{{ u.userName }}</td><td>{{ u.email }}</td>
+                <td><span class="badge rounded-pill px-2" [class.bg-danger]="u.role==='admin'" [class.bg-success]="u.role==='hotelmanager'" [class.bg-primary]="u.role==='user'">{{ u.role }}</span></td>
+                <td><button class="btn btn-xs btn-outline-danger" title="Delete User" (click)="deleteUser(u)"><i class="bi bi-person-x-fill"></i></button></td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <nav class="dash-pager" aria-label="Users pagination">
+          <button type="button" class="dash-pager__btn" [disabled]="usersPage() <= 1" (click)="usersPage.set(usersPage() - 1)" title="Previous page">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+          <span class="dash-pager__current">{{ usersPage() }}</span>
+          <button type="button" class="dash-pager__btn" [disabled]="usersPage() >= usersTotalPages()" (click)="usersPage.set(usersPage() + 1)" title="Next page">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+          <span class="dash-pager__meta">{{ usersPage() }} / {{ usersTotalPages() }}</span>
+        </nav>
+      </div>
+    </div>
+  }
+
+  <!-- ═══ BOOKINGS ═══ -->
+  @if (activeTab() === 'Bookings') {
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+          <div>
+            <h6 class="fw-700 mb-0">All Bookings ({{ bookingsTotalRecords() }})</h6>
+          </div>
+          @if (bookingsLoading()) { <span class="spinner-border spinner-border-sm"></span> }
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle small">
+            <thead class="table-light"><tr><th>ID</th><th>Hotel</th><th>User</th><th>Check-in</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              @for (b of bookings(); track b.bookingId) {
+                <tr><td>#{{ b.bookingId }}</td><td class="fw-600">{{ b.hotelName }}</td><td>#{{ b.userId }}</td><td>{{ b.checkIn | date:'shortDate' }}</td>
+                <td class="fw-600 text-primary">₹{{ b.totalAmount.toLocaleString('en-IN') }}</td>
+                <td><span class="status-badge" [ngClass]="getStatusClass(b.status)">{{ b.status }}</span></td>
+                <td>
+                  @if (b.status === 'Pending')   { <button class="btn btn-xs btn-success me-1" (click)="confirmBooking(b)">Confirm</button> }
+                  @if (b.status === 'Confirmed') { <button class="btn btn-xs btn-info me-1"    (click)="completeBooking(b)">Complete</button> }
+                </td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <nav class="dash-pager" aria-label="Bookings pagination">
+          <button type="button" class="dash-pager__btn" [disabled]="bookingsPage() <= 1" (click)="loadBookings(bookingsPage() - 1)" title="Previous page">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+          <span class="dash-pager__current">{{ bookingsPage() }}</span>
+          <button type="button" class="dash-pager__btn" [disabled]="bookingsPage() >= bookingsTotalPages()" (click)="loadBookings(bookingsPage() + 1)" title="Next page">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+          <span class="dash-pager__meta">{{ bookingsPage() }} / {{ bookingsTotalPages() }}</span>
+        </nav>
+      </div>
+    </div>
+  }
+
+  <!-- ═══ AMENITIES ═══ -->
+  @if (activeTab() === 'Amenities') {
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-4">
+            <h6 class="fw-700 mb-3">Add Amenity</h6>
+            <div class="mb-2"><label class="form-label small fw-600">Name *</label><input class="form-control form-control-sm" [value]="af().name" (input)="af.update(a=>({...a,name:$any($event.target).value}))"></div>
+            <div class="mb-2"><label class="form-label small fw-600">Icon (emoji)</label><input class="form-control form-control-sm" [value]="af().icon" (input)="af.update(a=>({...a,icon:$any($event.target).value}))"></div>
+            <div class="mb-3"><label class="form-label small fw-600">Description</label><input class="form-control form-control-sm" [value]="af().description" (input)="af.update(a=>({...a,description:$any($event.target).value}))"></div>
+            <button class="btn btn-sm btn-primary-custom w-100 rounded-pill" (click)="saveAmenity()" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Add' }}</button>
+            <div class="mt-2 text-center"><a routerLink="/amenities" class="small text-muted">Full Amenity Manager →</a></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-4">
+            <h6 class="fw-700 mb-3">All Amenities ({{ amenities().length }})</h6>
+            <div class="d-flex flex-wrap gap-2">
+              @for (a of amenities(); track a.amenityId) {
+                <div class="amenity-chip">{{ a.icon || '⭐' }} {{ a.name }}<button class="btn-close ms-2" style="font-size:.6rem" (click)="deleteAmenity(a)"></button></div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ═══ USER AMENITY PREFERENCES ═══ -->
+
+  <!-- ═══ HOTEL AMENITIES ═══ -->
+  @if (activeTab() === 'Hotel Amenities') {
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-700 mb-0">Hotel Amenity Assignments</h6>
+          <a routerLink="/amenities" class="btn btn-sm btn-primary-custom rounded-pill"><i class="bi bi-box-arrow-up-right me-1"></i>Full Manager</a>
+        </div>
+        <p class="text-muted small mb-0">Assign amenities to hotels and view all assignments on the dedicated Amenities page (Assign tab).</p>
+      </div>
+    </div>
+  }
+
+  <!-- ═══ BOOKING AMENITIES ═══ -->
+  @if (activeTab() === 'Payments') {
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <div class="mb-3">
+          <h6 class="fw-700 mb-0">All Payments ({{ payments().length }})</h6>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle small">
+            <thead class="table-light"><tr><th>ID</th><th>Booking</th><th>Amount</th><th>Method</th><th>Status</th><th>Update Status</th><th>Date</th></tr></thead>
+            <tbody>
+              @for (p of pagedPayments(); track p.paymentId) {
+                <tr><td>#{{ p.paymentId }}</td><td>#{{ p.bookingId }}</td><td class="fw-600 text-primary">₹{{ p.amount.toLocaleString('en-IN') }}</td><td>{{ p.paymentMethod }}</td>
+                <td><span class="status-badge" [ngClass]="getPayClass(p.paymentStatus)">{{ p.paymentStatus }}</span></td>
+                <td><select class="form-select form-select-sm" style="width:130px" (change)="updatePaymentStatus(p,$event)"><option value="">Change…</option><option value="Completed">Completed</option><option value="Failed">Failed</option><option value="Refunded">Refunded</option><option value="Pending">Pending</option></select></td>
+                <td class="text-muted">{{ p.createdAt | date:'shortDate' }}</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <nav class="dash-pager" aria-label="Payments pagination">
+          <button type="button" class="dash-pager__btn" [disabled]="paymentsPage() <= 1" (click)="paymentsPage.set(paymentsPage() - 1)" title="Previous page">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+          <span class="dash-pager__current">{{ paymentsPage() }}</span>
+          <button type="button" class="dash-pager__btn" [disabled]="paymentsPage() >= paymentsTotalPages()" (click)="paymentsPage.set(paymentsPage() + 1)" title="Next page">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+          <span class="dash-pager__meta">{{ paymentsPage() }} / {{ paymentsTotalPages() }}</span>
+        </nav>
+      </div>
+    </div>
+  }
+
+  <!-- ═══ REVIEWS ═══ -->
+  @if (activeTab() === 'Reviews') {
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+          <div>
+            <h6 class="fw-700 mb-0">All Reviews ({{ reviewsTotalRecords() }})
+              @if (reviewIsFiltered()) { <span class="badge bg-warning text-dark ms-1 rounded-pill" style="font-size:.7rem">Filtered</span> }
+            </h6>
+          </div>
+          @if (reviewsLoading()) { <span class="spinner-border spinner-border-sm"></span> }
+        </div>
+        <!-- Review filter bar -->
+        <div class="row g-2 mb-3 align-items-end">
+          <div class="col-sm-3">
+            <label class="form-label small fw-600 mb-1">Hotel ID</label>
+            <input type="number" class="form-control form-control-sm" placeholder="e.g. 1"
+              [value]="reviewFilter().hotelId"
+              (input)="reviewFilter.update(f=>({...f,hotelId:$any($event.target).value}))">
+          </div>
+          <div class="col-sm-3">
+            <label class="form-label small fw-600 mb-1">User ID</label>
+            <input type="number" class="form-control form-control-sm" placeholder="e.g. 5"
+              [value]="reviewFilter().userId"
+              (input)="reviewFilter.update(f=>({...f,userId:$any($event.target).value}))">
+          </div>
+          <div class="col-sm-3">
+            <label class="form-label small fw-600 mb-1">Min Rating</label>
+            <select class="form-select form-select-sm" [value]="reviewFilter().rating"
+              (change)="reviewFilter.update(f=>({...f,rating:$any($event.target).value}))">
+              <option value="">Any</option>
+              <option value="1">1★+</option><option value="2">2★+</option>
+              <option value="3">3★+</option><option value="4">4★+</option><option value="5">5★</option>
+            </select>
+          </div>
+          <div class="col-sm-3 d-flex gap-1 align-items-end">
+            <button class="btn btn-sm btn-primary-custom rounded-pill flex-fill" (click)="applyReviewFilter()">Apply</button>
+            @if (reviewIsFiltered()) {
+              <button class="btn btn-sm btn-outline-secondary rounded-pill" (click)="clearReviewFilter()" title="Clear"><i class="bi bi-x-lg"></i></button>
+            }
+          </div>
+        </div>
+        @if (reviews().length === 0 && !reviewsLoading()) {
+          <div class="empty-state"><i class="bi bi-star empty-icon"></i><p>No reviews.</p></div>
+        } @else {
+          <div class="d-flex flex-column gap-3">
+            @for (r of reviews(); track r.reviewId) {
+              <div class="review-item p-3 rounded-3">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                  <div>
+                    <div class="d-flex gap-1 mb-1">
+                      @for (s of stars(r.rating); track $index) {
+                        <i class="bi" [class.bi-star-fill]="s" [class.bi-star]="!s" style="color:#f57f17;font-size:.8rem"></i>
+                      }
+                      <span class="badge bg-primary rounded-pill ms-1">{{ r.rating }}/5</span>
+                    </div>
+                    <div class="text-muted small">Hotel #{{ r.hotelId }} · Guest #{{ r.userId }} · {{ r.createdAt | date:'mediumDate' }}</div>
+                  </div>
+                  <button class="btn btn-sm btn-outline-danger rounded-pill" (click)="deleteReview(r)"><i class="bi bi-trash3"></i></button>
+                </div>
+                <p class="small text-secondary mb-0">{{ r.comment }}</p>
+              </div>
+            }
+          </div>
+          <nav class="dash-pager" aria-label="Reviews pagination">
+            <button type="button" class="dash-pager__btn" [disabled]="reviewsPage() <= 1" (click)="loadReviews(reviewsPage() - 1)" title="Previous page">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+            <span class="dash-pager__current">{{ reviewsPage() }}</span>
+            <button type="button" class="dash-pager__btn" [disabled]="reviewsPage() >= reviewsTotalPages()" (click)="loadReviews(reviewsPage() + 1)" title="Next page">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+            <span class="dash-pager__meta">{{ reviewsPage() }} / {{ reviewsTotalPages() }}</span>
+          </nav>
+          }
+      </div>
+    </div>
+  }
+
+  <!-- ═══ CANCELLATIONS ═══ -->
+  @if (activeTab() === 'Cancellations') {
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+          <div>
+            <h6 class="fw-700 mb-0">Cancellations ({{ cancelsTotalRecords() }})</h6>
+          </div>
+          @if (cancelLoading()) { <span class="spinner-border spinner-border-sm"></span> }
+        </div>
+        @if (cancellations().length === 0 && !cancelLoading()) {
+          <div class="empty-state"><i class="bi bi-x-circle empty-icon"></i><p>No cancellations.</p></div>
+        } @else {
+          <div class="d-flex flex-column gap-3">
+            @for (c of cancellations(); track c.cancellationId) {
+              <div class="p-3 rounded-3 border">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+                  <div>
+                    <span class="fw-700 text-primary me-2">#{{ c.cancellationId }}</span>
+                    <span class="cancel-badge" [ngClass]="cancelClass(c.status)">{{ c.status }}</span>
+                    <div class="text-muted small mt-1">{{ c.hotelName }} · Booking #{{ c.bookingId }} · {{ c.cancellationDate | date:'mediumDate' }}</div>
+                    @if (c.refundAmount > 0) {
+                      <div class="refund-chip mt-1 d-inline-block">💰 Refund: ₹{{ c.refundAmount.toLocaleString('en-IN') }}</div>
+                    }
+                  </div>
+                  <button class="btn btn-sm btn-outline-primary rounded-pill" (click)="openCancelModal(c)">
+                    <i class="bi bi-pencil me-1"></i>Update Status
+                  </button>
+                </div>
+                <div class="reason-box">{{ c.reason }}</div>
+              </div>
+            }
+          </div>
+          <nav class="dash-pager" aria-label="Cancellations pagination">
+            <button type="button" class="dash-pager__btn" [disabled]="cancelsPage() <= 1" (click)="loadCancellations(cancelsPage() - 1)" title="Previous page">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+            <span class="dash-pager__current">{{ cancelsPage() }}</span>
+            <button type="button" class="dash-pager__btn" [disabled]="cancelsPage() >= cancelsTotalPages()" (click)="loadCancellations(cancelsPage() + 1)" title="Next page">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+            <span class="dash-pager__meta">{{ cancelsPage() }} / {{ cancelsTotalPages() }}</span>
+          </nav>
+          }
+      </div>
+    </div>
+  }
+
+</div>
+
+<!-- CANCELLATION STATUS MODAL -->
+@if (showCancelModal()) {
+  <div class="modal-backdrop-custom">
+    <div class="modal-card card border-0 shadow-lg">
+      <div class="card-body p-4">
+        <h5 class="fw-700 mb-3">Update Cancellation #{{ activeCancelId() }}</h5>
+        <div class="mb-3"><label class="form-label fw-600 small">Status</label>
+          <select class="form-select form-select-sm" [value]="modalStatus()" (change)="modalStatus.set($any($event.target).value)">
+            <option value="Pending">⏳ Pending</option><option value="Approved">✅ Approved</option><option value="Rejected">❌ Rejected</option>
+          </select>
+        </div>
+        <div class="mb-4"><label class="form-label fw-600 small">Refund Amount (₹)</label>
+          <input type="number" class="form-control form-control-sm" min="0" [value]="modalRefund()" (input)="modalRefund.set(+$any($event.target).value)">
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary-custom rounded-pill flex-fill" [disabled]="updatingCancel()" (click)="updateCancelStatus()">
+            @if (updatingCancel()) { <span class="spinner-border spinner-border-sm me-2"></span> } Save
+          </button>
+          <button class="btn btn-outline-secondary rounded-pill flex-fill" (click)="closeCancelModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- CONFIRM MODAL -->
+@if (showConfirmModal()) {
+  <div class="modal-backdrop-custom" (click)="closeConfirm()">
+    <div class="modal-card card border-0 shadow-lg" (click)="$event.stopPropagation()" style="max-width:420px">
+      <div class="card-body p-4 text-center">
+        <div class="mb-3">
+          <i class="bi {{ confirmIcon() }} {{ confirmColor() }}" style="font-size:2.5rem"></i>
+        </div>
+        <h5 class="fw-700 mb-2">{{ confirmTitle() }}</h5>
+        <p class="text-muted small mb-4">{{ confirmMessage() }}</p>
+        <div class="d-flex gap-2 justify-content-center">
+          <button class="btn btn-danger rounded-pill px-4" (click)="doConfirm()">
+            <i class="bi bi-check-lg me-1"></i>Yes, Confirm
+          </button>
+          <button class="btn btn-outline-secondary rounded-pill px-4" (click)="closeConfirm()">
+            <i class="bi bi-x-lg me-1"></i>Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

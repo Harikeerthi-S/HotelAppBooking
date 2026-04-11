@@ -1,0 +1,80 @@
+<div class="page-header">
+  <div class="container">
+    <h1><i class="bi bi-person-circle me-2"></i>My Profile</h1>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-5 col-md-7">
+
+      <!-- Avatar card -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-5 text-center">
+          <div class="profile-avatar mx-auto mb-3">{{ getInitial() }}</div>
+          <h4 class="fw-700 mb-1">{{ fullName() || '—' }}</h4>
+          <p class="text-muted mb-3">{{ email() || '—' }}</p>
+          <span class="role-badge {{ getRoleBadge().cls }}">{{ getRoleBadge().label }}</span>
+        </div>
+      </div>
+
+      <!-- Account Details -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+          <h6 class="fw-700 mb-3">Account Details</h6>
+
+          <div class="info-field mb-3">
+            <div class="info-label">
+              <i class="bi bi-person me-2 text-primary"></i>Full Name
+            </div>
+            <div class="info-value">{{ fullName() || '—' }}</div>
+          </div>
+
+          <div class="info-field">
+            <div class="info-label">
+              <i class="bi bi-envelope me-2 text-primary"></i>Email Address
+            </div>
+            <div class="info-value">{{ email() || '—' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick navigation (role-aware) -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+          <h6 class="fw-700 mb-3">Quick Links</h6>
+          <div class="d-flex flex-column gap-2">
+
+            @if (role() === 'user') {
+              <a routerLink="/dashboard-user"  class="nav-link-item"><i class="bi bi-calendar-check text-primary"></i><span>My Bookings</span><i class="bi bi-chevron-right text-muted ms-auto"></i></a>
+              <a routerLink="/wishlist"        class="nav-link-item"><i class="bi bi-heart text-danger"></i><span>Wishlist</span><i class="bi bi-chevron-right text-muted ms-auto"></i></a>
+              <a routerLink="/notifications"   class="nav-link-item"><i class="bi bi-bell text-warning"></i><span>Notifications</span><i class="bi bi-chevron-right text-muted ms-auto"></i></a>
+              <a routerLink="/cancellations"   class="nav-link-item"><i class="bi bi-x-circle text-danger"></i><span>Cancellations</span><i class="bi bi-chevron-right text-muted ms-auto"></i></a>
+              <a routerLink="/reviews"         class="nav-link-item"><i class="bi bi-star text-warning"></i><span>My Reviews</span><i class="bi bi-chevron-right text-muted ms-auto"></i></a>
+              <a routerLink="/amenities"       class="nav-link-item"><i class="bi bi-stars text-success"></i><span>Amenities</span><i class="bi bi-chevron-right text-muted ms-auto"></i></a>
+            }
+
+            @if (role() === 'admin') {
+              <a routerLink="/dashboard-admin" class="nav-link-item"><i class="bi bi-speedometer2 text-danger"></i><span>Admin Dashboard</span><i class="bi bi-chevron-right text-muted ms-auto"></i></a>
+              <a routerLink="/rooms"           class="nav-link-item"><i class="bi bi-door-open text-primary"></i><span>Room Manager</span><i class="bi bi-chevron-right text-muted ms-auto"></i></a>
+              <a routerLink="/amenities"       class="nav-link-item"><i class="bi bi-stars text-warning"></i><span>Amenities</span><i class="bi bi-chevron-right text-muted ms-auto"></i></a>
+            }
+
+            @if (role() === 'hotelmanager') {
+              <a routerLink="/dashboard-manager" class="nav-link-item"><i class="bi bi-building text-success"></i><span>Manager Dashboard</span><i class="bi bi-chevron-right text-muted ms-auto"></i></a>
+              <a routerLink="/rooms"             class="nav-link-item"><i class="bi bi-door-open text-primary"></i><span>Room Manager</span><i class="bi bi-chevron-right text-muted ms-auto"></i></a>
+              <a routerLink="/amenities"         class="nav-link-item"><i class="bi bi-stars text-warning"></i><span>Amenities</span><i class="bi bi-chevron-right text-muted ms-auto"></i></a>
+            }
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Logout -->
+      <button class="btn btn-outline-danger w-100 rounded-pill py-2 fw-600" (click)="logout()">
+        <i class="bi bi-box-arrow-right me-2"></i>Sign Out
+      </button>
+
+    </div>
+  </div>
+</div>
